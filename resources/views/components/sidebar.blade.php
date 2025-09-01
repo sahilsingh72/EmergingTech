@@ -192,7 +192,7 @@
           </li>
         </ul>
       </nav>
-      <!-- /.sidebar-menu -->
+      <!-- /.sidebar menu -->
     </div>
     <!-- /.sidebar -->
   </aside>
