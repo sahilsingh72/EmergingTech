@@ -177,6 +177,12 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
+                <a href="{{ route('register') }}" class="nav-link">
+                  <i class="fas fa-user-plus nav-icon"></i>
+                  <p>User Creation</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="#" class="nav-link">
                   <i class="fas fa-address-card nav-icon"></i>
                   <p>Profile</p>
