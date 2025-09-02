@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\FilterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,6 +20,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/attendance',[StudentController::class,'attendance'])->name('attendance');
+Route::get('/uploadfeedback',[StudentController::class,'uploadfeedback'])->name('uploadfeedback');
+Route::get('/uploadmedia',[StudentController::class,'uploadmedia'])->name('uploadmedia');
+
+Route::get('/uploadreport',[ReportController::class,'uploadreport'])->name('uploadreport');
+
 Route::get('/get-dlcs/{district_id}', [RegisteredUserController::class, 'getDlcs']);
 
 
