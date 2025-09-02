@@ -104,29 +104,13 @@ class RegisteredUserController extends Controller
 
         $user->save();
 
-            // 'district_id' => 'required_if:role_id,'.$roles->firstWhere('name','DLC')->id,           
-            // 'dlc_id' => 'required_if:role_id,'.$roles->firstWhere('name','DLC')->id,       
-            // // 'dlc_id' => 'required_if:role_id,'.$roles->firstWhere('name','Institute')->id.','.$roles->firstWhere('name','Trainer')->id,            
-            // 'block_id' => 'required_if:role_id,'.$roles->firstWhere('name','Institute')->id.','.$roles->firstWhere('name','Trainer')->id,            
-            // 'institute_id' => 'required_if:role_id,'.$roles->firstWhere('name','Institute')->id.','.$roles->firstWhere('name','Trainer')->id,            
+        // event(new Registered($user));
 
-        // $user = User::create([
-        //     'name' => $request->name,
-        //     'email' => $request->email,
-        //     'password' => Hash::make($request->password),
-        //     'role_id' => $request->role_id,     // assign selected role
-        //     'district_id'  => $request->district_id,   // DLC only
-        //     'dlc_id'  => $request->dlc_id,   // DLC only
-        //     // 'dlc_id'  => $request->dlc_id,   // institute, Trainer, DLC only
-        //     'block_id'  => $request->block_id,   // institute, Trainer only
-        //     'institute_id'  => $request->institute_id,   // institute, Trainer only
-        // ]);
+        // Auth::login($user);
 
-        event(new Registered($user));
+        // return redirect(route('dashboard', absolute: false));
+        return redirect()->back()->with('success', "New user with role {$role->name} created successfully!");
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
     }
 
     
