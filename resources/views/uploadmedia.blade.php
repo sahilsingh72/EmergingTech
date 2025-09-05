@@ -43,6 +43,7 @@
                                             class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300"
                                             placeholder="Enter purpose/Event">
                                     </div>
+                                    
 
                                     <!-- Any Other Description -->
                                     <div>

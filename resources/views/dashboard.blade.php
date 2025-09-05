@@ -234,8 +234,8 @@
           <!-- right col (We are only adding the ID to make the widgets sortable)-->
           <section class="col-lg-5 connectedSortable">
 
-            <!-- Map card -->
-            <div class="card bg-gradient-primary">
+
+            <div  class="card bg-gradient-primary">
               <div class="card-header border-0">
                 <h3 class="card-title">
                   <i class="fas fa-map-marker-alt mr-1"></i>
@@ -244,48 +244,22 @@
                 <!-- card tools -->
                 <div class="card-tools">
                   <button type="button"
-                          class="btn btn-primary btn-sm daterange"
-                          data-toggle="tooltip"
-                          title="Date range">
-                    <i class="far fa-calendar-alt"></i>
-                  </button>
-                  <button type="button"
                           class="btn btn-primary btn-sm"
                           data-card-widget="collapse"
                           data-toggle="tooltip"
                           title="Collapse">
                     <i class="fas fa-minus"></i>
-                  </button>
-                </div>
+                  </button> 
+                  </div>
                 <!-- /.card-tools -->
               </div>
               <div class="card-body">
-                <div id="world-map" style="height: 250px; width: 100%;"></div>
-              </div>
-              <!-- /.card-body-->
-              <div class="card-footer bg-transparent">
-                <div class="row">
-                  <div class="col-4 text-center">
-                    <div id="sparkline-1"></div>
-                    <div class="text-white">Visitors</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <div id="sparkline-2"></div>
-                    <div class="text-white">Online</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <div id="sparkline-3"></div>
-                    <div class="text-white">Sales</div>
-                  </div>
-                  <!-- ./col -->
-                </div>
-                <!-- /.row -->
+                <div id="odishaMap" style="height: 300px; width:100%;"></div>
+
+
               </div>
             </div>
-            <!-- /.card -->
-
+            
             <!-- solid sales graph -->
             <div class="card bg-gradient-info">
               <div class="card-header border-0">
@@ -337,6 +311,59 @@
             </div>
             <!-- /.card -->
 
+            <!-- Map card -->
+            <div class="card bg-gradient-primary" style="display:none">
+              <div class="card-header border-0">
+                <h3 class="card-title">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  District View
+                </h3>
+                <!-- card tools -->
+                <div class="card-tools">
+                  <button type="button"
+                          class="btn btn-primary btn-sm daterange"
+                          data-toggle="tooltip"
+                          title="Date range">
+                    <i class="far fa-calendar-alt"></i>
+                  </button>
+                  <button type="button"
+                          class="btn btn-primary btn-sm"
+                          data-card-widget="collapse"
+                          data-toggle="tooltip"
+                          title="Collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+                <!-- /.card-tools -->
+              </div>
+              <div class="card-body">
+                <div id="world-map" style="height: 250px; width: 100%;"></div>
+              </div>
+              <!-- /.card-body-->
+              <div class="card-footer bg-transparent">
+                <div class="row">
+                  <div class="col-4 text-center">
+                    <div id="sparkline-1"></div>
+                    <div class="text-white">Visitors</div>
+                  </div>
+                  <!-- ./col -->
+                  <div class="col-4 text-center">
+                    <div id="sparkline-2"></div>
+                    <div class="text-white">Online</div>
+                  </div>
+                  <!-- ./col -->
+                  <div class="col-4 text-center">
+                    <div id="sparkline-3"></div>
+                    <div class="text-white">Sales</div>
+                  </div>
+                  <!-- ./col -->
+                </div>
+                <!-- /.row -->
+              </div>
+            </div>
+            <!-- /.card -->
+
+
 
             <!-- /.card -->
           </section>
@@ -350,5 +377,100 @@
   <!-- /.content-wrapper -->
   @include('components.footer')
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+<script>
+var map = L.map('odishaMap').setView([20.3, 84.7], 6);
+
+// Base map layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    minZoom: 6, 
+    maxZoom: 8
+}).addTo(map);
+
+// ✅ Static progress values for each Odisha district
+var progressData = {
+    "Angul": 55,
+    "Balangir": 62,
+    "Balasore": 70,
+    "Bargarh": 45,
+    "Bhadrak": 80,
+    "Boudh": 50,
+    "Cuttack": 65,
+    "Deogarh": 40,
+    "Dhenkanal": 58,
+    "Gajapati": 60,
+    "Ganjam": 75,
+    "Jagatsinghpur": 68,
+    "Jajpur": 72,
+    "Jharsuguda": 48,
+    "Kalahandi": 52,
+    "Kandhamal": 47,
+    "Kendrapara": 66,
+    "Kendujhar": 53,
+    "Khordha": 90,
+    "Koraput": 30,
+    "Malkangiri": 35,
+    "Mayurbhanj": 63,
+    "Nabarangapur": 42,
+    "Nayagarh": 56,
+    "Nuapada": 39,
+    "Puri": 82,
+    "Rayagada": 40,
+    "Sambalpur": 67,
+    "Subarnapur": 44,
+    "Sundargarh": 61
+};
+var colors = [
+    "#1a9641", "#e6194B", "#3cb44b", "#ffe119", "#4363d8",
+    "#f58231", "#911eb4", "#46f0f0", "#f032e6", "#bcf60c",
+    "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8",
+    "#800000", "#aaffc3", "#808000", "#ffd8b1", "#000075",
+    "#808080", "#a9a9a9", "#ff4500", "#6a5acd", "#20b2aa",
+    "#dc143c", "#228b22", "#00ced1", "#daa520", "#ba55d3",
+    "#2e8b57"
+];
+// ✅ Function to pick random color
+function getRandomColor() {
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Load Odisha GeoJSON
+fetch("{{ asset('geojson/odisha.geojson') }}")
+.then(res => res.json())
+.then(data => {
+    var geoLayer = L.geoJSON(data, {
+        style: function(feature) {
+            let district = feature.properties.district; // ⚠️ check this matches your geojson property
+            let value = progressData[district] || 0;
+
+            // Dynamic color scale
+            let fillColor = getRandomColor();
+               
+
+            return {
+                fillColor: fillColor,
+                weight: 1,
+                color: "#333",
+                fillOpacity: 0.7
+            };
+        },
+        onEachFeature: function (feature, layer) {
+            let district = feature.properties.district;
+            let value = progressData[district] || "N/A";
+
+            layer.bindPopup(`<b>${district}</b><br>Progress: ${value}%`);
+        }
+    }).addTo(map);
+
+    // Auto zoom to Odisha boundaries
+    map.fitBounds(geoLayer.getBounds());
+});
+</script>
+
+
 </body>
 </html>
