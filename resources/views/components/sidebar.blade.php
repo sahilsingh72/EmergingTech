@@ -68,7 +68,7 @@
 
           <li class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'trainingcompcertificate') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'trainingcompcertificate') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-user-graduate"></i>
+              <i class="nav-icon fas fa-folder"></i>
               <p>
                 Training Evidences
                 <i class="right fas fa-angle-left"></i>
@@ -111,37 +111,38 @@
 
 {{-- Feedback --}}
 
-          <li class="nav-item has-treeview {{ request()->routeIs('uploadfeedback', 'uploadmedia', 'writtenfeedback') ? 'menu-open' : '' }}">
-            <a href="#" class="nav-link {{ request()->routeIs('uploadfeedback', 'uploadmedia', 'writtenfeedback') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-user-tie "></i>
-              <p>
-                Feedback
-                <i class="fas fa-angle-left right"></i>
-                {{-- <span class="badge badge-info right">6</span> --}}
-              </p>
+<li class="nav-item has-treeview {{ request()->routeIs('uploadfeedback', 'writtenfeedback', 'onlinefeedback') ? 'menu-open' : '' }}">
+  <a href="#" class="nav-link {{ request()->routeIs('uploadfeedback', 'writtenfeedback', 'onlinefeedback') ? 'active' : '' }}">
+    <i class="nav-icon fas fa-edit "></i>
+    <p>
+      Feedback
+      <i class="fas fa-angle-left right"></i>
+      {{-- <span class="badge badge-info right">6</span> --}}
+    </p>
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a href="{{route('writtenfeedback')}}" class="nav-link {{ request()->routeIs('writtenfeedback') ? 'active' : '' }}">
-                  <i class="fas fa-users  nav-icon"></i>
+                  <i class="fas fa-pen  nav-icon"></i>
                   <p>Written Feedback</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{{route('uploadfeedback')}}" class="nav-link {{ request()->routeIs('uploadfeedback') ? 'active' : '' }}">
-                  <i class="far fa-edit   nav-icon"></i>
+                  <i class="fas fa-file-video   nav-icon"></i>
                   <p>Video Feedback</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{route('uploadmedia')}}" class="nav-link {{ request()->routeIs('uploadmedia') ? 'active' : '' }}">
-                  <i class="fas fa-film nav-icon"></i>
+                <a href="{{route('onlinefeedback')}}" class="nav-link {{ request()->routeIs('onlinefeedback') ? 'active' : '' }}">
+                  <i class="fas fa-comment-dots nav-icon"></i>
                   <p>Online Feedback</p>
                 </a>
               </li>
             </ul>
           </li>
 
+{{-- Trainer --}}
 
           <li class="nav-item has-treeview {{ request()->routeIs('', 'uploadmedia', 'trainerlist') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('', 'uploadmedia', 'trainerlist') ? 'active' : '' }}">
@@ -159,7 +160,7 @@
                   <p>Trainer's List</p>
                 </a>
               </li>
-              <li class="nav-item">
+              {{-- <li class="nav-item">
                 <a href="" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
                   <i class="far fa-edit   nav-icon"></i>
                   <p>Feedback</p>
@@ -170,9 +171,61 @@
                   <i class="fas fa-film nav-icon"></i>
                   <p>Media</p>
                 </a>
+              </li> --}}
+            </ul>
+          </li>
+          
+          {{-- Students --}}
+          <li class="nav-item has-treeview {{ request()->routeIs('') ? 'menu-open' : '' }}">
+            <a href="{{route('uploadreport')}}" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-user-graduate"></i>
+              <p>
+                Student
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
+                  <i class="fas fa-user-plus nav-icon"></i>
+                  <p>Add Student</p>
+                </a>
               </li>
             </ul>
           </li>
+          
+  {{-- Finance & Bills  --}}
+          
+          <li class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills') ? 'menu-open' : '' }}">
+            <a href="{{route('uploadbills')}}" class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-file-invoice-dollar"></i>
+              <p>
+                Finance & Bills 
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{route('uploadbills')}}" class="nav-link {{ request()->routeIs('uploadbills') ? 'active' : '' }}">
+                  <i class="fas fa-utensils nav-icon"></i>
+                  <p>School Food Bills</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{route('uploadtravelbills')}}" class="nav-link {{ request()->routeIs('uploadtravelbills') ? 'active' : '' }}">
+                  <i class="fas fa-suitcase-rolling nav-icon"></i>
+                  <p>Travel Bills</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{route('uploadexpensebills')}}" class="nav-link {{ request()->routeIs('uploadexpensebills') ? 'active' : '' }}">
+                  <i class="fas fa-dollar-sign nav-icon"></i>
+                  <p>Expenses Bills</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+
           <li class="nav-item has-treeview {{ request()->is('') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
               <i class="nav-icon fas fa-box"></i>
@@ -203,23 +256,6 @@
             </ul>
           </li>
 
-          <li class="nav-item has-treeview {{ request()->routeIs('uploadbills') ? 'menu-open' : '' }}">
-            <a href="{{route('uploadbills')}}" class="nav-link {{ request()->routeIs('uploadbills') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-file-invoice-dollar"></i>
-              <p>
-                Finance & Bills 
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{route('uploadbills')}}" class="nav-link {{ request()->routeIs('uploadbills') ? 'active' : '' }}">
-                  <i class="fas fa-receipt nav-icon"></i>
-                  <p>Bill Submission</p>
-                </a>
-              </li>
-            </ul>
-          </li>
           <li class="nav-item has-treeview {{ request()->routeIs('uploadreport') ? 'menu-open' : '' }}">
             <a href="{{route('uploadreport')}}" class="nav-link {{ request()->routeIs('uploadreport') ? 'active' : '' }}">
               <i class="nav-icon fas fa-chart-bar"></i>

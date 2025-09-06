@@ -273,6 +273,11 @@ document.addEventListener("keydown", (e) => {
         modal.classList.remove("flex");
     }
 });
+        // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
+        });
         // Auto fetch School Name (example: from session/auth)
         const loggedInSchool =
             "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // Replace with Blade variable in Laravel

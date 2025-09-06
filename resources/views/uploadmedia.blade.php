@@ -190,7 +190,11 @@
         });
 
 
-
+        // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
+        });
         // Auto detect Date & Time
         document.getElementById("dateTimeField").value = new Date().toLocaleString();
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\TrainerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,13 +31,15 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     Route::get('/feedback',[StudentController::class,'writtenfeedback'])->name('writtenfeedback');
     Route::get('/uploadfeedback',[StudentController::class,'uploadfeedback'])->name('uploadfeedback');
-    Route::get('/uploadmedia',[StudentController::class,'uploadmedia'])->name('uploadmedia');
+    Route::get('/onlinefeedback',[StudentController::class,'onlinefeedback'])->name('onlinefeedback');
 
     Route::get('/uploadreport',[ReportController::class,'uploadreport'])->name('uploadreport');
 
     Route::get('/uploadbills',[BillController::class,'uploadbills'])->name('uploadbills');
+    Route::get('/uploadtravelbills',[BillController::class,'uploadtravelbills'])->name('uploadtravelbills');
+    Route::get('/uploadexpensebills',[BillController::class,'uploadexpensebills'])->name('uploadexpensebills');
 
-    Route::view('/trainerlist','trainerlist')->name('trainerlist');
+    Route::view('/trainerlist',[TrainerController::class,'trainerlist'])->name('trainerlist');
 
     Route::get('/get-dlcs/{district_id}', [RegisteredUserController::class, 'getDlcs']);
 
