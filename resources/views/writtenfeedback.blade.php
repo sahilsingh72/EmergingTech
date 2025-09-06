@@ -135,6 +135,16 @@
     </div>
     </div>
     <script>
+        document.getElementById("downloadBtn").addEventListener("click", () => {
+            // Example: Download certificate template (replace with backend file route)
+            const fileUrl = "/feedbackform/training_camp_feedback_form_image.pdf";
+            const link = document.createElement("a");
+            link.href = fileUrl;
+            link.download = "training_camp_feedback_form.pdf";
+            link.click();
+        });
+    </script>
+    <script>
        const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileUpload");
     const fileList = document.getElementById("fileList");
@@ -213,9 +223,11 @@
         });
     }
 
-        // Auto detect Date & Time
-        document.getElementById("dateTimeField").value = new Date().toLocaleString();
-
+         // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
+        });
         // Auto fetch School Name (example: from login session)
         // In real project, replace this with backend value (Laravel Blade, session, etc.)
         const loggedInSchool = "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // ← This should come from login

@@ -95,18 +95,18 @@
                                     </div>
 
                                     <!-- Modal (overlay) -->
-<div id="videoModal" class="fixed inset-0 bg-black/70 hidden z-[9999]">
-  <!-- close button is on overlay, not inside the video box -->
-  <button id="closeVideoModal" type="button"
-    class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full shadow pointer-events-auto z-[10000]"
-    aria-label="Close">X</button>
+                                    <div id="videoModal" class="fixed inset-0 bg-black/70 hidden z-[9999]">
+                                        <!-- close button is on overlay, not inside the video box -->
+                                        <button id="closeVideoModal" type="button"
+                                            class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full shadow pointer-events-auto z-[10000]"
+                                            aria-label="Close">X</button>
 
-  <!-- centered player area -->
-  <div class="w-full h-full flex items-center justify-center p-4">
-    <video id="modalVideo" controls
-      class="max-w-4xl w-full max-h-[90vh] rounded shadow-lg"></video>
-  </div>
-</div>
+                                        <!-- centered player area -->
+                                        <div class="w-full h-full flex items-center justify-center p-4">
+                                            <video id="modalVideo" controls
+                                                class="max-w-4xl w-full max-h-[90vh] rounded shadow-lg"></video>
+                                        </div>
+                                    </div>
                                     <!-- Any Description -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Any
@@ -130,115 +130,122 @@
     </div>
     </div>
     <script>
-       document.addEventListener('DOMContentLoaded', function () {
-  const videoDropZone = document.getElementById("videoDropZone");
-  const videoInput = document.getElementById("videoUpload");
-  const videoList = document.getElementById("videoList");
-  const videoModal = document.getElementById("videoModal");
-  const modalVideo = document.getElementById("modalVideo");
-  const closeVideoModal = document.getElementById("closeVideoModal");
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoDropZone = document.getElementById("videoDropZone");
+            const videoInput = document.getElementById("videoUpload");
+            const videoList = document.getElementById("videoList");
+            const videoModal = document.getElementById("videoModal");
+            const modalVideo = document.getElementById("modalVideo");
+            const closeVideoModal = document.getElementById("closeVideoModal");
 
-  let uploadedVideos = [];
+            let uploadedVideos = [];
 
-  // Open file dialog only if clicking the dropzone background/label graphics
-  videoDropZone.addEventListener("click", (e) => {
-    const tag = e.target.tagName;
-    if (e.target === videoDropZone || tag === "P" || tag === "SVG" || tag === "PATH") {
-      videoInput.click();
-    }
-  });
+            // Open file dialog only if clicking the dropzone background/label graphics
+            videoDropZone.addEventListener("click", (e) => {
+                const tag = e.target.tagName;
+                if (e.target === videoDropZone || tag === "P" || tag === "SVG" || tag === "PATH") {
+                    videoInput.click();
+                }
+            });
 
-  videoInput.addEventListener("change", (e) => {
-    handleVideos(e.target.files);
-    videoInput.value = "";
-  });
+            videoInput.addEventListener("change", (e) => {
+                handleVideos(e.target.files);
+                videoInput.value = "";
+            });
 
-  videoDropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    videoDropZone.classList.add("border-blue-500");
-  });
-  videoDropZone.addEventListener("dragleave", () => {
-    videoDropZone.classList.remove("border-blue-500");
-  });
-  videoDropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    videoDropZone.classList.remove("border-blue-500");
-    handleVideos(e.dataTransfer.files);
-  });
+            videoDropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                videoDropZone.classList.add("border-blue-500");
+            });
+            videoDropZone.addEventListener("dragleave", () => {
+                videoDropZone.classList.remove("border-blue-500");
+            });
+            videoDropZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                videoDropZone.classList.remove("border-blue-500");
+                handleVideos(e.dataTransfer.files);
+            });
 
-  function handleVideos(files) {
-    [...files].forEach(file => {
-      if (uploadedVideos.length >= 5) {
-        alert("You can only upload up to 5 videos.");
-        return;
-      }
-      if (!file.type.startsWith("video/")) {
-        alert("Only video files are allowed!");
-        return;
-      }
+            function handleVideos(files) {
+                [...files].forEach(file => {
+                    if (uploadedVideos.length >= 5) {
+                        alert("You can only upload up to 5 videos.");
+                        return;
+                    }
+                    if (!file.type.startsWith("video/")) {
+                        alert("Only video files are allowed!");
+                        return;
+                    }
 
-      uploadedVideos.push(file);
-      const url = URL.createObjectURL(file);
+                    uploadedVideos.push(file);
+                    const url = URL.createObjectURL(file);
 
-      const videoDiv = document.createElement("div");
-      videoDiv.className = "relative w-40 h-28 border rounded overflow-hidden shadow";
+                    const videoDiv = document.createElement("div");
+                    videoDiv.className = "relative w-40 h-28 border rounded overflow-hidden shadow";
 
-      videoDiv.innerHTML = `
+                    videoDiv.innerHTML = `
         <video src="${url}" class="w-full h-full object-cover cursor-pointer"></video>
         <button type="button"
           class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded z-10">X</button>
       `;
 
-      // Remove thumb
-      videoDiv.querySelector("button").addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        videoList.removeChild(videoDiv);
-        uploadedVideos = uploadedVideos.filter(f => f !== file);
-        URL.revokeObjectURL(url);
-      });
+                    // Remove thumb
+                    videoDiv.querySelector("button").addEventListener("click", (ev) => {
+                        ev.stopPropagation();
+                        videoList.removeChild(videoDiv);
+                        uploadedVideos = uploadedVideos.filter(f => f !== file);
+                        URL.revokeObjectURL(url);
+                    });
 
-      // Open modal
-      videoDiv.querySelector("video").addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        modalVideo.src = url;
-        videoModal.classList.remove("hidden");
-        // ensure flex layout for centering
-        videoModal.classList.add("flex");
-        modalVideo.play().catch(() => {});
-      });
+                    // Open modal
+                    videoDiv.querySelector("video").addEventListener("click", (ev) => {
+                        ev.stopPropagation();
+                        modalVideo.src = url;
+                        videoModal.classList.remove("hidden");
+                        // ensure flex layout for centering
+                        videoModal.classList.add("flex");
+                        modalVideo.play().catch(() => {});
+                    });
 
-      videoList.appendChild(videoDiv);
-    });
-  }
+                    videoList.appendChild(videoDiv);
+                });
+            }
 
-  // close helpers
-  function hideVideoModal() {
-    try { modalVideo.pause(); } catch {}
-    modalVideo.src = ""; // reset source
-    videoModal.classList.add("hidden");
-    videoModal.classList.remove("flex");
-  }
+            // close helpers
+            function hideVideoModal() {
+                try {
+                    modalVideo.pause();
+                } catch {}
+                modalVideo.src = ""; // reset source
+                videoModal.classList.add("hidden");
+                videoModal.classList.remove("flex");
+            }
 
-  // Close via button
-  closeVideoModal.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    hideVideoModal();
-  });
+            // Close via button
+            closeVideoModal.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                hideVideoModal();
+            });
 
-  // Close by clicking overlay background
-  videoModal.addEventListener("click", (e) => {
-    if (e.target === videoModal) {
-      hideVideoModal();
-    }
-  });
+            // Close by clicking overlay background
+            videoModal.addEventListener("click", (e) => {
+                if (e.target === videoModal) {
+                    hideVideoModal();
+                }
+            });
 
-  // Close with ESC
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !videoModal.classList.contains("hidden")) {
-      hideVideoModal();
-    }
-  });
-});
+            // Close with ESC
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && !videoModal.classList.contains("hidden")) {
+                    hideVideoModal();
+                }
+            });
+        });
+                // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
+        });
         // Auto fetch School Name (example: from session/auth)
         const loggedInSchool =
             "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // Replace with Blade variable in Laravel

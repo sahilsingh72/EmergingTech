@@ -27,6 +27,9 @@ class StudentController extends Controller
     public function uploadfeedback(){
         return view('uploadfeedback');
     }
+    public function onlinefeedback(){
+        return view('onlinefeedback');
+    }
     
     public function uploadmedia(){
         return view('uploadmedia');

@@ -9,4 +9,10 @@ class BillController extends Controller
     public function uploadbills(){
         return view('uploadbills');
     }
+    public function uploadtravelbills(){
+        return view('uploadtravelbills');
+    }
+    public function uploadexpensebills(){
+        return view('uploadexpensebills');
+    }
 }
