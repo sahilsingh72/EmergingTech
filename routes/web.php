@@ -28,6 +28,24 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/trainingphotos',[StudentController::class,'trainingphotos'])->name('trainingphotos');
     Route::get('/trainingvideos',[StudentController::class,'trainingvideos'])->name('trainingvideos');
     Route::get('/trainingcompcertificate',[StudentController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
+    Route::get('/addstudent',[StudentController::class,'addstudent'])->name('addstudent');
+    // Route::view('/addstudentsin','addstudentsin')->name('addstudentsin');
+    
+    Route::get('/addstudentsep', [StudentController::class, 'addstudentsin'])->name('single.addstudent');
+    Route::post('/addstudentsep', [StudentController::class, 'store'])->name('student.store');
+
+    Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
+    Route::get('/student',[StudentController::class,'studentlist'])->name('studentlist');
+    
+    // View student details
+    Route::get('/students/{id}', [StudentController::class, 'show'])->name('student.view');
+
+    // Edit student
+    Route::get('/students/{id}/edit', [StudentController::class, 'edit'])->name('student.edit');
+    Route::put('/students/{id}', [StudentController::class, 'update'])->name('student.update');
+
+    // Delete student
+    Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('student.delete');
     
     Route::get('/feedback',[StudentController::class,'writtenfeedback'])->name('writtenfeedback');
     Route::get('/uploadfeedback',[StudentController::class,'uploadfeedback'])->name('uploadfeedback');
@@ -50,5 +68,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 // Route::get('/filter', [RegisteredUserController::class, 'index'])->name('index');
 // Route::get('/filter/blocks/{dlc_id}', [RegisteredUserController::class, 'getBlocks'])->name('blocks');
 // Route::get('/filter/schools/{block_id}', [RegisteredUserController::class, 'getSchools'])->name('schools');
+
+
 
 require __DIR__.'/auth.php';

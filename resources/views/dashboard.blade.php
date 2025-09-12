@@ -91,7 +91,7 @@
               <div class="inner">
                 <h3>31</h3>
 
-                <p>Total DLC</p>
+                <p>Total Co-ordinator</p>
               </div>
               <div class="icon">
                 <i class="nav-icon fas fa-map "></i>
