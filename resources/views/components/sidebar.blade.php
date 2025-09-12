@@ -2,9 +2,9 @@
     <!-- Brand Logo -->
     <a href="index3.html" class="brand-link">
         {{-- <img style="align-items:center; width:20%" src="{{ asset('images\Et.webp') }}" alt="App Logo"></img> --}}
-        <img src="{{ asset('images/okcl_logo_circular.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
+        <img src="{{ asset('images/ocaclogo1.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light">EmergingTech | OKCL</span>
+      <span class="brand-text font-weight-light">EmergingTech | OCAC</span>
     </a>
 
     <!-- Sidebar -->
@@ -74,7 +74,7 @@
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
-            <ul class="nav nav-treeview">
+            <ul class="nav nav-treeview" >
               <li class="nav-item">
                 <a href="{{ route('attendance') }}" class="nav-link {{ request()->routeIs('attendance') ? 'active' : '' }}">
                   <i class="fas fa-user-check  nav-icon"></i>
@@ -133,12 +133,12 @@
                   <p>Video Feedback</p>
                 </a>
               </li>
-              <li class="nav-item">
+              {{-- <li class="nav-item">
                 <a href="{{route('onlinefeedback')}}" class="nav-link {{ request()->routeIs('onlinefeedback') ? 'active' : '' }}">
                   <i class="fas fa-comment-dots nav-icon"></i>
                   <p>Online Feedback</p>
                 </a>
-              </li>
+              </li> --}}
             </ul>
           </li>
 
@@ -175,9 +175,9 @@
             </ul>
           </li>
           
-          {{-- Students --}}
-          <li class="nav-item has-treeview {{ request()->routeIs('') ? 'menu-open' : '' }}">
-            <a href="{{route('uploadreport')}}" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
+{{-- Students --}}
+          <li class="nav-item has-treeview {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent') ? 'menu-open' : '' }}">
+            <a href="#" class="nav-link {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent') ? 'active' : '' }}">
               <i class="nav-icon fas fa-user-graduate"></i>
               <p>
                 Student
@@ -186,9 +186,15 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
+                <a href="{{route('addstudent')}}" class="nav-link {{ request()->routeIs('addstudent') ? 'active' : '' }}">
                   <i class="fas fa-user-plus nav-icon"></i>
                   <p>Add Student</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{route('studentlist')}}" class="nav-link {{ request()->routeIs('studentlist') ? 'active' : '' }}">
+                  <i class="fas fa-list nav-icon"></i>
+                  <p>Student List</p>
                 </a>
               </li>
             </ul>
