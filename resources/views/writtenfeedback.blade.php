@@ -64,25 +64,7 @@
                                         </div>
 
                                         <!-- Time From - To -->
-                                        <div class="w-2/3 flex items-end space-x-2">
-                                            <div class="flex-1">
-                                                <label for="time_from"
-                                                    class="block text-sm font-medium text-gray-700 mb-1">Time of
-                                                    Training</label>
-                                                <input type="time" id="time_from" name="time_from"
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
-                                            </div>
-
-                                            <span class="mb-2">to</span>
-
-                                            <div class="flex-1">
-                                                <label for="time_to"
-                                                    class="block text-sm font-medium text-gray-700 mb-1 hidden">Time of
-                                                    Training To</label>
-                                                <input type="time" id="time_to" name="time_to"
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
-                                            </div>
-                                        </div>
+                                        
                                     </div>
                                         </br>
                                         <!-- Upload Instruction -->
@@ -134,6 +116,16 @@
         </div>
     </div>
     </div>
+    <script>
+        document.getElementById("downloadBtn").addEventListener("click", () => {
+            // Example: Download certificate template (replace with backend file route)
+            const fileUrl = "/feedbackform/training_camp_feedback_form_image.pdf";
+            const link = document.createElement("a");
+            link.href = fileUrl;
+            link.download = "training_camp_feedback_form.pdf";
+            link.click();
+        });
+    </script>
     <script>
        const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileUpload");
@@ -213,9 +205,11 @@
         });
     }
 
-        // Auto detect Date & Time
-        document.getElementById("dateTimeField").value = new Date().toLocaleString();
-
+         // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
+        });
         // Auto fetch School Name (example: from login session)
         // In real project, replace this with backend value (Laravel Blade, session, etc.)
         const loggedInSchool = "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // ← This should come from login

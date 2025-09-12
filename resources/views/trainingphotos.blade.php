@@ -51,26 +51,7 @@
                                                 class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
                                         </div>
 
-                                        <!-- Time From - To -->
-                                        <div class="w-2/3 flex items-end space-x-2">
-                                            <div class="flex-1">
-                                                <label for="time_from"
-                                                    class="block text-sm font-medium text-gray-700 mb-1">Time of
-                                                    Training</label>
-                                                <input type="time" id="time_from" name="time_from"
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
-                                            </div>
-
-                                            <span class="mb-2">to</span>
-
-                                            <div class="flex-1">
-                                                <label for="time_to"
-                                                    class="block text-sm font-medium text-gray-700 mb-1 hidden">Time of
-                                                    Training To</label>
-                                                <input type="time" id="time_to" name="time_to"
-                                                    class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
-                                            </div>
-                                        </div>
+                                        
                                     </div>
 
                                     <!-- Upload Instruction -->
@@ -233,6 +214,11 @@
                 modal.classList.add("hidden");
                 modal.classList.remove("flex");
             }
+        });
+                // Auto fetch Date
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById("training_date").value = today;
         });
 
         // Auto fetch School Name (example: from session/auth)
