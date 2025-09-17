@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BillController;
+use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
@@ -56,9 +57,19 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/uploadbills',[BillController::class,'uploadbills'])->name('uploadbills');
     Route::get('/uploadtravelbills',[BillController::class,'uploadtravelbills'])->name('uploadtravelbills');
     Route::get('/uploadexpensebills',[BillController::class,'uploadexpensebills'])->name('uploadexpensebills');
+    
+    Route::get('/trainerlist', [TrainerController::class, 'index'])->name('trainers.index');
+    Route::post('/trainers/store', [TrainerController::class, 'store'])->name('trainers.store');
+    Route::get('/trainers/{trainer}/edit', [TrainerController::class, 'edit'])->name('trainers.edit');   
+    Route::put('/trainers/{trainer}', [TrainerController::class, 'update'])->name('trainers.update'); 
+    Route::delete('/trainers/{trainer}', [TrainerController::class, 'destroy'])->name('trainers.destroy');
 
-    Route::view('/trainerlist',[TrainerController::class,'trainerlist'])->name('trainerlist');
-
+    Route::get('/coordinatorlist', [CoordinatorController::class, 'index'])->name('coordinators.index');
+    Route::post('/coordinators/store', [CoordinatorController::class, 'store'])->name('coordinators.store');
+    Route::get('/coordinators/{coordinator}/edit', [CoordinatorController::class, 'edit'])->name('coordinators.edit');   
+    Route::put('/coordinators/{coordinator}', [CoordinatorController::class, 'update'])->name('coordinators.update'); 
+    Route::delete('/coordinators/{coordinator}', [CoordinatorController::class, 'destroy'])->name('coordinators.destroy');  
+    
     Route::get('/get-dlcs/{district_id}', [RegisteredUserController::class, 'getDlcs']);
 
 
