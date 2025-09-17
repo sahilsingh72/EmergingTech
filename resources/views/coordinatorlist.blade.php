@@ -7,15 +7,15 @@
         color: gray;
     }
 
-    #trainerTable {
+    #coordinatorTable {
         table-layout: auto;
         /* allow natural sizing */
         width: 100%;
         /* still stretch full table */
     }
 
-    #trainerTable th,
-    #trainerTable td {
+    #coordinatorTable th,
+    #coordinatorTable td {
         white-space: nowrap;
         /* prevent text wrapping */
     }
@@ -32,12 +32,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 text-dark">Trainer List</h1>
+                            <h1 class="m-0 text-dark">Coordinator List</h1>
                         </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Trainer List</a></li>
-                                <li class="breadcrumb-item active"> Coordinator & Trainer</li>
+                                <li class="breadcrumb-item"><a href="#">Coordinator List</a></li>
+                                <li class="breadcrumb-item active">Coordinator & Trainer</li>
                             </ol>
                         </div><!-- /.col -->
                     </div><!-- /.row -->
@@ -53,11 +53,11 @@
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
-                                    <h2 class="text-2xl font-semibold text-center mb-6"></i>Trainer list</h2>
+                                    <h2 class="text-2xl font-semibold text-center mb-6"></i>Coordinator List</h2>
                                     <div class="mb-4 flex justify-end">
-                                        <button id="addTrainerBtn"
+                                        <button id="addCoordinatorBtn"
                                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-user-plus"></i> Add Trainer
+                                            <i class="fas fa-user-plus"></i> Add Coordinator
                                         </button>
                                     </div>
                                     @if (session('success'))
@@ -90,17 +90,15 @@
                                         </div>
                                     </div>
 
-                                    <!-- Trainer Table -->
+                                    <!-- Coordinator Table -->
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                                        <table id="trainerTable" class="w-full border-collapse">
+                                        <table id="coordinatorTable" class="w-full border-collapse">
                                             <thead>
                                                 <tr class="bg-gray-100 text-left">
                                                     <th class="p-2 border">SNO</th>
                                                     <th class="p-2 border">Name</th>
                                                     <th class="p-2 border">Email</th>
                                                     <th class="p-2 border">Phone</th>
-                                                    <th class="p-2 border">Specialization</th>
-                                                    <th class="p-2 border">Address</th>
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
                                                     <th class="p-2 border">Experience</th>
@@ -110,28 +108,20 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($trainers as $index => $trainer)
+                                                @foreach ($coordinators as $index => $coordinator)
                                                     <tr>
                                                         <td class="p-2 border">{{ $index + 1 }}</td>
-                                                        <td class="p-2 border">{{ $trainer->trainer_name }}</td>
-                                                        <td class="p-2 border">{{ $trainer->email }}</td>
-                                                        <td class="p-2 border">{{ $trainer->phone }}</td>
-                                                        <td class="p-2 border">
-                                                            @if (is_array($trainer->specialization))
-                                                                {{ implode(', ', $trainer->specialization) }}
-                                                            @else
-                                                                {{ $trainer->specialization }}
-                                                            @endif
-                                                        </td>
-                                                        <td class="p-2 border">{{ $trainer->address }}</td>
+                                                        <td class="p-2 border">{{ $coordinator->coordinator_name }}</td>
+                                                        <td class="p-2 border">{{ $coordinator->email }}</td>
+                                                        <td class="p-2 border">{{ $coordinator->phone }}</td>
 
                                                         {{-- Photo --}}
                                                         <td class="p-2 border">
-                                                            @if ($trainer->photo)
-                                                                <a href="{{ asset('storage/' . $trainer->photo) }}"
+                                                            @if ($coordinator->photo)
+                                                                <a href="{{ asset('storage/' . $coordinator->photo) }}"
                                                                     target="_blank">
-                                                                    <img src="{{ asset('storage/' . $trainer->photo) }}"
-                                                                        alt="Trainer Photo"
+                                                                    <img src="{{ asset('storage/' . $coordinator->photo) }}"
+                                                                        alt="Coordinator Photo"
                                                                         class="h-12 w-12 object-cover rounded-full mx-auto hover:scale-110 transition">
                                                                 </a>
                                                             @else
@@ -139,8 +129,8 @@
                                                             @endif
                                                         </td>
                                                         <td class="p-2 border">
-                                                            @if ($trainer->cv)
-                                                                <a href="{{ asset('storage/' . $trainer->cv) }}"
+                                                            @if ($coordinator->cv)
+                                                                <a href="{{ asset('storage/' . $coordinator->cv) }}"
                                                                     target="_blank" class="text-blue-600">View CV</a>
                                                             @else
                                                                 -
@@ -149,8 +139,8 @@
 
                                                         {{-- Experience --}}
                                                         <td class="p-2 border">
-                                                            @if ($trainer->experience_certificate)
-                                                                <a href="{{ asset('storage/' . $trainer->experience_certificate) }}"
+                                                            @if ($coordinator->experience_certificate)
+                                                                <a href="{{ asset('storage/' . $coordinator->experience_certificate) }}"
                                                                     target="_blank" class="text-blue-600">View</a>
                                                             @else
                                                                 -
@@ -162,15 +152,15 @@
                                                         <td>
                                                             @php
                                                                 $educationCertificates = [];
-                                                                if (is_string($trainer->education_certificates)) {
+                                                                if (is_string($coordinator->education_certificates)) {
                                                                     $educationCertificates =
                                                                         json_decode(
-                                                                            $trainer->education_certificates,
+                                                                            $coordinator->education_certificates,
                                                                             true,
                                                                         ) ?? [];
-                                                                } elseif (is_array($trainer->education_certificates)) {
+                                                                } elseif (is_array($coordinator->education_certificates)) {
                                                                     $educationCertificates =
-                                                                        $trainer->education_certificates;
+                                                                        $coordinator->education_certificates;
                                                                 }
                                                             @endphp
 
@@ -185,8 +175,8 @@
                                                             @endif
                                                         </td>
                                                         <td class="p-2 border">
-                                                            @if ($trainer->aadhar_card)
-                                                                <a href="{{ asset('storage/' . $trainer->aadhar_card) }}"
+                                                            @if ($coordinator->aadhar_card)
+                                                                <a href="{{ asset('storage/' . $coordinator->aadhar_card) }}"
                                                                     target="_blank" class="text-blue-600">View</a>
                                                             @else
                                                                 -
@@ -195,20 +185,19 @@
                                                         {{-- Actions --}}
                                                         <td class="p-2 border text-center">
                                                             <button type="button" class="text-green-500 mx-1 editBtn"
-                                                                data-id="{{ $trainer->trainer_id }}"
-                                                                data-name="{{ $trainer->trainer_name }}"
-                                                                data-email="{{ $trainer->email }}"
-                                                                data-phone="{{ $trainer->phone }}"
-                                                                data-whatsapp_number="{{ $trainer->whatsapp_number}}"
-                                                                data-dist_id="{{ $trainer->dist_id }}"
-                                                                data-district="{{ $trainer->district }}"
-                                                                data-pincode="{{ $trainer->pincode}}"
-                                                                data-specialization="{{ is_array($trainer->specialization) ? implode(',', $trainer->specialization) : $trainer->specialization }}"
-                                                                data-address="{{ $trainer->address }}">
+                                                                data-id="{{ $coordinator->coordinator_id }}"
+                                                                data-name="{{ $coordinator->coordinator_name }}"
+                                                                data-email="{{ $coordinator->email }}"
+                                                                data-phone="{{ $coordinator->phone }}"
+                                                                data-whatsapp_number="{{ $coordinator->whatsapp_number}}"
+                                                                data-dist_id="{{ $coordinator->dist_id }}"
+                                                                data-district="{{ $coordinator->district }}"
+                                                                data-pincode="{{ $coordinator->pincode}}"
+                                                                data-address="{{ $coordinator->address}}">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
                                                             <button type="button" class="text-red-500 mx-1 deleteBtn"
-                                                                data-id="{{ $trainer->trainer_id }}">
+                                                                data-id="{{ $coordinator->coordinator_id }}">
                                                                 <i class="fas fa-trash-alt"></i>
                                                             </button>
                                                         </td>
@@ -220,15 +209,15 @@
                                     </div>
 
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
-                                    <!-- Add Trainer Modal -->
-                                    <div id="addTrainerModal"
+                                    <!-- Add Coordinator Modal -->
+                                    <div id="addCoordinatorModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div
                                             class="bg-white rounded-lg shadow-lg  max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
 
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-xl font-semibold">Add Trainer</h3>
+                                                <h3 class="text-xl font-semibold">Add Coordinator</h3>
                                                 <button id="closeModal"
                                                     class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                                             </div>
@@ -245,16 +234,16 @@
                                                 </div>
                                             @endif
                                             <!-- Form -->
-                                            <form id="trainerForm" method="POST"
-                                                action="{{ route('trainers.store') }}" enctype="multipart/form-data">
+                                            <form id="coordinatorForm" method="POST"
+                                                action="{{ route('coordinators.store') }}" enctype="multipart/form-data">
                                                 @csrf
                                                 <div class="grid grid-cols-2 gap-8">
-                                                    <!-- Left Column: Trainer Info -->
+                                                    <!-- Left Column: Coordinator Info -->
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Name</label>
-                                                            <input type="text" name="trainer_name"
+                                                                class="block text-sm font-medium text-gray-700">Coordinator Name</label>
+                                                            <input type="text" name="coordinator_name"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
                                                         <div>
@@ -263,7 +252,6 @@
                                                             <input type="email" name="email"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
-
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">District</label>
@@ -279,13 +267,14 @@
                                                         
                                                         <!-- hidden input to store district name -->
                                                         <input type="hidden" name="district" id="districtName">
+
                                                     </div>
 
                                                     <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Phone</label>
+                                                                class="block text-sm font-medium text-gray-700">Phone Number</label>
                                                             <input type="text" name="phone"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
@@ -301,37 +290,22 @@
                                                             <input type="text" name="pincode"
                                                                 class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
                                                         </div>
-                                                        
-
-
-
                                                     </div>
                                                 </div>
-                                                <div class="grid grid-cols-1 mt-3">
-                                                    <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Specialization</label>
 
-                                                            <select class="w-full border rounded p-2 mt-1"
-                                                                name="specialization[]" id="specialization" multiple>
-                                                                <option value="AI">AI</option>
-                                                                <option value="IoT & Robotics">IoT & Robotics</option>
-                                                                <option value="Cybersecurity">Cybersecurity</option>
-                                                            </select>
-                                                        </div>
-                                                </div>
                                                 <div class="grid grid-cols-1">
                                                     <div>
                                                         <label
                                                             class="block text-sm font-medium text-gray-700 mt-3">Address (Enter full address)</label>
-                                                        <textarea name="address" rows="2" class="w-full border rounded p-2 mt-1"></textarea>
+                                                        <textarea name="address" rows="3" class="w-full border rounded p-2 mt-1"></textarea>
                                                     </div>
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-8 mt-3">
-                                                    <!-- Left Column: Trainer Info -->
+                                                    <!-- Left Column: Coordinator Info -->
                                                     <div class="space-y-4">
+                                                        
+                                                       
                                                         <div>
-
                                                             <label class="block text-sm font-medium text-gray-700">CV /
                                                                 Resume</label>
                                                             <input type="file" name="cv"
@@ -392,7 +366,7 @@
                                                         class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
                                                     <button type="submit"
                                                         class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md">
-                                                        Save Trainer
+                                                        Save Coordinator
                                                     </button>
                                                 </div>
                                             </form>
@@ -400,35 +374,35 @@
                                         </div>
                                     </div>
 
-                                    <!-- Edit Trainer Modal -->
-                                    <div id="editTrainerModal"
+                                    <!-- Edit Coordinator Modal -->
+                                    <div id="editCoordinatorModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div
                                             class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-xl font-semibold">Edit Trainer</h3>
+                                                <h3 class="text-xl font-semibold">Edit Coordinator</h3>
                                                 <button id="closeEditModal"
                                                     class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                                             </div>
 
-                                            <form id="editTrainerForm" method="POST" enctype="multipart/form-data">
+                                            <form id="editCoordinatorForm" method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="hidden" name="trainer_id" id="editTrainerId">
+                                                <input type="hidden" name="coordinator_id" id="editCoordinatorId">
 
                                                 <div class="grid grid-cols-2 gap-8">
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Trainer Name</label>
-                                                            <input type="text" name="trainer_name"
-                                                                id="editTrainerName"
+                                                            <label class="block text-sm font-medium">Coordinator Name</label>
+                                                            <input type="text" name="coordinator_name"
+                                                                id="editCoordinatorName"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium">Email</label>
                                                             <input type="email" name="email"
-                                                                id="editTrainerEmail"
+                                                                id="editCoordinatorEmail"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
@@ -451,42 +425,29 @@
                                                         <div>
                                                             <label class="block text-sm font-medium">Phone</label>
                                                             <input type="text" name="phone"
-                                                                id="editTrainerPhone"
+                                                                id="editCoordinatorPhone"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
                                                             <input type="text" name="whatsapp_number"
-                                                                id="editTrainerWhatsapp"
+                                                                id="editCoordinatorWhatsapp"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                             class="block text-sm font-medium text-gray-700">Pincode</label>
                                                             <input type="text" name="pincode"
-                                                            id="editTrainerPincode"
+                                                            id="editCoordinatorPincode"
                                                             class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="grid grid-cols-1 mt-3">
-                                                    <div>
-                                                        <label
-                                                            class="block text-sm font-medium text-gray-700">Specialization</label>
-                                                        <select class="w-full border rounded p-2 mt-1"
-                                                            name="specialization[]" id="editSpecialization" multiple>
-                                                            <option value="AI">AI</option>
-                                                            <option value="IoT & Robotics">IoT & Robotics</option>
-                                                            <option value="Cybersecurity">Cybersecurity</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
                                                 <div class="mt-4">
                                                     <label class="block text-sm font-medium">Address</label>
-                                                    <textarea name="address" id="editTrainerAddress" rows="3" class="w-full border rounded p-2 mt-1"></textarea>
+                                                    <textarea name="address" id="editCoordinatorAddress" rows="3" class="w-full border rounded p-2 mt-1"></textarea>
                                                 </div>
 
                                                 <!-- File fields -->
@@ -496,6 +457,7 @@
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
                                                             <input type="file" name="cv"
+                                                                id="editCoordinatorcv"
                                                                 accept=".pdf,.doc,.docx"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
@@ -505,16 +467,16 @@
                                                             <label class="block text-sm font-medium">Educational
                                                                 Qualification Certificates</label>
                                                             <input type="file" name="education_certificates[]"
+                                                                id="editCoordinatorEdu"
                                                                 multiple accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
                                                         </div>
-                                                        
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
                                                             <input type="file" name="aadhar_card"
-                                                                id="editTrainerAadhar"
+                                                                id="editCoordinatorAadhar"
                                                                 accept=".pdf,.doc,.docx"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
@@ -526,6 +488,7 @@
                                                             <label class="block text-sm font-medium">Experience
                                                                 Certificate</label>
                                                             <input type="file" name="experience_certificate"
+                                                                id="editCoordinatorExp"
                                                                 accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
@@ -534,6 +497,7 @@
                                                         <div>
                                                             <label class="block text-sm font-medium">Photo</label>
                                                             <input type="file" name="photo"
+                                                                id="editCoordinatorPhoto"
                                                                 accept=".jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
@@ -547,7 +511,7 @@
                                                         class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
                                                     <button type="submit"
                                                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md">
-                                                        Update Trainer
+                                                        Update Coordinator
                                                     </button>
                                                 </div>
                                             </form>
@@ -556,12 +520,12 @@
 
 
                                     <!-- Delete Confirmation Modal -->
-                                    <div id="deleteTrainerModal"
+                                    <div id="deleteCoordinatorModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div class="bg-white rounded-lg shadow-lg max-w-md p-6">
                                             <h3 class="text-xl font-semibold mb-4">Confirm Delete</h3>
-                                            <p class="mb-6">Are you sure you want to delete this trainer?</p>
-                                            <form id="deleteTrainerForm" method="POST">
+                                            <p class="mb-6">Are you sure you want to delete this coordinator?</p>
+                                            <form id="deleteCoordinatorForm" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <div class="flex justify-end gap-3">
@@ -586,7 +550,7 @@
         </div>
     </div>
     </div>
-     <script>
+    <script>
         // add
         document.getElementById("districtSelect").addEventListener("change", function() {
             let selected = this.options[this.selectedIndex];
@@ -598,37 +562,6 @@
             document.getElementById("editDistrictName").value = selected.getAttribute("data-name");
         });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
-    <script>
-        $(document).ready(function() {
-
-            var multipleCancelButton = new Choices('#specialization', {
-                removeItemButton: true,
-                maxItemCount: 3,
-                searchResultLimit: 3,
-                renderChoiceLimit: 3
-            });
-
-            var multipleCancelButton1 = new Choices('#editSpecialization', {
-                removeItemButton: true,
-                maxItemCount: 3,
-                searchResultLimit: 3,
-                renderChoiceLimit: 3
-            });
-            // When opening edit modal, preselect values
-    $(".editBtn").on("click", function() {
-        let specs = $(this).data("specialization").split(",");
-        multipleCancelButton1.removeActiveItems(); // remove previous selections
-        specs.forEach(s => {
-            multipleCancelButton1.setChoiceByValue(s.trim());
-        });
-        $("#editTrainerModal").removeClass("hidden");
-    });
-            
-        });
-    </script>
     <script>
         $(document).ready(function() {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
@@ -637,7 +570,7 @@
 
             function renderTable() {
                 let searchText = $("#searchInput").val().toLowerCase();
-                let rows = $("#trainerTable tbody tr");
+                let rows = $("#coordinatorTable tbody tr");
 
                 // Filter rows
                 rows.each(function() {
@@ -691,7 +624,7 @@
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
                 let asc = sortDirection[columnIndex];
 
-                let rows = $("#trainerTable tbody tr").get();
+                let rows = $("#coordinatorTable tbody tr").get();
 
                 rows.sort(function(a, b) {
                     let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
@@ -706,7 +639,7 @@
                 });
 
                 $.each(rows, function(index, row) {
-                    $("#trainerTable tbody").append(row);
+                    $("#coordinatorTable tbody").append(row);
                 });
 
                 currentPage = 1; // reset pagination after sort
@@ -719,11 +652,11 @@
     </script>
     <script>
         $(document).ready(function() {
-            $("#addTrainerBtn").on("click", function() {
-                $("#addTrainerModal").removeClass("hidden");
+            $("#addCoordinatorBtn").on("click", function() {
+                $("#addCoordinatorModal").removeClass("hidden");
             });
             $("#closeModal, #cancelModal").on("click", function() {
-                $("#addTrainerModal").addClass("hidden");
+                $("#addCoordinatorModal").addClass("hidden");
             });
         });
     </script>
@@ -743,7 +676,7 @@
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 // Open modal if there are validation errors
-                document.getElementById("addTrainerModal").classList.remove("hidden");
+                document.getElementById("addCoordinatorModal").classList.remove("hidden");
             });
         </script>
     @endif
@@ -752,48 +685,43 @@
             // Edit Modal
             $(".editBtn").on("click", function() {
                 let id = $(this).data("id");
-                $("#editTrainerId").val(id);
-                $("#editTrainerName").val($(this).data("name"));
-                $("#editTrainerEmail").val($(this).data("email"));
-                $("#editTrainerPhone").val($(this).data("phone"));
-                $("#editTrainerWhatsapp").val($(this).data("whatsapp_number"));
-                $("#editTrainerPincode").val($(this).data("pincode"));
-                $("#editTrainerAddress").val($(this).data("address"));
-                
+                $("#editCoordinatorId").val(id);
+                $("#editCoordinatorName").val($(this).data("name"));
+                $("#editCoordinatorEmail").val($(this).data("email"));
+                // $("#editCoordinatorDistrict").val($(this).data("district"));
+                $("#editCoordinatorPhone").val($(this).data("phone"));
+                $("#editCoordinatorWhatsapp").val($(this).data("whatsapp_number"));
+                $("#editCoordinatorPincode").val($(this).data("pincode"));
+                $("#editCoordinatorAddress").val($(this).data("address"));
+
                 // Get district values
                 let distId = $(this).data("dist_id");   // DSM_DSCD
                 let distName = $(this).data("district"); // DSM_DSNM
 
                 $("#editDistrictSelect").val(distId); // select correct option
                 $("#editDistrictName").val(distName); // hidden input
-                
-                // Specialization handling
-                let specs = $(this).data("specialization").split(",");
-                $("#editSpecialization option").prop("selected", false);
-                specs.forEach(s => {
-                    $("#editSpecialization option[value='" + s.trim() + "']").prop("selected",
-                    true);
-                });
 
                 // Set form action dynamically
-                $("#editTrainerForm").attr("action", "/trainers/" + id);
+                $("#editCoordinatorForm").attr("action", "/coordinators/" + id);
 
-                $("#editTrainerModal").removeClass("hidden");
+                $("#editCoordinatorModal").removeClass("hidden");
+
+                
             });
 
             $("#closeEditModal, #cancelEditModal").on("click", function() {
-                $("#editTrainerModal").addClass("hidden");
+                $("#editCoordinatorModal").addClass("hidden");
             });
 
             // Delete Modal
             $(".deleteBtn").on("click", function() {
                 let id = $(this).data("id");
-                $("#deleteTrainerForm").attr("action", "/trainers/" + id);
-                $("#deleteTrainerModal").removeClass("hidden");
+                $("#deleteCoordinatorForm").attr("action", "/coordinators/" + id);
+                $("#deleteCoordinatorModal").removeClass("hidden");
             });
 
             $("#cancelDeleteModal").on("click", function() {
-                $("#deleteTrainerModal").addClass("hidden");
+                $("#deleteCoordinatorModal").addClass("hidden");
             });
         });
     </script>

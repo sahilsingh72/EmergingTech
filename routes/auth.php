@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:OCAC,OKCL'])->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store']);
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::get('/filter/districts/{zone_id}', [RegisteredUserController::class, 'getDistricts']);
 });
 
 

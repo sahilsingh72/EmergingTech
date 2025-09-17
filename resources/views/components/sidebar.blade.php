@@ -144,34 +144,30 @@
 
 {{-- Trainer --}}
 
-          <li class="nav-item has-treeview {{ request()->routeIs('', 'uploadmedia', 'trainerlist') ? 'menu-open' : '' }}">
-            <a href="#" class="nav-link {{ request()->routeIs('', 'uploadmedia', 'trainerlist') ? 'active' : '' }}">
+          <li class="nav-item has-treeview {{ request()->routeIs('', 'coordinators.index', 'trainers.index') ? 'menu-open' : '' }}">
+            <a href="#" class="nav-link {{ request()->routeIs('', 'coordinators.index', 'trainers.index') ? 'active' : '' }}">
               <i class="nav-icon fas fa-user-tie "></i>
               <p>
-                Trainer
+                Coordinator & Trainer
                 <i class="fas fa-angle-left right"></i>
                 {{-- <span class="badge badge-info right">6</span> --}}
               </p>
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{{route('trainerlist')}}" class="nav-link {{ request()->routeIs('trainerlist') ? 'active' : '' }}">
+                <a href="{{route('coordinators.index')}}" class="nav-link {{ request()->routeIs('coordinators.index') ? 'active' : '' }}">
+                  <i class="fas fa-users-cog  nav-icon"></i>
+                  <p>Coordinator's List</p>
+                </a>
+              </li>
+            </ul>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{route('trainers.index')}}" class="nav-link {{ request()->routeIs('trainers.index') ? 'active' : '' }}">
                   <i class="fas fa-users  nav-icon"></i>
                   <p>Trainer's List</p>
                 </a>
               </li>
-              {{-- <li class="nav-item">
-                <a href="" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
-                  <i class="far fa-edit   nav-icon"></i>
-                  <p>Feedback</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{route('uploadmedia')}}" class="nav-link {{ request()->routeIs('uploadmedia') ? 'active' : '' }}">
-                  <i class="fas fa-film nav-icon"></i>
-                  <p>Media</p>
-                </a>
-              </li> --}}
             </ul>
           </li>
           
