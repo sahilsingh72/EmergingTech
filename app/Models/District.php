@@ -14,5 +14,6 @@ class District extends Model
         'DSM_DSCD',
         'DSM_STCD',
         'DSM_DSNM',
+        'DSM_ZONEID',
     ];
 }
