@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'onedrive' => [
+        'client_id'     => env('ONEDRIVE_CLIENT_ID'),
+        'client_secret' => env('ONEDRIVE_CLIENT_SECRET'),
+        'tenant_id'     => env('ONEDRIVE_TENANT_ID'),
+        'redirect_uri'  => env('ONEDRIVE_REDIRECT_URI'),
+        'scopes'        => env('ONEDRIVE_SCOPES'),
+    ],
+
 ];

@@ -94,15 +94,8 @@ public function update(Request $request, $id)
     }
 
     
-    public function trainingphotos(){
-        return view('trainingphotos');
-    }
-    public function trainingvideos(){
-        return view('trainingvideos');
-    }
-    public function trainingcompcertificate(){
-        return view('trainingcompcertificate');
-    }
+    
+    
 
     public function writtenfeedback(){
         return view('writtenfeedback');
