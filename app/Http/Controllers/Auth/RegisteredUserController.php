@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coordinator;
 use App\Models\District;
 use App\Models\DLC;
 use App\Models\Role;
+use App\Models\School;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
@@ -18,45 +20,29 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-
-    //FOR INSTITUTE AND TRAINER
-    public function index()
-    {
-        $dlcs = DB::table('dlc_mst')->get();
-        return view('register', compact('dlcs'));
-    }
-
-    
-
-
     public function create(): View
     {
         $roles = Role::all();   // fetch all roles
-        $dlcdsts = DLC::select('dlc_id', 'dlc_cnm', 'dlc_dst', 'dlc_dstID')->get();
+        $coordinators = Coordinator:: select('coordinator_name', 'coordinator_id')->get();
         $zones = District::select('DSM_ZONEID')
             ->distinct()
-            ->orderBy('DSM_ZONEID')
             ->get();
+
         $dstmst = District::select('DSM_DSCD', 'DSM_STCD', 'DSM_DSNM', 'DSM_ZONEID')->get();
 
-        return view('auth.register', compact('roles', 'dlcdsts', 'dstmst', 'zones'));
+        return view('auth.register', compact('roles', 'coordinators', 'dstmst', 'zones'));
     }
-
-    //FOR DLC /coordinator
 
     public function getDistricts($zone_id)
     {
-         $districts = District::where('DSM_ZONEID', $zone_id)
-            ->select('DSM_DSCD', 'DSM_DSNM')
-            ->orderBy('DSM_DSNM')
-            ->get();
-
+        $districts = District::where('DSM_ZONEID', $zone_id)->get(['DSM_DSCD', 'DSM_DSNM']);
         return response()->json($districts);
     }
-    public function getDlcs($district_id)
+
+    public function getSchools($district_id)
     {
-        return DLC::where('dlc_dstID', $district_id)
-                    ->get(['dlc_id', 'dlc_cnm']);
+        $schools = School::where('scm_dist_id', $district_id)->get(['scm_id', 'scm_name']);
+        return response()->json($schools);
     }
 
     public function store(Request $request): RedirectResponse

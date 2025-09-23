@@ -16,4 +16,9 @@ class District extends Model
         'DSM_DSNM',
         'DSM_ZONEID',
     ];
+
+    public function schools()
+    {
+        return $this->hasMany(School::class, 'scm_dist_id', 'DSM_DSCD');
+    }
 }
