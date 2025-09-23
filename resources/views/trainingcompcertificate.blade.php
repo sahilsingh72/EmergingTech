@@ -49,12 +49,20 @@
                                         </button>
                                     </div>
 
-
+                                    <form method="POST" action="{{ route('upload.certificate') }}"
+                                        enctype="multipart/form-data">
+                                        @csrf
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">School
-                                            Name</label>
-                                        <input type="text" id="schoolName" readonly
-                                            class="w-full border border-gray-300 rounded-md p-2 bg-gray-100 cursor-not-allowed">
+                                        <x-input-label for="school_id" :value="__('School Name')" />
+                                            <select name="school_id" id="school_id" class="form-control">
+                                                <option value="">-- Select School --</option>
+                                                @foreach($schools as $school)
+                                                    <option value="{{ $school->scm_id }}">
+                                                        {{ $school->scm_name }} - {{ $school->scm_udise_code }},
+                                                        {{ $school->scm_dist }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                     </div>
                                     <div class="flex items-end space-x-4 mt-2">
                                         <!-- Date -->
@@ -84,7 +92,7 @@
                                         </svg>
                                         <p class="text-gray-500">Drag and drop PDF / Image, or click to select</p>
 
-                                        <input type="file" id="fileUpload" class="hidden" accept="image/*,.pdf">
+                                        <input type="file" name="training_completion_certificate" id="fileUpload" class="hidden" accept="image/*,.pdf">
                                         <!-- File Preview Section -->
                                         <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                         </div>
@@ -106,6 +114,7 @@
                                         class="w-full bg-green-500 text-white py-2 rounded-md text-lg font-medium hover:bg-green-600 transition">
                                         Upload
                                     </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -145,7 +154,7 @@ dropZone.addEventListener("click", (e) => {
 // Handle file input change
 fileInput.addEventListener("change", (e) => {
     handleFile(e.target.files[0]); // only take first file
-    fileInput.value = ""; // reset
+    // fileInput.value = ""; // reset
 });
 
 // Drag events
@@ -260,10 +269,6 @@ document.addEventListener("keydown", (e) => {
             let today = new Date().toISOString().split('T')[0];
             document.getElementById("training_date").value = today;
         });
-        // Auto fetch School Name (example: from session/auth)
-        const loggedInSchool =
-            "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // Replace with Blade variable in Laravel
-        document.getElementById("schoolName").value = loggedInSchool;
     </script>
 </body>
 @include('components.footer')

@@ -1,13 +1,20 @@
 <?php
 
+use App\Services\OneDriveService;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceUploadController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\CoordinatorController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TrainerController;
+use App\Http\Controllers\OneDriveController;
+use App\Http\Controllers\TrainingEvidenceController;
+use App\Http\Controllers\TrainingUploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,12 +30,18 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    Route::get('/attendance',[AttendanceController::class,'attendance'])->name('attendance');
+    Route::post('/attendance', [AttendanceController::class, 'upload'])->name('upload.attendance');
 
+    Route::get('/trainingphotos',[TrainingEvidenceController::class,'trainingphotos'])->name('trainingphotos');
+    Route::post('/trainingphotos',[TrainingEvidenceController::class,'upload'])->name('upload.trainingphotos');
+    
+    Route::get('/trainingvideos',[TrainingEvidenceController::class,'trainingvideos'])->name('trainingvideos');
+    Route::post('/trainingvideos',[TrainingEvidenceController::class,'uploadvideo'])->name('upload.trainingvideos');
 
-    Route::get('/attendance',[StudentController::class,'attendance'])->name('attendance');
-    Route::get('/trainingphotos',[StudentController::class,'trainingphotos'])->name('trainingphotos');
-    Route::get('/trainingvideos',[StudentController::class,'trainingvideos'])->name('trainingvideos');
-    Route::get('/trainingcompcertificate',[StudentController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
+    Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
+    Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadCcertificate'])->name('upload.certificate');
     Route::get('/addstudent',[StudentController::class,'addstudent'])->name('addstudent');
     // Route::view('/addstudentsin','addstudentsin')->name('addstudentsin');
     
@@ -48,9 +61,11 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     // Delete student
     Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('student.delete');
     
-    Route::get('/feedback',[StudentController::class,'writtenfeedback'])->name('writtenfeedback');
-    Route::get('/uploadfeedback',[StudentController::class,'uploadfeedback'])->name('uploadfeedback');
-    Route::get('/onlinefeedback',[StudentController::class,'onlinefeedback'])->name('onlinefeedback');
+    Route::get('/feedback',[FeedbackController::class,'writtenfeedback'])->name('writtenfeedback');
+    Route::post('/feedback',[FeedbackController::class,'uploadwrittenfeedback'])->name('upload.writtenfeedback');
+    Route::get('/uploadfeedback',[FeedbackController::class,'uploadfeedback'])->name('uploadfeedback');
+    Route::post('/uploadfeedback',[FeedbackController::class,'uploadvideofeedback'])->name('upload.videofeedback');
+    Route::get('/onlinefeedback',[FeedbackController::class,'onlinefeedback'])->name('onlinefeedback');
 
     Route::get('/uploadreport',[ReportController::class,'uploadreport'])->name('uploadreport');
 
@@ -70,7 +85,6 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::put('/coordinators/{coordinator}', [CoordinatorController::class, 'update'])->name('coordinators.update'); 
     Route::delete('/coordinators/{coordinator}', [CoordinatorController::class, 'destroy'])->name('coordinators.destroy');  
     
-    Route::get('/get-dlcs/{district_id}', [RegisteredUserController::class, 'getDlcs']);
 
 
     Route::get('/schools', [SchoolController::class, 'index'])->name('index');
@@ -80,6 +94,14 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 // Route::get('/filter/blocks/{dlc_id}', [RegisteredUserController::class, 'getBlocks'])->name('blocks');
 // Route::get('/filter/schools/{block_id}', [RegisteredUserController::class, 'getSchools'])->name('schools');
 
+
+
+
+
+Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');
+Route::get('/onedrive/callback', [OneDriveController::class, 'handleCallback'])->name('onedrive.callback');
+Route::get('/onedrive/upload', [OneDriveController::class, 'showUploadForm'])->name('onedrive.upload.form');
+Route::post('/onedrive/upload', [OneDriveController::class, 'uploadFile'])->name('onedrive.upload');
 
 
 require __DIR__.'/auth.php';
