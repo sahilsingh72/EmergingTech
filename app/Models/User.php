@@ -18,14 +18,18 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'role_id',
         'name',
         'email',
         'password',
-        'role_id',
-        'district_id',
         'dlc_id',
+        'coordinator_id',
+        'trainer_id',
+        'zone_id',
+        'district_id',
         'block_id',
         'institute_id',
+        'assignUnder_id',
     ];
 
     /**
@@ -50,6 +54,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function coordinator()
+    {
+        return $this->belongsTo(Coordinator::class, 'coordinator_id', 'coordinator_id');
+    }
+    public function trainer()
+    {
+        return $this->belongsTo(Trainer::class, 'trainer_id', 'trainer_id');
+    }
     public function district()
     {
         return $this->belongsTo(School::class, 'district_id', 'scm_distid');
@@ -62,12 +74,12 @@ class User extends Authenticatable
 
     public function institute()
     {
-        return $this->belongsTo(School::class, 'institute_id', 'id'); // if school_mst has pk id
+        return $this->belongsTo(School::class, 'institute_id', 'scm_id'); 
     }
 
     public function role()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(Role::class, 'role_id', 'id');
     }
      public function dlc()
     {

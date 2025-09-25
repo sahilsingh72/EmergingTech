@@ -90,5 +90,6 @@
             link.click();
         });
     </script>
+    
 </body>
 @include('components.footer')

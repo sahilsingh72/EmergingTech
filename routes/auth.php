@@ -9,17 +9,22 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use Illuminate\Support\Facades\Mail;
+
 use Illuminate\Support\Facades\Route;
+
+
 Route::middleware(['auth', 'role:OCAC,OKCL'])->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store']);
-    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');// web.php
-    Route::get('/get-districts', [RegisteredUserController::class, 'getDistricts'])->name('get.districts');
-    Route::get('/get-schools', [RegisteredUserController::class, 'getSchools'])->name('get.schools');
+    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::get('/get-districts/{zone_id}', [RegisteredUserController::class, 'getDistricts'])->name('get.districts');
+    Route::get('/get-schools/{district_id}', [RegisteredUserController::class, 'getSchools'])->name('get.schools');
 
 });
 
 
-
+ Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
 
 Route::middleware('guest')->group(function () {
     // Route::get('register', [RegisteredUserController::class, 'create'])
@@ -35,8 +40,7 @@ Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
+   
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
@@ -67,3 +71,5 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+

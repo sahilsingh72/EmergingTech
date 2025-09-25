@@ -15,7 +15,7 @@ class TrainerController extends Controller
     public function index()
     {
         $trainers = Trainer::latest()->get();
-        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->get();
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         return view('trainerlist', compact('trainers', 'districts'));
     }
 

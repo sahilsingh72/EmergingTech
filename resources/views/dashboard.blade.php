@@ -154,43 +154,7 @@
             </div>
             <!-- /.card -->
 
-            <!-- DIRECT CHAT -->
-            <div class="card direct-chat direct-chat-primary">
-              <div class="card-header">
-                <h3 class="card-title"><i class="ion ion-clipboard mr-1"></i>District Camp wise Data</h3>
-
-                <div class="card-tools">
-                  {{-- <span data-toggle="tooltip" title="3 New Messages" class="badge badge-primary">3</span> --}}
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="card-footer">
-                {{-- <form action="#" method="post">
-                  <div class="input-group">
-                    <input type="text" name="message" placeholder="Type Message ..." class="form-control">
-                    <span class="input-group-append">
-                      <button type="button" class="btn btn-primary">Send</button>
-                    </span>
-                  </div>
-                </form> --}}
-
-
-
-                <iframe 
-                    width="600" 
-                    height="315" 
-                    src="https://www.youtube.com/embed/" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-              </div>
-            </div>
+           
 
 
             <!-- Calendar -->
