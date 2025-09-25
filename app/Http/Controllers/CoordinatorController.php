@@ -13,7 +13,7 @@ class CoordinatorController extends Controller
     {
         // $coordinators = Coordinator::latest()->paginate(10); // paginated
         $coordinators = Coordinator::latest()->get();
-        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->get();
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
         return view('coordinatorlist', compact('coordinators', 'districts'));
         // return view('coordinatorlist');

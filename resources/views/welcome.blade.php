@@ -36,6 +36,7 @@
     <div class="flex items-center space-x-6">
       <ul class="hidden md:flex space-x-6">
         <li><a href="#" class="hover:text-orange-500">Home</a></li>
+        <li><a href="https://www.ocac.in/" target="_blank" class="hover:text-orange-500">OCAC</a></li>
         <li><a href="#about" class="hover:text-orange-500">About</a></li>
         <li><a href="#courses" class="hover:text-orange-500">Courses</a></li>
         <li><a href="#contact" class="hover:text-orange-500">Contact</a></li>
@@ -99,6 +100,11 @@
       <p class="text-lg text-gray-700 leading-relaxed">
         At EmergingTech, we believe in preparing the next generation for tomorrow’s world. Our mission is to provide immersive learning experiences in the most in-demand technologies shaping the future.
       </p>
+      <p class="text-lg text-gray-700 leading-relaxed">
+      EmergingTech is proud to collaborate with <a href="https://okcl.org/" target="_blank"><span class="font-semibold text-orange-500">OKCL</span> </a>
+      as our <span class="font-semibold">Implementation Partner</span>, ensuring quality delivery of 
+      innovative learning solutions across Odisha.
+    </p>
     </div>
   </section>
  
@@ -164,26 +170,28 @@
   <footer id="contact" class="bg-[#0B2540] text-white py-8 px-4 sm:px-6 md:px-12">
     <div class="max-w-6xl mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-8">
       <div>
-        <h3 class="text-xl font-bold mb-4">EmergingTech</h3>
+        {{-- <h3 class="text-xl font-bold mb-4">EmergingTech</h3> --}}
+        <img  class="w-[200px] text-center" src="{{ asset('images\images.jpg') }}" alt="OCAC"></img></br>
         <p class="text-gray-300">
-          Shaping the future through innovation and technology education.
+          Odisha Computer Application Centre (OCAC), the Technical Directorate of Electronics & Information Technology Department, Government of Odisha, has evolved through years as a centre of excellence in IT solutions and e-Governance...<a href="https://www.ocac.in/" target="_blank" style="color:blue">Read More</a>
         </p>
       </div>
-      <div>
+      <div class="ml-14">
         <h3 class="text-xl font-bold mb-4">Quick Links</h3>
-        <ul class="space-y-2">
+        <ul class="space-y-1">
           <li><a href="#" class="hover:text-orange-500">Home</a></li>
           <li><a href="#about" class="hover:text-orange-500">About</a></li>
           <li><a href="#courses" class="hover:text-orange-500">Courses</a></li>
+          <li><a href="https://okcl.org" target="_blank" class="hover:text-orange-500">OKCL</a></li>
           <li><a href="#contact" class="hover:text-orange-500">Contact</a></li>
         </ul>
       </div>
       <div>
         <h3 class="text-xl font-bold mb-4">Contact</h3>
         <p>Email: help@okcl.org</p>
-        <p>Phone: +91 67435200210</p>
+        <p>Phone: +91 6743520021</p>
       </div>
-    </div>r
+    </div>
     <div class="text-center text-gray-400 mt-8 bg-">
       &copy; 2025 EmergingTech. All rights reserved.
     </div>

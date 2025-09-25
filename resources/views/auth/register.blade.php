@@ -61,205 +61,233 @@
                             <div>
                                 <form method="POST" action="{{ route('register') }}">
                                     @csrf
-                                    <!-- Role -->
-                                    <div class="form-group mt-4">
+
+                                    <!-- Step 1: Role Selection -->
+                                    <div class="mb-4">
                                         <x-input-label for="role_id" :value="__('Select Role')" />
-                                        <select name="role_id" id="role_id" required
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                            <option value="">-- Choose Role --</option>
-                                            @foreach ($roles as $role)
+                                        <select name="role_id" id="role_id" class="border rounded w-full p-2">
+                                            <option value="">-- Select Role --</option>
+                                            @foreach($roles as $role)
                                                 <option value="{{ $role->id }}">{{ $role->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
 
-                                    <!-- Role-specific Fields -->
-                                    <div id="role_fields" class="d-none">
+                                    <!-- Step 2: All other fields (hidden initially) -->
+                                    <div id="role_fields" class="hidden">
 
-                                        <!-- OCAC / OKCL -->
-                                        <div class="ocac_okcl d-none">
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="name" :value="__('Name')" />
-                                                <x-text-input id="name" class="form-control" type="text" name="name"
-                                                    :value="old('name')" required autofocus autocomplete="name" />
-                                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                                            </div>
+                                        <!-- Name Field (shown only for OCAC, OKCL, Institute) -->
+                                        <div class="mb-4 hidden" id="name_field">
+                                            <x-input-label id="name_label" for="name" :value="__('name')" />
+                                            <input type="text" name="name" id="name" class="border rounded w-full p-2">
+                                            <x-input-error :messages="$errors->get('name')"
+                                                class="mt-2" />
                                         </div>
 
-                                        <!-- Coordinator -->
-                                        <div class="coordinator d-none">
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="coordinator_id" :value="__('Select Coordinator')" />
-                                                <select name="coordinator_id" id="coordinator_id" class="form-control">
-                                                    <option value="">-- Select Coordinator --</option>
-                                                    @foreach($coordinators as $c)
+                                        <!-- Hidden name for Trainer/Coordinator -->
+                                        <input type="hidden" name="hidden_name" id="hidden_name">
+                                        <x-input-error :messages="$errors->get('hidden_name')"
+                                                class="mt-2" />
+                                        
+                                      
+
+                                        <!-- Coordinator Fields -->
+                                        <div class="coordinator-fields hidden mb-4 mt-4">
+
+                                            <x-input-label for="assign" :value="__(key: 'Select Coordinator')" />
+                                            <select name="coordinator_id" class="border rounded w-full p-2 mb-2">
+                                                <option value="">-- Select Coordinator --</option>
+                                                @foreach($coordinators as $c)
+                                                    <option value="{{ $c->coordinator_id }}"
+                                                        data-name="{{ $c->coordinator_name }}">{{ $c->coordinator_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <!-- Trainer Fields -->
+                                        <div class="trainer-fields hidden my-4">
+
+                                            <x-input-label for="assign" :value="__('Select Trainer')" />
+                                            <select name="trainer_id" class="border rounded w-full p-2 mb-2">
+                                                <option value="{{ old('trainer_id') }}">-- Select Trainer --</option>
+                                                @foreach($trainers as $t)
+                                                    <option value="{{ $t->trainer_id }}">{{ $t->trainer_name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <x-input-label for="assign" :value="__('Assign Under (Coordinator)')" />
+                                            <select name="assignUnder_id" class="border rounded w-full p-2">
+                                                <option value="{{ old('assignUnder_id') }}">-- Assign Coordinator --</option>
+                                                @foreach($coordinators as $c)
                                                     <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
                                                     </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
+                                                @endforeach
+                                            </select>
+                                            
+                                        </div>
 
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="zone_id" :value="__('Select Zone')" />
-                                                <select name="zone_id" id="zone_id" class="form-control">
+                                        <!-- Institute Fields -->
+                                        <div class="institute-fields hidden mb-4">
+                                            <x-input-label for="assign" :value="__('Assign Under (Coordinator)')" />
+                                            <select name="assignUnder_id" class="border rounded w-full p-2">
+                                                <option value="">-- Assign Coordinator --</option>
+                                                @foreach($coordinators as $c)
+                                                    <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <!-- Zone / District / Institute (only for Coordinator, Trainer, Institute) -->
+                                        <div class="role-location hidden mb-4">
+                                            <div class="mb-4">
+
+                                                <x-input-label for="Zone" :value="__('Zone')" />
+                                                <select name="zone_id" class="border rounded w-full p-2">
                                                     <option value="">-- Select Zone --</option>
                                                     @foreach($zones as $z)
-                                                    <option value="{{ $z->DSM_ZONEID }}">{{ $z->DSM_ZONEID }}</option>
+                                                        <option value="{{ $z->DSM_ZONEID }}">{{ $z->DSM_ZONEID }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
 
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="district_id" :value="__('Select District')" />
-                                                <select name="district_id" id="district_id" class="form-control">
+                                            <div class="mb-4">
+                                                <x-input-label for="District" :value="__('District')" />
+                                                <select name="district_id" class="border rounded w-full p-2">
                                                     <option value="">-- Select District --</option>
                                                 </select>
                                             </div>
 
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="school_id" :value="__('Select School')" />
-                                                <select name="school_id" id="school_id" class="form-control">
-                                                    <option value="">-- Select School --</option>
+                                            <div class="mb-4">
+
+                                                <x-input-label :value="__('School / Institute')" />
+                                                <select name="institute_id" class="border rounded w-full p-2">
+                                                    <option value="">-- Select School/Institute --</option>
                                                 </select>
                                             </div>
                                         </div>
 
-                                        <!-- Trainer -->
-                                        <div class="trainer d-none">
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="trainer_id" :value="__('Select Trainer')" />
-                                                <select name="trainer_id" id="trainer_id" class="form-control">
-                                                    <option value="">-- Select Trainer --</option>
-                                                    {{-- @foreach($trainers as $t)
-                                                    <option value="{{ $t->id }}">{{ $t->name }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="zone_id" :value="__('Select Zone')" />
-                                                <select name="zone_id" id="zone_id" class="form-control">
-                                                    <option value="">-- Select Zone --</option>
-                                                    {{-- @foreach($zones as $z)
-                                                    <option value="{{ $z->id }}">{{ $z->zone_name }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="district_id" :value="__('Select District')" />
-                                                <select name="district_id" id="district_id" class="form-control">
-                                                    <option value="">-- Select District --</option>
-                                                    {{-- @foreach($districts as $d)
-                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="school_id" :value="__('Select School')" />
-                                                <select name="school_id" id="school_id" class="form-control">
-                                                    <option value="">-- Select School --</option>
-                                                    {{-- @foreach($schools as $s)
-                                                    <option value="{{ $s->scm_id }}">{{ $s->scm_name }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="assign_coordinator" :value="__('Assign Under (Coordinator)')" />
-                                                <select name="assign_coordinator" id="assign_coordinator"
-                                                    class="form-control">
-                                                    <option value="">-- Select Coordinator --</option>
-                                                    @foreach($coordinators as $c)
-                                                    <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <!-- Institute -->
-                                        <div class="institute d-none">
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="zone_id" :value="__('Select Zone')" />
-                                                <select name="zone_id" id="zone_id" class="form-control">
-                                                    <option value="">-- Select Zone --</option>
-                                                    {{-- @foreach($zones as $z)
-                                                    <option value="{{ $z->id }}">{{ $z->zone_name }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="district_id" :value="__('Select District')" />
-                                                <select name="district_id" id="district_id" class="form-control">
-                                                    <option value="">-- Select District --</option>
-                                                    {{-- @foreach($districts as $d)
-                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="school_id" :value="__('Select School')" />
-                                                <select name="school_id" id="school_id" class="form-control">
-                                                    <option value="">-- Select School --</option>
-                                                    {{-- @foreach($schools as $s)
-                                                    <option value="{{ $s->scm_id }}">{{ $s->scm_name }}</option>
-                                                    @endforeach --}}
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group mt-4">
-                                                <x-input-label for="assign_coordinator" :value="__('Assign Under (Coordinator)')" />
-                                                <select name="assign_coordinator" id="assign_coordinator"
-                                                    class="form-control">
-                                                    <option value="">-- Select Coordinator --</option>
-                                                    @foreach($coordinators as $c)
-                                                    <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <!-- Email Address -->
-                                        <div class="form-group mt-4">
+                                          <!-- Email -->
+                                        <div class="mb-4">
                                             <x-input-label for="email" :value="__('Email')" />
-                                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
-                                                :value="old('email')" required autocomplete="username" />
-                                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                                            <input type="email" name="email" id="email"
+                                                class="border rounded w-full p-2" value="{{ old('email') }}" required>
+                                            <x-input-error :messages="$errors->get('email')"
+                                                class="mt-2" />
                                         </div>
 
                                         <!-- Password -->
                                         <div class="mt-4">
                                             <x-input-label for="password" :value="__('Password')" />
+
                                             <x-text-input id="password" class="block mt-1 w-full" type="password"
                                                 name="password" required autocomplete="new-password" />
+
                                             <x-input-error :messages="$errors->get('password')" class="mt-2" />
                                         </div>
+
                                         <!-- Confirm Password -->
-                                        <div class="mt-4">
+                                        <div class="my-4">
                                             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+
                                             <x-text-input id="password_confirmation" class="block mt-1 w-full"
                                                 type="password" name="password_confirmation" required
                                                 autocomplete="new-password" />
+
                                             <x-input-error :messages="$errors->get('password_confirmation')"
                                                 class="mt-2" />
                                         </div>
                                     </div>
-
-                                    <div class="flex items-center justify-end mt-4">
-
-
-                                        <x-primary-button class="ms-4">
-                                            {{ __('Register') }}
-                                        </x-primary-button>
-                                    </div>
+                                    <x-primary-button type="submit" class="ms-4">
+                                        {{ __('Register') }}
+                                    </x-primary-button>
                                 </form>
                             </div>
                         </div>
                     </div>
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                        $(document).ready(function () {
+
+                            $('#role_id').on('change', function () {
+                                let role = $('#role_id option:selected').text().toLowerCase();
+                                $('#role_fields').removeClass('hidden');
+
+                                // Hide all role-specific fields first
+                                $('.coordinator-fields, .trainer-fields, .institute-fields, .role-location').addClass('hidden');
+                                $('#name_field').addClass('hidden');
+                                $('#hidden_name').val('');
+
+                                // Reset
+                                $('#name_field').addClass('hidden');
+                                $('#name').prop('disabled', true); // disable text field
+                                $('#hidden_name').val('');
+
+                                if (role === 'coordinator') {
+                                    $('.coordinator-fields, .role-location').removeClass('hidden');
+                                }
+                                else if (role === 'trainer') {
+                                    $('.trainer-fields, .role-location').removeClass('hidden');
+                                }
+                                else if (role === 'institute') {
+                                    $('.institute-fields, .role-location').removeClass('hidden');
+                                    $('#name_field').removeClass('hidden');
+                                    $('#name_label').text('HM Name');
+                                    $('#name').prop('disabled', false); // enable text input
+                                }
+                                else if (role === 'ocac' || role === 'okcl') {
+                                    $('#name_field').removeClass('hidden');
+                                    $('#name_label').text('Name');
+                                    $('#name').prop('disabled', false); // enable text input
+                                }
+                            });
+
+                            // Fill hidden name input for Coordinator
+                            $('#coordinator_id').on('change', function () {
+                                let name = $('#coordinator_id option:selected').text();
+                                $('#hidden_name').val(name);
+                            });
+
+                            // Fill hidden name input for Trainer
+                            $('#trainer_id').on('change', function () {
+                                let name = $('#trainer_id option:selected').text();
+                                $('#hidden_name').val(name);
+                            });
+
+
+                            // AJAX: Load districts when zone changes
+                            $('select[name="zone_id"]').on('change', function () {
+                                let zone = $(this).val();
+                                let $district = $('select[name="district_id"]');
+                                $district.html('<option>Loading...</option>');
+                                if (zone) {
+                                    $.get('/get-districts/' + zone, function (data) {
+                                        $district.empty().append('<option value="">-- Select District --</option>');
+                                        $.each(data, function (_, d) {
+                                            $district.append('<option value="' + d.DSM_DSCD + '">' + d.DSM_DSNM + '</option>');
+                                        });
+                                    });
+                                }
+                            });
+
+                            // AJAX: Load schools when district changes
+                            $('select[name="district_id"]').on('change', function () {
+                                let district = $(this).val();
+                                let $school = $('select[name="institute_id"]');
+                                $school.html('<option>Loading...</option>');
+                                if (district) {
+                                    $.get('/get-schools/' + district, function (data) {
+                                        $school.empty().append('<option value="">-- Select School/Institute --</option>');
+                                        $.each(data, function (_, s) {
+                                            $school.append('<option value="' + s.scm_id + '">' + s.scm_udise_code + ' | ' + s.scm_name + '</option>');
+                                        });
+                                    });
+                                }
+                            });
+
+                        });
+                    </script>
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                     @if (session('success'))
                         <script>
@@ -272,59 +300,23 @@
                         </script>
                     @endif
 
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script>
-                        $(document).ready(function () {
-                            $('#role_id').on('change', function () {
-                                let roleId = $(this).val();
-                                let roleName = $("#role_id option:selected").text().toLowerCase();
 
-                                // Hide everything
-                                $('#role_fields').addClass('d-none');
-                                $('.ocac_okcl, .coordinator, .trainer, .institute').addClass('d-none');
-                                $('#submit_btn_wrapper').addClass('d-none');
-
-                                if (roleId) {
-                                    $('#role_fields').removeClass('d-none');
-                                    $('#submit_btn_wrapper').removeClass('d-none');
-
-                                    if (roleName === 'ocac' || roleName === 'okcl') {
-                                        $('.ocac_okcl').removeClass('d-none');
-                                    } else if (roleName === 'coordinator') {
-                                        $('.coordinator').removeClass('d-none');
-                                    } else if (roleName === 'trainer') {
-                                        $('.trainer').removeClass('d-none');
-                                    } else if (roleName === 'institute') {
-                                        $('.institute').removeClass('d-none');
-                                    }
-                                }
-                            });
-                        });
-                    </script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Validation Errors -->
+@if ($errors->any())
 <script>
-    $('#zone_id').on('change', function () {
-        var zone_id = this.value;
-        $('#district_id').html('<option value="">Loading...</option>');
-        $.get('/get-districts/' + zone_id, function (data) {
-            $('#district_id').empty().append('<option value="">-- Select District --</option>');
-            $.each(data, function (key, district) {
-                $('#district_id').append('<option value="' + district.DSM_DSCD + '">' + district.DSM_DSNM + '</option>');
-            });
-        });
-    });
+    let errorMessage = "";
+    @foreach ($errors->all() as $error)
+        errorMessage += "{{ $error }}\n";
+    @endforeach
 
-    $('#district_id').on('change', function () {
-        var district_id = this.value;
-        $('#school_id').html('<option value="">Loading...</option>');
-        $.get('/get-schools/' + district_id, function (data) {
-            $('#school_id').empty().append('<option value="">-- Select School --</option>');
-            $.each(data, function (key, school) {
-                $('#school_id').append('<option value="' + school.scm_id + '">' + school.scm_name + '</option>');
-            });
-        });
+    Swal.fire({
+        title: '⚠️ Warning!',
+        text: errorMessage,
+        icon: 'warning',
+        confirmButtonText: 'OK'
     });
 </script>
+@endif
 
                 </div>
         </div>
@@ -333,6 +325,40 @@
 @include('components.footer')
 
 
+
+
+
+{{--
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).on('change', '.zone-dropdown', function () {
+        let $wrapper = $(this).closest('div'); // find parent container
+        let zone_id = $(this).val();
+        let $district = $wrapper.find('.district-dropdown');
+        $district.html('<option>Loading...</option>');
+
+        $.get('/get-districts/' + zone_id, function (data) {
+            $district.empty().append('<option value="">-- Select District --</option>');
+            $.each(data, function (key, district) {
+                $district.append('<option value="' + district.DSM_DSCD + '">' + district.DSM_DSNM + '</option>');
+            });
+        });
+    });
+
+    $(document).on('change', '.district-dropdown', function () {
+        let $wrapper = $(this).closest('div');
+        let district_id = $(this).val();
+        let $school = $wrapper.find('.school-dropdown');
+        $school.html('<option>Loading...</option>');
+
+        $.get('/get-schools/' + district_id, function (data) {
+            $school.empty().append('<option value="">-- Select School --</option>');
+            $.each(data, function (key, school) {
+                $school.append('<option value="' + school.scm_id + '">' + school.scm_udise_code + ' | ' + school.scm_name + '</option>');
+            });
+        });
+    });
+</script> --}}
 
 
 
@@ -413,7 +439,7 @@
 
                             <!-- Institute / Trainer Section -->
                             <div class="mt-4" id="institute_section" style="display:none;">
-                                <label for="dlc_id" class="block text-sm font-medium text-gray-700">Assign Under
+                                <label for="coordinator_" class="block text-sm font-medium text-gray-700">Assign Under
                                     (DLC)</label>
                                 <select name="dlc_id2" id="dlc_id2"
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
