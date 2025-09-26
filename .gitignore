@@ -35,3 +35,4 @@ package-lock.json
 phpunit.xml
 package.json
 .editorconfig
+.gitattributes
