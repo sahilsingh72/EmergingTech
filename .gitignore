@@ -30,7 +30,6 @@ Homestead.yaml
 *.tmp
 *.swp
 composer.lock
-composer.json
 package-lock.json
 phpunit.xml
 package.json
