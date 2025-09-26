@@ -36,3 +36,4 @@ phpunit.xml
 package.json
 .editorconfig
 .gitattributes
+artisan
