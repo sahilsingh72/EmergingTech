@@ -31,3 +31,7 @@ Homestead.yaml
 *.swp
 composer.lock
 composer.json
+package-lock.json
+phpunit.xml
+package.json
+.editorconfig
