@@ -5,16 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Coordinator;
 use App\Models\District;
-use App\Models\DLC;
 use App\Models\Role;
 use App\Models\School;
 use App\Models\Trainer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -69,7 +65,7 @@ class RegisteredUserController extends Controller
             'zone_id'=>'required',
             'district_id'=>'required',
             'institute_id'=>'required',
-            'assignUnder_id'=>'required',
+            'trainer_assignUnder_id'=>'required',
         ]);
     }
     elseif($role->name === 'Institute') {
@@ -78,7 +74,7 @@ class RegisteredUserController extends Controller
             'zone_id'=>'required',
             'district_id'=>'required',
             'institute_id'=>'required',
-            'assignUnder_id'=>'required',
+            'institute_assignUnder_id'=>'required',
         ]);
     }
     else { // OCAC/OKCL
@@ -102,7 +98,7 @@ class RegisteredUserController extends Controller
         $user->zone_id = $request->zone_id;
         $user->district_id = $request->district_id;
         $user->institute_id = $request->institute_id;
-        $user->assignUnder_id = $request->assignUnder_id;
+        $user->assignUnder_id = $request->trainer_assignUnder_id;
     } 
     elseif($role->name === 'Coordinator') {
         $coordinator = Coordinator::find($request->coordinator_id);
@@ -117,57 +113,22 @@ class RegisteredUserController extends Controller
         $user->zone_id = $request->zone_id;
         $user->district_id = $request->district_id;
         $user->institute_id = $request->institute_id;
-        $user->assignUnder_id = $request->assignUnder_id;
+        $user->assignUnder_id = $request->institute_assignUnder_id;
     }
     else { // OCAC/OKCL
         $user->name = $request->name;
     }
         $user->save();
+         // ✅ Fire registered event (Laravel default)
+        event(new Registered($user));
 
-        return redirect()->back()->with('success',"New user ({$role->name}) created successfully!");
+        // ✅ Send verification mail immediately
+        // $user->sendEmailVerificationNotification();
+
+        // (Optional) Auto login the user
+        // Auth::login($user);
+
+        return redirect()->back()->with('success',"New user {$role->name} created successfully!");
     }
-
-    // public function store(Request $request): RedirectResponse
-    // {
-    //     // dd($request->all());
-
-    //     $roles = Role::all();
-    //     $request->validate([
-    //         'name' => ['required', 'string', 'max:255'],
-    //         'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-    //         'password' => ['required', 'confirmed', Rules\Password::defaults()],
-    //         'role_id' => ['required', 'exists:roles,id'],  // validate role
-    //     ]);
-    //     $role = Role::find($request->role_id);
-
-    //     $user = new User();
-    //     $user->name = $request->name;
-    //     $user->email = $request->email;
-    //     $user->password = Hash::make($request->password);
-    //     $user->role_id = $request->role_id;
-    //     $user->zone_id = $request->zone_id;
-
-    //     if ($role->name === "DLC" || $role->name === "Coordinator") {
-    //         $user->district_id = $request->district_id;
-    //     }
-
-    //     if ($role->name === "Institute" || $role->name === "Trainer") {
-    //         $user->district_id = $request->district_id2;  // optional if needed
-    //         $user->dlc_id = $request->dlc_id; // copied from dlc_id2 via JS
-    //         $user->block_id = $request->block_id;
-    //         $user->institute_id = $request->institute_id;
-    //     }
-
-    //     $user->save();
-
-    //     // event(new Registered($user));
-
-    //     // Auth::login($user);
-
-    //     // return redirect(route('dashboard', absolute: false));
-    //     return redirect()->back()->with('success', "New user with role {$role->name} created successfully!");
-
-    // }
-
     
 }

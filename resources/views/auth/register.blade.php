@@ -79,7 +79,7 @@
                                         <!-- Name Field (shown only for OCAC, OKCL, Institute) -->
                                         <div class="mb-4 hidden" id="name_field">
                                             <x-input-label id="name_label" for="name" :value="__('name')" />
-                                            <input type="text" name="name" id="name" class="border rounded w-full p-2">
+                                            <input type="text" name="name" id="name" class="border rounded w-full p-2" :value="{{ old('name') }}" required autofocus autocomplete="name">
                                             <x-input-error :messages="$errors->get('name')"
                                                 class="mt-2" />
                                         </div>
@@ -94,7 +94,7 @@
                                         <!-- Coordinator Fields -->
                                         <div class="coordinator-fields hidden mb-4 mt-4">
 
-                                            <x-input-label for="assign" :value="__(key: 'Select Coordinator')" />
+                                            <x-input-label for="coordinator" :value="__(key: 'Select Coordinator')" />
                                             <select name="coordinator_id" class="border rounded w-full p-2 mb-2">
                                                 <option value="">-- Select Coordinator --</option>
                                                 @foreach($coordinators as $c)
@@ -108,16 +108,16 @@
                                         <!-- Trainer Fields -->
                                         <div class="trainer-fields hidden my-4">
 
-                                            <x-input-label for="assign" :value="__('Select Trainer')" />
+                                            <x-input-label for="trainer" :value="__('Select Trainer')" />
                                             <select name="trainer_id" class="border rounded w-full p-2 mb-2">
-                                                <option value="{{ old('trainer_id') }}">-- Select Trainer --</option>
+                                                <option value="">-- Select Trainer --</option>
                                                 @foreach($trainers as $t)
                                                     <option value="{{ $t->trainer_id }}">{{ $t->trainer_name }}</option>
                                                 @endforeach
                                             </select>
                                             <x-input-label for="assign" :value="__('Assign Under (Coordinator)')" />
-                                            <select name="assignUnder_id" class="border rounded w-full p-2">
-                                                <option value="{{ old('assignUnder_id') }}">-- Assign Coordinator --</option>
+                                            <select name="trainer_assignUnder_id" class="border rounded w-full p-2">
+                                                <option value="">-- Assign Coordinator --</option>
                                                 @foreach($coordinators as $c)
                                                     <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
                                                     </option>
@@ -129,7 +129,7 @@
                                         <!-- Institute Fields -->
                                         <div class="institute-fields hidden mb-4">
                                             <x-input-label for="assign" :value="__('Assign Under (Coordinator)')" />
-                                            <select name="assignUnder_id" class="border rounded w-full p-2">
+                                            <select name="institute_assignUnder_id" class="border rounded w-full p-2">
                                                 <option value="">-- Assign Coordinator --</option>
                                                 @foreach($coordinators as $c)
                                                     <option value="{{ $c->coordinator_id }}">{{ $c->coordinator_name }}
