@@ -1,6 +1,6 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="/" class="brand-link">
         {{-- <img style="align-items:center; width:20%" src="{{ asset('images\Et.webp') }}" alt="App Logo"></img> --}}
         <img src="{{ asset('images/ocaclogo1.png') }}" alt="Logo" class="brand-image img-circle elevation-3"
            style="opacity: .8">
@@ -228,7 +228,7 @@
             </ul>
           </li>
 
-          <li class="nav-item has-treeview {{ request()->is('') ? 'menu-open' : '' }}">
+          {{-- <li class="nav-item has-treeview {{ request()->is('') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
               <i class="nav-icon fas fa-box"></i>
               <p>
@@ -256,16 +256,16 @@
                 </a>
               </li>
             </ul>
-          </li>
+          </li> --}}
 
-          <li class="nav-item has-treeview {{ request()->routeIs('uploadreport') ? 'menu-open' : '' }}">
+          {{-- <li class="nav-item has-treeview {{ request()->routeIs('uploadreport') ? 'menu-open' : '' }}">
             <a href="{{route('uploadreport')}}" class="nav-link {{ request()->routeIs('uploadreport') ? 'active' : '' }}">
               <i class="nav-icon fas fa-chart-bar"></i>
               <p>
                 Reports
               </p>
             </a>
-          </li>
+          </li> --}}
 
 
           <li class="nav-item has-treeview {{ request()->routeIs('register', 'profile.edit') ? 'menu-open' : '' }}">

@@ -7,6 +7,7 @@ use App\Models\TrainingUpload;
 use App\Services\OneDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class TrainingEvidenceController extends Controller
 {
@@ -20,6 +21,17 @@ class TrainingEvidenceController extends Controller
 
     public function trainingphotos()
     {
+        
+        $userId   = Auth::id();
+        //  Check if this user already uploaded training photos
+        $existingUpload = TrainingUpload::where('uploaded_by', $userId)
+            ->where('file_type', 'training_photo')
+            ->first();
+
+        if ($existingUpload) {
+            return redirect()->route('trainingphotos.list')
+                ->with('info', 'You have already uploaded your training photos.');
+        }
         $schools = School::all();
         return view('trainingphotos', compact('schools'));
     }
@@ -38,6 +50,8 @@ class TrainingEvidenceController extends Controller
 
         $schoolId = $request->school_id;
         $userId   = Auth::id();
+
+        
 
         $fileTypeMap = config('filetypes');
 
@@ -72,8 +86,86 @@ class TrainingEvidenceController extends Controller
             ]);
         }
 
-        return back()->with('success', 'training photo uploaded successfully!');
+        return  redirect()->route('trainingphotos.list')->with('success', 'training photo uploaded successfully!');
     }
+
+    public function trainingphotoslist(){
+        $user = Auth::user();
+        $uploads = TrainingUpload::where('uploaded_by', $user->id)->latest()->get();
+
+        return view('trainingphotoslist', compact('uploads'));
+    }
+
+    public function editTrainingPhoto($id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        // Make sure it’s a training_photo type
+        if ($upload->file_type !== 'training_photo') {
+            abort(403, 'Invalid file type');
+        }
+
+        return response()->json($upload); // we’ll load it dynamically in modal via JS
+    }
+
+
+    public function updateTrainingPhoto(Request $request, $id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        $existingNames = $upload->file_name;
+        $existingPaths = $upload->onedrive_path;
+        $existingUrls  = $upload->onedrive_url;
+
+        // Remove selected files (optional)
+        if ($request->has('remove_files')) {
+            foreach ($request->remove_files as $remove) {
+                $index = array_search($remove, $existingNames);
+                if ($index !== false) {
+                    unset($existingNames[$index]);
+                    unset($existingPaths[$index]);
+                    unset($existingUrls[$index]);
+                }
+            }
+        }
+
+        // Upload new files
+        if ($request->hasFile('new_training_photo')) {
+            foreach ($request->file('new_training_photo') as $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $folder = "School_{$upload->school_id}/User_{$upload->uploaded_by}/training_photo";
+                $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
+
+                $existingNames[] = $file->getClientOriginalName();
+                $existingPaths[] = $result['path'];
+                $existingUrls[]  = $result['url'] ?? null;
+            }
+        }
+
+        // Update record
+        $upload->update([
+            'file_name'     => array_values($existingNames),
+            'onedrive_path' => array_values($existingPaths),
+            'onedrive_url'  => array_values($existingUrls),
+        ]);
+
+        return back()->with('success', 'Training photos updated successfully!');
+    }
+
+    public function previewImage(Request $request)
+    {
+        $path = $request->query('path');
+        $thumbnail = $this->oneDrive->getThumbnailUrl($path);
+
+        // Stream the image directly
+        return response()->stream(function () use ($thumbnail) {
+            $response = Http::withHeaders($thumbnail['headers'])->get($thumbnail['thumbnail_url']);
+            echo $response->body();
+        }, 200, ['Content-Type' => 'image/jpeg']);
+    }
+
+
+
     public function trainingvideos()
     {
         $schools = School::all();
@@ -126,6 +218,69 @@ class TrainingEvidenceController extends Controller
         ]);
 
         return back()->with('success', 'training video uploaded successfully!');
+    }
+
+    public function trainingvideoslist(){
+        $user = Auth::user();
+        $uploads = TrainingUpload::where('uploaded_by', $user->id)->latest()->get();
+
+        return view('trainingvideoslist', compact('uploads'));
+    }
+
+    public function editTrainingVideo($id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        // Make sure it’s a training_photo type
+        if ($upload->file_type !== 'training_video') {
+            abort(403, 'Invalid file type');
+        }
+
+        return response()->json($upload); // we’ll load it dynamically in modal via JS
+    }
+
+
+    public function updateTrainingVideo(Request $request, $id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        $existingNames = $upload->file_name;
+        $existingPaths = $upload->onedrive_path;
+        $existingUrls  = $upload->onedrive_url;
+
+        // Remove selected files (optional)
+        if ($request->has('remove_files')) {
+            foreach ($request->remove_files as $remove) {
+                $index = array_search($remove, $existingNames);
+                if ($index !== false) {
+                    unset($existingNames[$index]);
+                    unset($existingPaths[$index]);
+                    unset($existingUrls[$index]);
+                }
+            }
+        }
+
+        // Upload new files
+        if ($request->hasFile('new_training_video')) {
+            foreach ($request->file('new_training_video') as $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $folder = "School_{$upload->school_id}/User_{$upload->uploaded_by}/training_video";
+                $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
+
+                $existingNames[] = $file->getClientOriginalName();
+                $existingPaths[] = $result['path'];
+                $existingUrls[]  = $result['url'] ?? null;
+            }
+        }
+
+        // Update record
+        $upload->update([
+            'file_name'     => array_values($existingNames),
+            'onedrive_path' => array_values($existingPaths),
+            'onedrive_url'  => array_values($existingUrls),
+        ]);
+
+        return back()->with('success', 'Training photos updated successfully!');
     }
 
     public function trainingcompcertificate()

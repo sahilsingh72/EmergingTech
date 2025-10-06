@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Coordinator;
 use App\Models\District;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class CoordinatorController extends Controller
 {
@@ -21,7 +23,18 @@ class CoordinatorController extends Controller
 
     public function store(Request $request)
     {
-        // dd( $request->all());
+
+        // Ensure storage/app/public exists
+        $storagePublicPath = storage_path('app/public');
+        if (!File::exists($storagePublicPath)) {
+            File::makeDirectory($storagePublicPath, 0775, true);
+        }
+
+        // Ensure public/storage symlink exists
+        $publicStorage = public_path('storage');
+        if (!file_exists($publicStorage)) {
+            Artisan::call('storage:link');
+        }
 
         $validated = $request->validate([
             'coordinator_name' => 'required|string|max:255',
@@ -95,6 +108,18 @@ class CoordinatorController extends Controller
 
     public function update(Request $request, Coordinator $coordinator)
     {
+        // Ensure storage/app/public exists
+        $storagePublicPath = storage_path('app/public');
+        if (!File::exists($storagePublicPath)) {
+            File::makeDirectory($storagePublicPath, 0775, true);
+        }
+
+        // Ensure public/storage symlink exists
+        $publicStorage = public_path('storage');
+        if (!file_exists($publicStorage)) {
+            Artisan::call('storage:link');
+        }
+        
         $validated = $request->validate([
             'coordinator_name' => 'required|string|max:255',
             'email' => 'required|email|unique:coordinator_mst,email,' . $coordinator->coordinator_id . ',coordinator_id',

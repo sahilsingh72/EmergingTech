@@ -34,6 +34,13 @@
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Photos</h2>
+
+                                    <div class="mb-4 flex justify-end">
+                                        <a href="{{route('trainingphotos.list')}}"><button
+                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                            <i class="fas fa-list"></i> View uploaded training photos
+                                        </button></a>
+                                    </div>
                                     <form action="{{ route('upload.trainingphotos') }}" method="POST"
                                         enctype="multipart/form-data">
                                         @csrf

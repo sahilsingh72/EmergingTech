@@ -28,6 +28,13 @@
                         <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                             <div class="bg-white p-8 rounded-lg w-full">
                                 <h2 class="text-2xl font-semibold text-center mb-6">Upload Student Attendance</h2>
+                                <div class="mb-4 flex justify-end">
+                                    <a href="{{route('attendance.list')}}"><button
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                        <i class="fas fa-list"></i> View Attendance Records
+                                    </button></a>
+                                </div>
+
 
                                 <form action="{{ route('upload.attendance') }}" method="POST"
                                     enctype="multipart/form-data">
@@ -61,7 +68,7 @@
 
                                     <!-- Attendance Upload -->
                                     <label class="block text-sm font-medium text-gray-700 mb-1 mt-3">
-                                        Upload Student's Attendance Sheet (PDF or Image)
+                                        Upload Student's Attendance Sheet (PDF or Image)<span style="color:red">*</span>
                                     </label>
                                     {{-- <input type="file" name="attendance_files[]" multiple
                                         accept="application/pdf,image/*" class="border p-2 rounded w-full mb-6"> --}}
@@ -77,7 +84,7 @@
                                         <p class="text-gray-500">Drag and drop PDF / Image, or click to select</p>
 
                                         <input type="file" name="attendance_files[]" id="fileUpload" class="hidden"
-                                            multiple accept="application/pdf,image/*">
+                                            multiple accept="application/pdf,image/*" required>
                                         <!-- File Preview Section -->
                                         <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                         </div>
@@ -95,7 +102,7 @@
                                     </div>
                                     <!-- Trainer Image Upload -->
                                     <label class="block text-sm font-medium text-gray-700 mb-1 mt-3">
-                                        Upload Image of Trainer with Students
+                                        Upload Image of Trainer with Students <span style="color:red">*</span>
                                     </label>
                                     {{-- <input type="file" name="trainer_image" accept="image/*"
                                         class="border p-2 rounded w-full mb-6"> --}}
@@ -109,7 +116,7 @@
                                                   d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12V4m0 8l-3-3m3 3l3-3"/>
                                         </svg>
                                         <p class="text-gray-500">Drag and drop trainer image, or click to select</p>
-                                        <input type="file" name="trainer_image" id="trainerUpload" class="hidden" accept="image/*">
+                                        <input type="file" name="trainer_image" id="trainerUpload" class="hidden" accept="image/*" required>
                                         <div id="trainerPreview" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3"></div>
                                     </div>
 
@@ -137,7 +144,22 @@
             </section>
         </div>
     </div>
+<!-- Validation Errors -->
+@if ($errors->any())
+<script>
+    let errorMessage = "";
+    @foreach ($errors->all() as $error)
+        errorMessage += "{{ $error }}\n";
+    @endforeach
 
+    Swal.fire({
+        title: '⚠️ Warning!',
+        text: errorMessage,
+        icon: 'warning',
+        confirmButtonText: 'OK'
+    });
+</script>
+@endif
     <script>
         // Auto-set today's date
         document.addEventListener('DOMContentLoaded', function () {

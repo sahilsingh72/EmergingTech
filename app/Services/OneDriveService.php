@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redirect;
 
 class OneDriveService
 {
@@ -18,7 +20,8 @@ class OneDriveService
         $this->clientId     = config('services.onedrive.client_id');
         $this->clientSecret = config('services.onedrive.client_secret');
         $this->tenantId     = config('services.onedrive.tenant_id');
-        $this->redirectUri  = config('services.onedrive.redirect');
+        // $this->redirectUri  = config('services.onedrive.redirect');
+        $this->redirectUri  = config('services.onedrive.redirect_uri');
         $this->scopes       = 'offline_access Files.ReadWrite User.Read';
         $this->tokenFile    = storage_path('app/onedrive_token.json');
     }
@@ -68,7 +71,10 @@ class OneDriveService
      protected function getAccessToken()
     {
         if (!file_exists($this->tokenFile)) {
-            throw new \Exception("⚠️ Run login flow first to get OneDrive token (use getAuthUrl()).");
+            // throw new \Exception("⚠️ Run login flow first to get OneDrive token (use getAuthUrl()).");
+            throw new HttpResponseException(
+                Redirect::to('/onedrive/login')
+            );
         }
 
         $tokens = json_decode(file_get_contents($this->tokenFile), true);
@@ -136,26 +142,50 @@ class OneDriveService
         $stream   = fopen($file->getRealPath(), 'r');
 
         $onedrivePath = "{$folder}/{$filename}";
-        $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/content";
+        // $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/content";
+        $uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/content";
 
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$accessToken}",
             'Content-Type'  => $file->getMimeType() ?? 'application/octet-stream',
-        ])->send('PUT', $url, [
+        ])
+        ->timeout(120)
+        ->send('PUT', $uploadUrl, [
             'body' => $stream,
         ]);
 
         fclose($stream);
 
-        if ($response->successful()) {
-            return [
-                'path' => $onedrivePath,
-                'url'  => $url,
-            ];
+        if (!$response->successful()) {
+            throw new \Exception("OneDrive upload failed: " . $response->body());
         }
 
-        // If the API rejects with InvalidAuthenticationToken despite our refresh attempt,
-        // it's often necessary to re-authenticate manually.
-        throw new \Exception("❌ OneDrive upload failed: " . $response->body());
+        // Create shareable link
+        $linkResponse = Http::withHeaders([
+            'Authorization' => "Bearer {$accessToken}",
+            'Content-Type' => 'application/json',
+        ])->post("https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/createLink", [
+            'type' => 'view',
+            'scope' => 'anonymous',
+        ]);
+
+        $linkData = $linkResponse->json();
+        $shareableUrl = $linkData['link']['webUrl'] ?? null;
+
+        return [
+            'path' => $onedrivePath,
+            'url'  => $shareableUrl,
+        ];
+        
+    }
+    public function getThumbnailUrl($onedrivePath)
+    {
+        $accessToken = $this->getAccessToken();
+        $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/thumbnails/0/medium/content";
+
+        return [
+            'thumbnail_url' => $url,
+            'headers' => ['Authorization' => "Bearer {$accessToken}"]
+        ];
     }
 }

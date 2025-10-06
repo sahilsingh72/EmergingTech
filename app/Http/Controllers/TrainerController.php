@@ -7,6 +7,8 @@ use App\Models\Trainer;
 // use Illuminate\Container\Attributes\Log;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -24,7 +26,17 @@ class TrainerController extends Controller
      */
     public function store(Request $request)
     {
-        // dd( $request->all());
+        // Ensure storage/app/public exists
+        $storagePublicPath = storage_path('app/public');
+        if (!File::exists($storagePublicPath)) {
+            File::makeDirectory($storagePublicPath, 0775, true);
+        }
+
+        // Ensure public/storage symlink exists
+        $publicStorage = public_path('storage');
+        if (!file_exists($publicStorage)) {
+            Artisan::call('storage:link');
+        }
 
         $validated = $request->validate([
             'trainer_name' => 'required|string|max:255',
@@ -102,6 +114,18 @@ class TrainerController extends Controller
     
     public function update(Request $request, Trainer $trainer)
     {
+        // Ensure storage/app/public exists
+        $storagePublicPath = storage_path('app/public');
+        if (!File::exists($storagePublicPath)) {
+            File::makeDirectory($storagePublicPath, 0775, true);
+        }
+
+        // Ensure public/storage symlink exists
+        $publicStorage = public_path('storage');
+        if (!file_exists($publicStorage)) {
+            Artisan::call('storage:link');
+        }
+
         $validated = $request->validate([
         'trainer_name' => 'required|string|max:255',
         'email' => 'required|email|unique:trainers,email,' . $trainer->trainer_id . ',trainer_id',
@@ -217,7 +241,7 @@ if ($request->hasFile('education_certificates')) {
         $trainer->delete();
 
         return redirect()->route('trainers.index')
-                         ->with('success', 'Trainer and all related files deleted successfully!');
+                         ->with('success', "Trainer {$trainer->trainer_name} deleted successfully!");
     } catch (\Exception $e) {
         return redirect()->route('trainers.index')
                          ->with('error', 'Error deleting trainer: ' . $e->getMessage());

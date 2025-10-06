@@ -20,24 +20,24 @@ class OneDriveController extends Controller
 
         $tokens = $oneDrive->getTokenFromCode($request->get('code'));
 
-        return redirect()->route('onedrive.upload.form')
+        return redirect()->route('dashboard')
                          ->with('status', '✅ Tokens saved, you can now upload files!');
     }
 
-    public function showUploadForm()
-    {
-        return view('onedrive.upload');
-    }
+    // public function showUploadForm()
+    // {
+    //     return view('onedrive.upload');
+    // }
 
-    public function uploadFile(Request $request, OneDriveService $oneDrive)
-    {
-        $request->validate([
-            'upload' => 'required|file|max:10240', // max 10MB
-        ]);
+    // public function uploadFile(Request $request, OneDriveService $oneDrive)
+    // {
+    //     $request->validate([
+    //         'upload' => 'required|file|max:10240', // max 10MB
+    //     ]);
 
-        $file = $request->file('upload');
-        $result = $oneDrive->uploadDirect($file, "MyMedia");
+    //     $file = $request->file('upload');
+    //     $result = $oneDrive->uploadDirect($file, "MyMedia");
 
-        return back()->with('status', $result);
-    }
+    //     return back()->with('status', $result);
+    // }
 }

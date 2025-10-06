@@ -2,8 +2,6 @@
 
 use App\Services\OneDriveService;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\AttendanceUploadController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\FeedbackController;
@@ -33,12 +31,25 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     Route::get('/attendance',[AttendanceController::class,'attendance'])->name('attendance');
     Route::post('/attendance', [AttendanceController::class, 'upload'])->name('upload.attendance');
+    Route::get('/attendance-list',[AttendanceController::class,'attendanceList'])->name('attendance.list');
+    Route::get('/attendance-list/{id}/edit', [AttendanceController::class, 'edit'])->name('attendance.list.edit');
+    Route::put('/attendance-list/{id}', [AttendanceController::class, 'update'])->name('attendance.list.update');
 
     Route::get('/trainingphotos',[TrainingEvidenceController::class,'trainingphotos'])->name('trainingphotos');
     Route::post('/trainingphotos',[TrainingEvidenceController::class,'upload'])->name('upload.trainingphotos');
+    Route::get('/trainingphotos-list',[TrainingEvidenceController::class,'trainingphotoslist'])->name('trainingphotos.list');
+    Route::get('/trainingphotos-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingPhoto'])->name('training.photo.edit');
+    Route::put('/trainingphotos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingPhoto'])->name('training.photo.update');
+    Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
+
+
     
     Route::get('/trainingvideos',[TrainingEvidenceController::class,'trainingvideos'])->name('trainingvideos');
     Route::post('/trainingvideos',[TrainingEvidenceController::class,'uploadvideo'])->name('upload.trainingvideos');
+    Route::get('/trainingvideos-list',[TrainingEvidenceController::class,'trainingvideoslist'])->name('trainingvideos.list');
+    Route::get('/trainingvideos-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingVideo'])->name('training.video.edit');
+    Route::put('/trainingvideos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingVideo'])->name('training.video.update');
+    // Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
 
     Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
     Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadCcertificate'])->name('upload.certificate');
@@ -90,18 +101,11 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/schools', [SchoolController::class, 'index'])->name('index');
     Route::get('/schools/get-by-dlc/{dlc_id}', [SchoolController::class, 'getByDlc'])->name('schools.getByDlc');
 });
-// Route::get('/filter', [RegisteredUserController::class, 'index'])->name('index');
-// Route::get('/filter/blocks/{dlc_id}', [RegisteredUserController::class, 'getBlocks'])->name('blocks');
-// Route::get('/filter/schools/{block_id}', [RegisteredUserController::class, 'getSchools'])->name('schools');
-
-
-
-
 
 Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');
 Route::get('/onedrive/callback', [OneDriveController::class, 'handleCallback'])->name('onedrive.callback');
-Route::get('/onedrive/upload', [OneDriveController::class, 'showUploadForm'])->name('onedrive.upload.form');
-Route::post('/onedrive/upload', [OneDriveController::class, 'uploadFile'])->name('onedrive.upload');
+// Route::get('/onedrive/upload', [OneDriveController::class, 'showUploadForm'])->name('onedrive.upload.form');
+// Route::post('/onedrive/upload', [OneDriveController::class, 'uploadFile'])->name('onedrive.upload');
 
 
 require __DIR__.'/auth.php';
