@@ -17,10 +17,13 @@ class Trainer extends Model
         'phone',
         'whatsapp_number',
         'dist_id',
+        'scm_id',
         'district',
         'specialization',
         'address',
         'pincode',
+        'user_id',
+        'highest_qual',
         'cv',
         'education_certificates',
         'experience_certificate',
@@ -32,4 +35,9 @@ class Trainer extends Model
         'education_certificates' => 'array',
         'specialization' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

@@ -4,6 +4,7 @@ use App\Services\OneDriveService;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\CoordinatorController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -13,17 +14,22 @@ use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\OneDriveController;
 use App\Http\Controllers\TrainingEvidenceController;
 use App\Http\Controllers\TrainingUploadController;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/chart-data', [DashboardController::class, 'getChartData'])->name('chart.data');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+});
 
-// Route::middleware('auth')->group(function () {
+Route::middleware([RoleMiddleware::class . ':OKCL, OCAC, DLC'])->group(function () {
+    Route::get('/coordinatorlist', [CoordinatorController::class, 'index'])->name('coordinators.index');
+});
+
 Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -52,7 +58,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     // Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
 
     Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
-    Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadCcertificate'])->name('upload.certificate');
+    Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadcertificate'])->name('upload.certificate');
     Route::get('/addstudent',[StudentController::class,'addstudent'])->name('addstudent');
     // Route::view('/addstudentsin','addstudentsin')->name('addstudentsin');
     
@@ -84,22 +90,26 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/uploadtravelbills',[BillController::class,'uploadtravelbills'])->name('uploadtravelbills');
     Route::get('/uploadexpensebills',[BillController::class,'uploadexpensebills'])->name('uploadexpensebills');
     
-    Route::get('/trainerlist', [TrainerController::class, 'index'])->name('trainers.index');
-    Route::post('/trainers/store', [TrainerController::class, 'store'])->name('trainers.store');
-    Route::get('/trainers/{trainer}/edit', [TrainerController::class, 'edit'])->name('trainers.edit');   
-    Route::put('/trainers/{trainer}', [TrainerController::class, 'update'])->name('trainers.update'); 
-    Route::delete('/trainers/{trainer}', [TrainerController::class, 'destroy'])->name('trainers.destroy');
+    
 
+
+    Route::get('/schools', [SchoolController::class, 'index'])->name('index');
+    Route::get('/schools/get-by-dlc/{dlc_id}', [SchoolController::class, 'getByDlc'])->name('schools.getByDlc');
+});
+
+Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,DLC'])->group(function () {
     Route::get('/coordinatorlist', [CoordinatorController::class, 'index'])->name('coordinators.index');
     Route::post('/coordinators/store', [CoordinatorController::class, 'store'])->name('coordinators.store');
     Route::get('/coordinators/{coordinator}/edit', [CoordinatorController::class, 'edit'])->name('coordinators.edit');   
     Route::put('/coordinators/{coordinator}', [CoordinatorController::class, 'update'])->name('coordinators.update'); 
     Route::delete('/coordinators/{coordinator}', [CoordinatorController::class, 'destroy'])->name('coordinators.destroy');  
     
+    Route::get('/trainerlist', [TrainerController::class, 'index'])->name('trainers.index');
+    Route::post('/trainers/store', [TrainerController::class, 'store'])->name('trainers.store');
+    Route::get('/trainers/{trainer}/edit', [TrainerController::class, 'edit'])->name('trainers.edit');   
+    Route::put('/trainers/{trainer}', [TrainerController::class, 'update'])->name('trainers.update'); 
+    Route::delete('/trainers/{trainer}', [TrainerController::class, 'destroy'])->name('trainers.destroy');
 
-
-    Route::get('/schools', [SchoolController::class, 'index'])->name('index');
-    Route::get('/schools/get-by-dlc/{dlc_id}', [SchoolController::class, 'getByDlc'])->name('schools.getByDlc');
 });
 
 Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');

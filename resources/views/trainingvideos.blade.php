@@ -1,5 +1,25 @@
 @include('components.navbar')
 @include('components.sidebar')
+<style>
+.loader {
+  border-right-color: transparent;
+    border-bottom-color: transparent;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+/* Smooth fade for overlay */
+#contentBlurOverlay {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+}
+#contentBlurOverlay.flex {
+  opacity: 1;
+}
+</style>
 
 <body class="hold-transition sidebar-mini layout-fixed">
 
@@ -26,7 +46,13 @@
             <!-- /.content-header -->
 
             <!-- Main content -->
-            <section class="content">
+            <section class="content relative">
+
+                <div id="contentBlurOverlay"
+     class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
+    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
+    <p class="text-white text-base font-medium">Uploading, please wait...</p>
+</div>
                 <div class="container-fluid">
                     <div class="py-12">
                         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -41,7 +67,7 @@
                                             <i class="fas fa-list"></i>  View uploaded training video
                                         </button></a>
                                     </div>
-                                    <form method="POST" action="{{ route('upload.trainingvideos') }}"
+                                    <form id="videoUploadForm" method="POST" action="{{ route('upload.trainingvideos') }}"
                                         enctype="multipart/form-data">
                                         @csrf
                                         <!-- School Name (readonly) -->
@@ -130,6 +156,60 @@
         </div>
     </div>
     </div>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector('form[action="{{ route('upload.trainingvideos') }}"]');
+    const overlay = document.getElementById("contentBlurOverlay");
+
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Show overlay
+            overlay.classList.remove("hidden");
+            overlay.classList.add("flex");
+
+            // Create form data
+            const formData = new FormData(form);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", form.action, true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    console.log("Upload Progress: " + percent + "%");
+                }
+            };
+
+            xhr.onload = function () {
+                overlay.classList.add("hidden");
+                overlay.classList.remove("flex");
+
+                if (xhr.status === 200) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "✅ Upload complete!",
+                        text: "Your videos have been uploaded successfully."
+                    })
+                    // .then(() => {
+                    //     window.location.href = "{{ route('trainingvideos.list') }}";
+                    // });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "❌ Upload failed",
+                        text: "Something went wrong. Please try again."
+                    });
+                }
+            };
+
+            xhr.send(formData);
+        });
+    }
+});
+</script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const videoDropZone = document.getElementById("videoDropZone");

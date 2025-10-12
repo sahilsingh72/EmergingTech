@@ -73,10 +73,10 @@
                                         </select>
                                     </div>
 
-                                    <!-- Step 2: All other fields (hidden initially) -->
+                                    <!--  All other fields (hidden initially) -->
                                     <div id="role_fields" class="hidden">
 
-                                        <!-- Name Field (shown only for OCAC, OKCL, Institute) -->
+                                        <!-- Name Field (shown only for OCAC, OKCL, Institute, dlc) -->
                                         <div class="mb-4 hidden" id="name_field">
                                             <x-input-label id="name_label" for="name" :value="__('name')" />
                                             <input type="text" name="name" id="name" class="border rounded w-full p-2" :value="{{ old('name') }}" required autofocus autocomplete="name">
@@ -91,6 +91,7 @@
                                         
                                       
 
+                                        
                                         <!-- Coordinator Fields -->
                                         <div class="coordinator-fields hidden mb-4 mt-4">
 
@@ -236,7 +237,7 @@
                                     $('#name_label').text('HM Name');
                                     $('#name').prop('disabled', false); // enable text input
                                 }
-                                else if (role === 'ocac' || role === 'okcl') {
+                                else if (role === 'ocac' || role === 'okcl' || role === 'dlc') {
                                     $('#name_field').removeClass('hidden');
                                     $('#name_label').text('Name');
                                     $('#name').prop('disabled', false); // enable text input

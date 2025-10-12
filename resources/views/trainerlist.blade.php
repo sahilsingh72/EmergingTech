@@ -159,7 +159,7 @@
 
 
                                                         {{-- Education Certificates --}}
-                                                        <td>
+                                                        <td class="p-2 border">
                                                             @php
                                                                 $educationCertificates = [];
                                                                 if (is_string($trainer->education_certificates)) {
@@ -204,13 +204,15 @@
                                                                 data-district="{{ $trainer->district }}"
                                                                 data-pincode="{{ $trainer->pincode}}"
                                                                 data-specialization="{{ is_array($trainer->specialization) ? implode(',', $trainer->specialization) : $trainer->specialization }}"
-                                                                data-address="{{ $trainer->address }}">
+                                                                data-address="{{ $trainer->address }}"
+                                                                data-school_id="{{ $trainer->scm_id }}"
+                                                                data-highest_qualification="{{ $trainer->highest_qual }}">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
-                                                            <button type="button" class="text-red-500 mx-1 deleteBtn"
+                                                            {{-- <button type="button" class="text-red-500 mx-1 deleteBtn"
                                                                 data-id="{{ $trainer->trainer_id }}">
                                                                 <i class="fas fa-trash-alt"></i>
-                                                            </button>
+                                                            </button> --}}
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -253,7 +255,7 @@
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Name</label>
+                                                                class="block text-sm font-medium text-gray-700">Trainer Name</label>
                                                             <input type="text" name="trainer_name"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
@@ -266,17 +268,17 @@
 
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">District</label>
-                                                            <select name="dist_id" id="districtSelect" class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select District --</option>
-                                                                @foreach ($districts as $district)
-                                                                    <option value="{{ $district->DSM_DSCD }}" data-name="{{ $district->DSM_DSNM }}">
-                                                                        {{ $district->DSM_DSNM }}
+                                                                class="block text-sm font-medium text-gray-700">School</label>
+                                                            <select name="school" id="schoolSelect" class="w-full border rounded p-2 mt-1" required>
+                                                                <option value="">-- Select School --</option>
+                                                                @foreach ($schools as $school)
+                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                                        {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-                                                        
+
                                                         <!-- hidden input to store district name -->
                                                         <input type="hidden" name="district" id="districtName">
                                                     </div>
@@ -298,27 +300,22 @@
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Pincode</label>
-                                                            <input type="text" name="pincode"
+                                                            <input type="number" name="pincode"
                                                                 class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
-                                                        </div>
-                                                        
-
-
-
+                                                        </div> 
                                                     </div>
                                                 </div>
                                                 <div class="grid grid-cols-1 mt-3">
                                                     <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Specialization</label>
-
-                                                            <select class="w-full border rounded p-2 mt-1"
-                                                                name="specialization[]" id="specialization" multiple>
-                                                                <option value="AI">AI</option>
-                                                                <option value="IoT & Robotics">IoT & Robotics</option>
-                                                                <option value="Cybersecurity">Cybersecurity</option>
-                                                            </select>
-                                                        </div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-700">Specialization</label>
+                                                        <select class="w-full border rounded p-2 mt-1"
+                                                            name="specialization[]" id="specialization" multiple>
+                                                            <option value="AI">AI</option>
+                                                            <option value="IoT & Robotics">IoT & Robotics</option>
+                                                            <option value="Cybersecurity">Cybersecurity</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                                 <div class="grid grid-cols-1">
                                                     <div>
@@ -331,57 +328,83 @@
                                                     <!-- Left Column: Trainer Info -->
                                                     <div class="space-y-4">
                                                         <div>
+                                                            <div>
+                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
+                                                               <select id="qualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
+                                                                   <option value="">-- Select Qualification --</option>
+                                                                   <option value="B-Tech">B-Tech</option>
+                                                                   <option value="BCA">BCA</option>
+                                                                   <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                                   <option value="Other">Other (Equivalent)</option>
+                                                                </select>
 
-                                                            <label class="block text-sm font-medium text-gray-700">CV /
-                                                                Resume</label>
-                                                            <input type="file" name="cv"
-                                                                accept=".pdf,.doc,.docx"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
-                                                        </div>
-                                                        <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Educational
-                                                                Qualification Certificates</label>
-                                                            <input type="file" name="education_certificates[]"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                JPG, PNG. Max size: 2 MB</p>
-                                                        </div>
-                                                        
-                                                        <div>
-                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                accept=".pdf,.doc,.docx"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                                <!-- Hidden text input for "Other" -->
+                                                                <div id="otherQualificationDiv" class="hidden">
+                                                                    <input type="text" id="otherQualification" name="other_qualification" 
+                                                                        class="w-full border rounded p-2 mt-1" 
+                                                                        placeholder="Please specify your qualification">
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
                                                     <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
-
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Experience
                                                                 Certificate</label>
                                                             <input type="file" name="experience_certificate"
                                                                 accept=".pdf,.jpg,.jpeg,.png"
-                                                                class="w-full border rounded p-2 mt-1">
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-8 mt-3">
+                                                    <!-- Left Column: Trainer Info -->
+                                                    <div class="space-y-4">
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Photo</label>
                                                             <input type="file" name="photo"
                                                                 accept=".jpg,.jpeg,.png"
-                                                                class="w-full border rounded p-2 mt-1">
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
                                                                 PNG. Max size: 2 MB</p>
+                                                        </div>
+
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Educational
+                                                                Qualification Certificates</label>
+                                                            <input type="file" name="education_certificates[]"
+                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                                class="w-full border rounded p-2 mt-1" required>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
+                                                                JPG, PNG. Max size: 2 MB</p>
+                                                        </div>
+                                                    </div>
+                                                        
+                                                    <!-- Right Column: File Uploads -->
+                                                    <div class="space-y-4">
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">CV /
+                                                                Resume</label>
+                                                            <input type="file" name="cv"
+                                                                accept=".pdf,.doc,.docx"
+                                                                class="w-full border rounded p-2 mt-1" required>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
+                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card"
+                                                                accept=".pdf,.doc,.docx"
+                                                                class="w-full border rounded p-2 mt-1" required>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
+                                                                DOC, DOCX. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -433,17 +456,15 @@
                                                         </div>
                                                         <div>
                                                             <label
-                                                            class="block text-sm font-medium text-gray-700">District</label>
-                                                            <select name="dist_id" id="editDistrictSelect" class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select District --</option>
-                                                                @foreach ($districts as $district)
-                                                                    <option value="{{ $district->DSM_DSCD }}" data-name="{{ $district->DSM_DSNM }}">
-                                                                        {{ $district->DSM_DSNM }}
+                                                                class="block text-sm font-medium text-gray-700">School</label>
+                                                            <select name="school" id="editTrainerSchool" class="w-full border rounded p-2 mt-1" required>
+                                                                <option value="">-- Select School --</option>
+                                                                @foreach ($schools as $school)
+                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                                        {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-                                                            <!-- hidden input for district name -->
-                                                            <input type="hidden" name="district" id="editDistrictName">
                                                         </div>
                                                     </div>
 
@@ -464,7 +485,7 @@
                                                         <div>
                                                             <label
                                                             class="block text-sm font-medium text-gray-700">Pincode</label>
-                                                            <input type="text" name="pincode"
+                                                            <input type="number" name="pincode"
                                                             id="editTrainerPincode"
                                                             class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
                                                         </div>
@@ -493,14 +514,32 @@
                                                 <div class="grid grid-cols-2 gap-8 mt-4">
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">CV /
-                                                                Resume</label>
-                                                            <input type="file" name="cv"
-                                                                accept=".pdf,.doc,.docx"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                           <div>
+                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
+                                                                <select id="editQualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
+                                                                    <option value="">-- Select Qualification --</option>
+                                                                    <option value="B-Tech">B-Tech</option>
+                                                                    <option value="BCA">BCA</option>
+                                                                    <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                                    <option value="Other">Other (Equivalent)</option>
+                                                                </select>
+
+                                                                <div id="editOtherQualificationDiv" class="hidden">
+                                                                    <input type="text" id="editOtherQualification" name="other_qualification"
+                                                                            class="w-full border rounded p-2 mt-1"
+                                                                            placeholder="Please specify your qualification">
+                                                                </div>
+                                                           </div>
                                                         </div>
+                                                        <div>
+                                                            <label class="block text-sm font-medium">Photo</label>
+                                                            <input type="file" name="photo"
+                                                                accept=".jpg,.jpeg,.png"
+                                                                class="w-full border rounded p-2 mt-1">
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
+                                                                PNG. Max size: 2 MB</p>
+                                                        </div>
+                                                        
                                                         <div>
                                                             <label class="block text-sm font-medium">Educational
                                                                 Qualification Certificates</label>
@@ -509,16 +548,6 @@
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
-                                                        </div>
-                                                        
-                                                        <div>
-                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                id="editTrainerAadhar"
-                                                                accept=".pdf,.doc,.docx"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                     <div class="space-y-4">
@@ -532,12 +561,23 @@
                                                                 JPG, PNG. Max size: 2 MB</p>
                                                         </div>
                                                         <div>
-                                                            <label class="block text-sm font-medium">Photo</label>
-                                                            <input type="file" name="photo"
-                                                                accept=".jpg,.jpeg,.png"
+                                                            <label class="block text-sm font-medium">CV /
+                                                                Resume</label>
+                                                            <input type="file" name="cv"
+                                                                accept=".pdf,.doc,.docx"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
-                                                                PNG. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
+                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                        </div>
+                                                        
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card"
+                                                                id="editTrainerAadhar"
+                                                                accept=".pdf,.doc,.docx"
+                                                                class="w-full border rounded p-2 mt-1">
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
+                                                                DOC, DOCX. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -586,6 +626,39 @@
         </div>
     </div>
     </div>
+     <script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Add modal
+    document.getElementById('qualification').addEventListener('change', function () {
+        const otherDiv = document.getElementById('otherQualificationDiv');
+        const otherInput = document.getElementById('otherQualification');
+
+        if (this.value === 'Other') {
+            otherDiv.classList.remove('hidden');
+            otherInput.required = true;
+        } else {
+            otherDiv.classList.add('hidden');
+            otherInput.required = false;
+            otherInput.value = '';
+        }
+    });
+
+    // Edit modal
+    document.getElementById('editQualification').addEventListener('change', function () {
+        const otherDiv = document.getElementById('editOtherQualificationDiv');
+        const otherInput = document.getElementById('editOtherQualification');
+
+        if (this.value === 'Other') {
+            otherDiv.classList.remove('hidden');
+            otherInput.required = true;
+        } else {
+            otherDiv.classList.add('hidden');
+            otherInput.required = false;
+            otherInput.value = '';
+        }
+    });
+});
+</script>
      <script>
         // add
         document.getElementById("districtSelect").addEventListener("change", function() {
@@ -734,10 +807,6 @@
             let today = new Date().toISOString().split('T')[0];
             document.getElementById("training_date").value = today;
         });
-        // Auto fetch School Name (example: from session/auth)
-        const loggedInSchool =
-            "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // Replace with Blade variable in Laravel
-        document.getElementById("schoolName").value = loggedInSchool;
     </script>
     @if ($errors->any())
         <script>
@@ -755,14 +824,31 @@
                 $("#editTrainerId").val(id);
                 $("#editTrainerName").val($(this).data("name"));
                 $("#editTrainerEmail").val($(this).data("email"));
+                $("#editTrainerSchool").val($(this).data("school_id"));
                 $("#editTrainerPhone").val($(this).data("phone"));
                 $("#editTrainerWhatsapp").val($(this).data("whatsapp_number"));
                 $("#editTrainerPincode").val($(this).data("pincode"));
                 $("#editTrainerAddress").val($(this).data("address"));
                 
+                let qual = $(this).data("highest_qualification");
+                    const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
+
+                    if (standardOptions.includes(qual)) {
+                        $("#editQualification").val(qual);
+                        $("#editOtherQualificationDiv").addClass("hidden");
+                        $("#editOtherQualification").val('');
+                    } else {
+                        $("#editQualification").val('Other');
+                        $("#editOtherQualificationDiv").removeClass("hidden");
+                        $("#editOtherQualification").val(qual);
+                    }
+
                 // Get district values
                 let distId = $(this).data("dist_id");   // DSM_DSCD
                 let distName = $(this).data("district"); // DSM_DSNM
+                let schoolId = $(this).data("school");
+
+                $("#schoolSelect").val(schoolId);
 
                 $("#editDistrictSelect").val(distId); // select correct option
                 $("#editDistrictName").val(distName); // hidden input

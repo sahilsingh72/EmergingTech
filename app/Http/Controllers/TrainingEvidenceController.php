@@ -19,6 +19,7 @@ class TrainingEvidenceController extends Controller
         $this->oneDrive = $oneDrive;
     }
 
+    
     public function trainingphotos()
     {
         
@@ -28,10 +29,10 @@ class TrainingEvidenceController extends Controller
             ->where('file_type', 'training_photo')
             ->first();
 
-        if ($existingUpload) {
-            return redirect()->route('trainingphotos.list')
-                ->with('info', 'You have already uploaded your training photos.');
-        }
+        // if ($existingUpload) {
+        //     return redirect()->route('trainingphotos.list')
+        //         ->with('info', 'You have already uploaded your training photos.');
+        // }
         $schools = School::all();
         return view('trainingphotos', compact('schools'));
     }
@@ -178,7 +179,7 @@ class TrainingEvidenceController extends Controller
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'training_video' => 'required|array',
-            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:10240',
+            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:512000',
             'description'     => 'nullable|string',
         ]);
 
@@ -217,7 +218,9 @@ class TrainingEvidenceController extends Controller
             'description'    => $request->description,
         ]);
 
-        return back()->with('success', 'training video uploaded successfully!');
+        return redirect()
+            ->route('trainingvideos.list')
+            ->with('success', 'training video uploaded successfully!');
     }
 
     public function trainingvideoslist(){
@@ -285,10 +288,32 @@ class TrainingEvidenceController extends Controller
 
     public function trainingcompcertificate()
     {
+        $userId = Auth::id();
         $schools = School::all();
-        return view('trainingcompcertificate', compact('schools'));
+
+        // Check if user has uploaded all required files
+        $requiredFiles = [
+            'attendance_sheet'  => 'Attendance Sheet',
+            'training_photo'    => 'Training Photo',
+            'training_video'    => 'Training Video',
+            'written_feedback'  => 'Written Feedback',
+            'video_feedback'    => 'Video Feedback',
+        ];
+
+        $uploadedFiles = TrainingUpload::where('uploaded_by', $userId)
+            ->pluck('file_type')
+            ->toArray();
+
+        
+        // ✅ Check which of the required ones exist
+        $completedFiles = array_intersect(array_keys($requiredFiles), $uploadedFiles);
+
+        // Determine if all files are uploaded
+        $canUploadCertificate = count($completedFiles) === count($requiredFiles);
+
+        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'canUploadCertificate'));
     }
-    public function uploadCcertificate(Request $request)
+    public function uploadcertificate(Request $request)
 
     {
         // dd($request->all());
@@ -296,6 +321,8 @@ class TrainingEvidenceController extends Controller
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'training_completion_certificate.*' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+            'declaration' => 'accepted',
+            'training_completed' => 'accepted',
         ]);
 
         $schoolId = $request->school_id;
@@ -324,6 +351,26 @@ class TrainingEvidenceController extends Controller
             'training_date'  => $request->training_date,
             'description'    => $request->description,
         ]);
+
+         // ✅ Mark school as completed only if ALL required files are uploaded
+        $requiredFiles = [
+            'attendance_sheet',
+            'training_photo',
+            'training_video',
+            'written_feedback',
+            'video_feedback',
+            'training_completion_certificate'
+        ];
+
+        $uploadedFiles = TrainingUpload::where('uploaded_by', $userId)
+            ->where('school_id', $schoolId)
+            ->whereIn('file_type', $requiredFiles)
+            ->pluck('file_type')
+            ->toArray();
+
+        if (empty(array_diff($requiredFiles, $uploadedFiles))) {
+            School::where('scm_id', $schoolId)->update(['training_completed' => 1]);
+        }
 
         return back()->with('success', 'training completion certificate uploaded successfully!');
     }

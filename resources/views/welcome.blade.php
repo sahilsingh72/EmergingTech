@@ -14,12 +14,44 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    .nav.fixed {
+    position: fixed; /* Becomes fixed when scrolling */
+    background-color: white;
+    top: 0;
+    right: 0;
+    width: 100%; /* Ensures it spans the full width */
+    margin: 0; /* Removes margin */
+    padding-top: 0; /* Ensures no padding */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ 
+}
+ 
     .icon-hover {
       transition: transform 0.3s ease-in-out;
     }
     .card:hover .icon-hover {
       transform: translateY(-5px) scale(1.1);
     }
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+.animate-blink {
+  display: inline-block;
+  animation: blink 4s step-start infinite;
+}
   </style>
   
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -31,66 +63,53 @@
 <body class="bg-gray-50 text-gray-800">
  
   <!-- Navbar -->
-  <nav class="bg-[#0B2540] text-white px-4 sm:px-6 md:pl-[9rem] md:pr-[4.8rem] py-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold">EmergingTech</h1>
-    <div class="flex items-center space-x-6">
-      <ul class="hidden md:flex space-x-6">
-        <li><a href="#" class="hover:text-orange-500">Home</a></li>
-        <li><a href="https://www.ocac.in/" target="_blank" class="hover:text-orange-500">OCAC</a></li>
-        <li><a href="#about" class="hover:text-orange-500">About</a></li>
-        <li><a href="#courses" class="hover:text-orange-500">Courses</a></li>
-        <li><a href="#contact" class="hover:text-orange-500">Contact</a></li>
-      </ul>
-      <!-- Login Button -->
-      {{-- <a href="{{ route('login') }}" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-semibold text-white shadow-md">
-        Login
-      </a> --}}
-       @if (Route::has('login'))
-            <nav class="flex items-center gap-4">
-                @auth
-                    <a href="{{ url('/dashboard') }}"
-                        class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-semibold text-white shadow-md">
-                        Dashboard
-                    </a>
-                @else
-                    <a href="{{ route('login') }}"
-                        class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-semibold text-white shadow-md"
-                        onmouseout="this.style.backgroundColor='transparent'">
-                        Login
-                    </a>
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50 bg-gradient-to-tr from-[#081C33] to-[#1E3A8A] text-white px-4 sm:px-6 md:pl-[9rem] md:pr-[4.8rem] py-4 flex justify-between items-center transition-colors duration-500 shadow-lg">
+<h1 class="text-2xl font-bold">EmergingTech</h1>
+<div class="flex items-center space-x-6">
+<ul class="hidden md:flex space-x-6">
+<li><a href="#" class="hover:text-orange-500 transition">Home</a></li>
+<li><a href="https://www.ocac.in/" target="_blank" class="hover:text-orange-500 transition">OCAC</a></li>
+<li><a href="#courses" class="hover:text-orange-500 transition">Camps</a></li>
+<li><a href="#contact" class="hover:text-orange-500 transition">Contact</a></li>
+</ul>
+ 
+    @if (Route::has('login'))
+<nav class="flex items-center gap-4">
+        @auth
+<a href="{{ url('/dashboard') }}" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-semibold text-white shadow-md transition">Dashboard</a>
+        @else
+<a href="{{ route('login') }}" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg font-semibold text-white shadow-md transition">Login</a>
+        @endauth
+</nav>
+    @endif
+</div>
+</nav>
 
-                    {{-- @if (Route::has('register'))
-                            <a href="{{ route('register') }}"
-                               class="px-5 py-2 rounded-md border dark:border-[#3E3E3A] text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] hover:bg-black hover:text-white transition">
-                               Register
-                            </a>
-                        @endif --}}
-                @endauth
-            </nav>
-        @endif
-    </div>
-  </nav>
+ 
  
   <!-- Banner -->
-  <section class="bg-[#0B2540] text-white py-20 px-6 sm:px-8 md:px-16 flex flex-col md:flex-row items-center">
+  <section class="bg-[#0B2540] text-white py-20 mt-6 px-6 sm:px-8 md:px-16 flex flex-col md:flex-row items-center">
     <div class="md:w-1/2 space-y-6 px-4 sm:px-6 md:pl-[7.5rem] md:pr-[3.5rem]">
-      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
-        Explore the Future with <span class="text-orange-500">EmergingTech</span>
-      </h2>
+<h2 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+  Explore the Future with 
+  <span class="text-orange-500 inline-block h-14 w-[14ch] overflow-hidden">
+    <span id="typing"></span><span class="animate-blink">|</span>
+  </span>
+</h2>
       <p class="text-base sm:text-lg text-gray-300">
-        Discover the latest innovations in Artificial Intelligence,IoT & Robotics, and CyberSecurity. Empower your career with cutting-edge skills.
+        Discover the latest innovations in Artificial Intelligence, IoT & Robotics, and CyberSecurity. Empower your career with cutting-edge skills.
       </p>
       {{-- <button class="bg-orange-500 hover:bg-orange-600 px-6 py-3 rounded-lg font-semibold text-white shadow-md">
         Get Started
       </button> --}}
     </div>
-    <div class="md:w-1/2 mt-8 md:mt-0 px-4 sm:px-6 md:pl-[8rem] md:pr-[4rem]">
-      <img
-        src="{{ asset('Et.webp') }}"
-        alt="EmergingTech"
-        class="rounded-lg shadow-lg max-w-full h-auto"
-      />
-    </div>
+    <div class="md:w-1/2 mt-7 md:mt-0 px-4 sm:px-6 md:pl-[8rem] md:pr-[4rem]">
+  <img
+    src="{{ asset('Et.webp') }}"
+    alt="EmergingTech"
+    class="rounded-lg shadow-lg max-w-full h-auto floating"
+  />
+</div>
   </section>
  
   <!-- About Section -->
@@ -111,7 +130,7 @@
   <!-- Courses Section -->
   <section id="courses" class="py-16 px-4 sm:px-6 md:px-12 bg-[#E8F0FE]">
     <div class="max-w-6xl mx-auto text-center">
-      <h2 class="text-3xl font-bold text-[#0B2540] mb-12">Our Courses</h2>
+      <h2 class="text-3xl font-bold text-[#0B2540] mb-12">Our Training Camp</h2>
       <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
        
         <!-- AI Card -->
@@ -188,7 +207,7 @@
       </div>
       <div>
         <h3 class="text-xl font-bold mb-4">Contact</h3>
-        <p>Email: help@okcl.org</p>
+        {{-- <p>Email: help@okcl.org</p> --}}
         <p>Phone: +91 6743520021</p>
       </div>
     </div>
@@ -206,7 +225,20 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
     </svg>
   </button>
- 
+  <script>
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 50) {
+    // Change to light color gradient when scrolling
+    navbar.classList.remove('from-[#081C33]', 'to-[#1E3A8A]');
+    navbar.classList.add('from-gray-100', 'to-gray-300', 'text-black');
+  } else {
+    // Revert back to original gradient
+    navbar.classList.remove('from-gray-100', 'to-gray-300', 'text-black');
+    navbar.classList.add('from-[#081C33]', 'to-[#1E3A8A]', 'text-white');
+  }
+});
+</script>
   <script>
     lucide.createIcons();
   </script>
@@ -224,6 +256,26 @@
       }
     });
   </script>
+<script>
+const text = "EmergingTech...";
+const typingEl = document.getElementById("typing");
+let index = 0;
+let forward = true;
+
+function type() {
+  if (forward) {
+    index++;
+    if (index === text.length) forward = false;
+  } else {
+    index--;
+    if (index === 0) forward = true;
+  }
+  typingEl.textContent = text.slice(0, index);
+  setTimeout(type, 150);
+}
+
+type();
+</script>
 </body>
 </html>
  

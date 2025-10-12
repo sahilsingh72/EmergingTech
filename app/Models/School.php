@@ -24,6 +24,7 @@ class School extends Model
         'scm_subdivision_name',
         'scm_address',
         'scm_pin_code',
+        'training_completed',
    ];
 
     public function district()

@@ -52,6 +52,10 @@
 
     <!-- Main content -->
     <section class="content">
+      @php
+            use Illuminate\Support\Facades\Auth;
+            $user = Auth::user();
+        @endphp
       <div class="container-fluid">
         <!-- Small boxes (Stat box) -->
         <div class="row">
@@ -59,9 +63,9 @@
             <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-                <h3>100</h3>
+                <h3>{{$completedSchools }} / {{$totalSchools }}</h3>
 
-                <p>Total Institutes/Camps</p>
+                <p>Institutes Completed Training</p>
               </div>
               <div class="icon">
               <i class="nav-icon fas fa-university "></i>
@@ -74,44 +78,45 @@
             <!-- small box -->
             <div class="small-box bg-success">
               <div class="inner">
-                <h3>2319<sup style="font-size: 20px"></sup></h3>
+                <h3>{{ $students }}<sup style="font-size: 20px"></sup></h3>
 
                 <p>Total Students</p>
               </div>
               <div class="icon">
                 <i class="nav-icon fas fa-user-graduate"></i>
               </div>
+              
               <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
-          <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning">
-              <div class="inner">
-                <h3>31</h3>
+            <div class="col-lg-3 col-6">
+              <!-- small box -->
+              <div class="small-box bg-warning">
+                <div class="inner">
+                  <h3>{{ $totalCoordinators }}</h3>
 
-                <p>Total Co-ordinator</p>
+                  <p>Total Co-ordinator</p>
+                </div>
+                <div class="icon">
+                  <i class="nav-icon fas fa-map "></i>
+                </div>
+                <a href="{{route('coordinators.index')}}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
               </div>
-              <div class="icon">
-                <i class="nav-icon fas fa-map "></i>
-              </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
-          </div>
           <!-- ./col -->
           <div class="col-lg-3 col-6">
             <!-- small box -->
             <div class="small-box bg-danger">
               <div class="inner">
-                <h3>121</h3>
+                <h3>{{$totalTrainers}}</h3>
 
                 <p>Total Trainer</p>
               </div>
               <div class="icon">
                 <i class="fas fa-users  nav-icon"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="{{route('trainers.index')}}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
@@ -122,7 +127,24 @@
           <!-- Left col -->
           <section class="col-lg-7 connectedSortable">
             <!-- Custom tabs (Charts with tabs)-->
-            <div class="card">
+            {{-- <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-home mr-1"></i>
+                  Camp Completion Progress
+                </h3>
+              </div><!-- /.card-header -->
+              <div class="card-body">
+                <div class="tab-content p-0">
+                  <!-- Morris chart - Sales -->
+                  <div class="chart tab-pane active" id="revenue-chart"
+                       style="position: relative; height: 300px;">
+                      <canvas id="revenue-chart-canvas" height="300" style="height: 300px;"></canvas>                         
+                   </div> 
+                </div>
+              </div><!-- /.card-body -->
+            </div> --}}
+            {{-- <div class="card">
               <div class="card-header">
                 <h3 class="card-title">
                   <i class="fas fa-home mr-1"></i>
@@ -151,12 +173,85 @@
                   </div>  
                 </div>
               </div><!-- /.card-body -->
-            </div>
+            </div> --}}
             <!-- /.card -->
 
+
+@if($user->role_id == 1 || $user->role_id == 2 )
+              <!-- solid Upload graph -->
+            <div class="card bg-gradient-info">
+              <div class="card-header border-0 justify-content-between align-items-center">
+                <h3 class="card-title">
+                  <i class="fas fa-th mr-1"></i>
+                  Upload Statistics
+                </h3>
+
+                <div class="d-flex align-items-center float-right">
+                  <select id="timeFilter" class="form-control form-control-sm mr-2">
+                    <option value="day">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <input type="date" id="startDate" class="form-control form-control-sm mr-1" style="display:none;">
+                <input type="date" id="endDate" class="form-control form-control-sm mr-2" style="display:none;">
+
+                <select id="chartType" class="form-control form-control-sm">
+                    <option value="bar">Bar</option>
+                    <option value="line">Line</option>
+                    <option value="pie">Pie</option>
+                </select>
+              </div>
+                
+              </div>
+              <div class="card-body">
+                <div class="card mt-4">
+                  <div class="card-body">
+                      <canvas id="uploadChart" height="120"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
            
+@endif
+
+            
 
 
+          </section>
+          <!-- /.Left col -->
+          <!-- right col (We are only adding the ID to make the widgets sortable)-->
+          <section class="col-lg-5 connectedSortable">
+
+@if($user->role_id == 1 || $user->role_id == 2 )
+            <div  class="card bg-gradient-primary">
+              <div class="card-header border-0">
+                <h3 class="card-title">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  District View
+                </h3>
+                <!-- card tools -->
+                <div class="card-tools">
+                  <button type="button"
+                          class="btn btn-primary btn-sm"
+                          data-card-widget="collapse"
+                          data-toggle="tooltip"
+                          title="Collapse">
+                    <i class="fas fa-minus"></i>
+                  </button> 
+                  </div>
+                <!-- /.card-tools -->
+              </div>
+              <div class="card-body">
+                <div id="odishaMap" style="height: 300px; width:100%;"></div>
+
+
+              </div>
+            </div>
+            
+
+@endif
             <!-- Calendar -->
             <div class="card bg-gradient-success">
               <div class="card-header border-0">
@@ -194,87 +289,11 @@
               </div>
               <!-- /.card-body -->
             </div>
-          </section>
-          <!-- /.Left col -->
-          <!-- right col (We are only adding the ID to make the widgets sortable)-->
-          <section class="col-lg-5 connectedSortable">
+
+          
 
 
-            <div  class="card bg-gradient-primary">
-              <div class="card-header border-0">
-                <h3 class="card-title">
-                  <i class="fas fa-map-marker-alt mr-1"></i>
-                  District View
-                </h3>
-                <!-- card tools -->
-                <div class="card-tools">
-                  <button type="button"
-                          class="btn btn-primary btn-sm"
-                          data-card-widget="collapse"
-                          data-toggle="tooltip"
-                          title="Collapse">
-                    <i class="fas fa-minus"></i>
-                  </button> 
-                  </div>
-                <!-- /.card-tools -->
-              </div>
-              <div class="card-body">
-                <div id="odishaMap" style="height: 300px; width:100%;"></div>
 
-
-              </div>
-            </div>
-            
-            <!-- solid sales graph -->
-            {{-- <div class="card bg-gradient-info">
-              <div class="card-header border-0">
-                <h3 class="card-title">
-                  <i class="fas fa-th mr-1"></i>
-                  Sales Graph
-                </h3>
-
-                <div class="card-tools">
-                  <button type="button" class="btn bg-info btn-sm" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn bg-info btn-sm" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="card-body">
-                <canvas class="chart" id="line-chart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-              </div>
-              <!-- /.card-body -->
-              <div class="card-footer bg-transparent">
-                <div class="row">
-                  <div class="col-4 text-center">
-                    <input type="text" class="knob" data-readonly="true" value="20" data-width="60" data-height="60"
-                           data-fgColor="#39CCCC">
-
-                    <div class="text-white">Mail-Orders</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <input type="text" class="knob" data-readonly="true" value="50" data-width="60" data-height="60"
-                           data-fgColor="#39CCCC">
-
-                    <div class="text-white">Online</div>
-                  </div>
-                  <!-- ./col -->
-                  <div class="col-4 text-center">
-                    <input type="text" class="knob" data-readonly="true" value="30" data-width="60" data-height="60"
-                           data-fgColor="#39CCCC">
-
-                    <div class="text-white">In-Store</div>
-                  </div>
-                  <!-- ./col -->
-                </div>
-                <!-- /.row -->
-              </div>
-              <!-- /.card-footer -->
-            </div> --}}
-            <!-- /.card -->
 
             <!-- Map card -->
             <div class="card bg-gradient-primary" style="display:none">
@@ -346,7 +365,51 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<script>
+const zoneLabels = @json($zoneWise->pluck('scm_zone_id'));
+const zoneData = @json($zoneWise->pluck('completed'));
 
+const districtLabels = @json($districtWise->pluck('scm_dist_id'));
+const districtData = @json($districtWise->pluck('completed'));
+
+new Chart(document.getElementById('zoneChart'), {
+    type: 'bar',
+    data: {
+        labels: zoneLabels,
+        datasets: [{
+            label: 'Completed Trainings',
+            data: zoneData,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
+new Chart(document.getElementById('districtChart'), {
+    type: 'bar',
+    data: {
+        labels: districtLabels,
+        datasets: [{
+            label: 'Completed Trainings',
+            data: districtData,
+            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
 <script>
 var map = L.map('odishaMap').setView([20.3, 84.7], 6);
 
@@ -435,7 +498,88 @@ fetch("{{ asset('geojson/odisha.geojson') }}")
     map.fitBounds(geoLayer.getBounds());
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chart;
 
+async function fetchChartData(filter = 'day', start = null, end = null) {
+  const url = new URL("{{ route('chart.data') }}");
+  url.searchParams.append('filter', filter);
+  if (filter === 'custom' && start && end) {
+    url.searchParams.append('start', start);
+    url.searchParams.append('end', end);
+  }
 
+  const response = await fetch(url);
+  return await response.json();
+}
+
+async function renderChart(filter = 'day', chartType = 'bar', start = null, end = null) {
+  const data = await fetchChartData(filter, start, end);
+  const ctx = document.getElementById('uploadChart').getContext('2d');
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: data.labels,
+      datasets: data.datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            title: (items) => `📅 ${items[0].label}`,
+            label: (context) => `${context.dataset.label}: ${context.formattedValue} uploads`
+          }
+        },
+        legend: {
+          position: 'bottom'
+        },
+        title: {
+          display: true,
+          text: `Uploads (${filter})`
+        }
+      },
+      scales: chartType !== 'pie' ? {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      } : {}
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const filterSelect = document.getElementById('timeFilter');
+  const chartTypeSelect = document.getElementById('chartType');
+  const startDate = document.getElementById('startDate');
+  const endDate = document.getElementById('endDate');
+
+  renderChart();
+
+  filterSelect.addEventListener('change', () => {
+    const filter = filterSelect.value;
+    if (filter === 'custom') {
+      startDate.style.display = 'inline-block';
+      endDate.style.display = 'inline-block';
+    } else {
+      startDate.style.display = 'none';
+      endDate.style.display = 'none';
+      renderChart(filter, chartTypeSelect.value);
+    }
+  });
+
+  chartTypeSelect.addEventListener('change', () => {
+    renderChart(filterSelect.value, chartTypeSelect.value);
+  });
+
+  endDate.addEventListener('change', () => {
+    const start = startDate.value;
+    const end = endDate.value;
+    if (start && end) renderChart('custom', chartTypeSelect.value, start, end);
+  });
+});
+</script>
 </body>
 </html>

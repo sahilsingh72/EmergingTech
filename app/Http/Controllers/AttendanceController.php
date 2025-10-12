@@ -25,11 +25,11 @@ class AttendanceController extends Controller
             ->whereIn('file_type', ['attendance_sheet', 'trainer_photo'])
             ->get();
 
-        if ($uploads->count() >= 2) {
-            // User already uploaded both files, redirect to list
-            return redirect()->route('attendance.list')
-                            ->with('info', 'You have already uploaded attendance and trainer image.');
-        }
+        // if ($uploads->count() >= 2) {
+        //     // User already uploaded both files, redirect to list
+        //     return redirect()->route('attendance.list')
+        //                     ->with('info', 'You have already uploaded attendance and trainer image.');
+        // }
         
         $schools = School::all();
         return view('studentattendance', compact('schools'));
