@@ -30,6 +30,7 @@ class Trainer extends Model
         'photo',
         'aadhar_card',
     ];
+    
 
     protected $casts = [
         'education_certificates' => 'array',
