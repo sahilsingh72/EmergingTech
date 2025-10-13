@@ -10,12 +10,33 @@ use App\Models\TrainingUpload;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\StudentT;
 
 class DashboardController extends Controller
 {
     public function dashboard()
     {
+        $user = Auth::user(); // full user object
+        $userId = $user->id;  // just the ID
+        $roleName = $user->role->name;
+
+        if ($roleName === 'DLC') {
+            $totalCoordinators = Coordinator::whereHas('user', function ($query) use ($userId) {
+                $query->where('assignUnder_id', $userId);
+            })->count();
+            $totalTrainers = Trainer::whereHas('user', function ($query) use ($userId) {
+                $query->where('assignUnder_id', $userId);
+            })->count();
+        } 
+        // elseif (in_array($user->role->name, ['DLC'])) {
+        //     $totalCoordinators = Coordinator::where('user_id', $user->id)->count();
+        //     $totalTrainers = Trainer::where('user_id', $user->id)->count();
+        // } 
+        else {
+            $totalCoordinators = Coordinator::count();
+            $totalTrainers = Trainer::count();
+        }
         // Zone-wise completed trainings
         $zoneWise = School::select('scm_zone_id')
             ->selectRaw('COUNT(*) as total, SUM(training_completed) as completed')
@@ -28,12 +49,10 @@ class DashboardController extends Controller
             ->groupBy('scm_dist_id')
             ->get();
 
-
-        $totalTrainers = Trainer::count();
-        $totalCoordinators = Coordinator::count();
+        
+        $students = StudentMst::count();
         $totalSchools = School::count();
         $completedSchools = School::where('training_completed', 1)->count();
-        $students = StudentMst::count();
         $schools = School::all();
         
 
