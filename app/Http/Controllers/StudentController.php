@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Imports\StudentsImport;
+use App\Models\School;
 use App\Models\StudentMst;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -14,10 +16,14 @@ class StudentController extends Controller
         return view('studentattendance');
     }
     public function addstudent(){
-        return view('addstudent');
+
+        $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id', Auth::user()->district_id)->orderBy('scm_name', 'asc')->get();
+
+        return view('addstudent', compact('schools'));
     }
     public function import(Request $request)
     {
+
         $request->validate([
             'file' => 'required|mimes:xls,xlsx,csv'
         ]);

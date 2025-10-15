@@ -65,8 +65,14 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">School
                                             Name</label>
-                                        <input type="text" id="schoolName" readonly
-                                            class="w-full border border-gray-300 rounded-md p-2 bg-gray-100 mb-2 cursor-not-allowed">
+                                        <select name="school" id="schoolSelect" class="w-full border rounded p-2 mt-1" required>
+                                            <option value="">-- Select School --</option>
+                                            @foreach ($schools as $school)
+                                                <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                    {{ $school->scm_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Choose Excel File</label>

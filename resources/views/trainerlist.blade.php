@@ -395,16 +395,14 @@
                                                             <input type="file" name="cv"
                                                                 accept=".pdf,.doc,.docx"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
                                                             <input type="file" name="aadhar_card"
                                                                 accept=".pdf,.doc,.docx"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -564,20 +562,18 @@
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
                                                             <input type="file" name="cv"
-                                                                accept=".pdf,.doc,.docx"
+                                                                accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                         
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
                                                             <input type="file" name="aadhar_card"
                                                                 id="editTrainerAadhar"
-                                                                accept=".pdf,.doc,.docx"
+                                                                accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                 </div>

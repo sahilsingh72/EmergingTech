@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Coordinator;
 use App\Models\District;
 use App\Models\School;
+use App\Models\SuppStaff;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class CoordinatorController extends Controller
+class StaffController extends Controller
 {
     public function index()
     {
@@ -23,50 +21,37 @@ class CoordinatorController extends Controller
         $roleId = Auth::user()->role_id;
 
         if (in_array($roleId, [1, 2])) {
-            // ✅ Role 1 or 2 can see ALL coordinators
-            $coordinators = Coordinator::latest()->get();
+            // ✅ Role 1 or 2 can see ALL staff
+            $suppstaffs = SuppStaff::latest()->get();
         } else {
-            // ✅ Others see only coordinators created by them (via assignUnder_id)
-            $coordinators = Coordinator::whereHas('user', function ($query) use ($userId) {
+            // ✅ Others see only staff created by them (via assignUnder_id)
+            $suppstaffs = SuppStaff::whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->latest()->get();
         }
-        // $coordinators = Coordinator::latest()->get();
+        
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
-        return view('coordinatorlist', compact('coordinators', 'districts', 'schools'));
-       
+        return view('supportingstafflist', compact('schools', 'districts', 'suppstaffs'));
     }
 
-    public function store(Request $request, Coordinator $coordinator)
+     public function store(Request $request, SuppStaff $suppstaff)
     {
 
         $userId   = Auth::id();
         $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        
-        // // Ensure storage/app/public exists
-        // $storagePublicPath = storage_path('app/public');
-        // if (!File::exists($storagePublicPath)) {
-        //     File::makeDirectory($storagePublicPath, 0775, true);
-        // }
-
-        // // Ensure public/storage symlink exists
-        // $publicStorage = public_path('storage');
-        // if (!file_exists($publicStorage)) {
-        //     Artisan::call('storage:link');
-        // }
 
         $validated = $request->validate([
-            'coordinator_name' => 'required|string|max:255',
+            'ss_name' => 'required|string|max:255',
             'email' => [
                 'required',
                 'email',
-                function ($attribute, $value, $fail) use ($coordinator) {
+                function ($attribute, $value, $fail) use ($suppstaff) {
                     // Check trainers table excluding current trainer
-                    $existsInTrainers = DB::table('coordinator_mst')
+                    $existsInTrainers = DB::table('support_staff_mst')
                         ->where('email', $value)
-                        ->where('coordinator_id', '<>', $coordinator->coordinator_id)
+                        ->where('ss_id', '<>', $suppstaff->ss_id)
                         ->exists();
         
                     // Check user table
@@ -88,14 +73,12 @@ class CoordinatorController extends Controller
             'pincode' => 'required|digits:6',
             'highest_qualification' => 'required|string|max:255',
             'other_qualification' => 'nullable|string|max:255',
-            'cv' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
-            'experience_certificate' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'cv' => 'file|mimes:pdf,application/pdf|max:2048',
             'photo' => 'image|mimes:jpg,jpeg,png|max:2048',
             'education_certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'aadhar_card' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
+            'aadhar_card' => 'file|mimes:pdf,application/pdf|max:2048',
         ], [
             'cv.max' => 'The CV must not be larger than 2 MB.',
-            'experience_certificate.max' => 'The experience certificate must not be larger than 2 MB.',
             'photo.max' => 'The photo must not be larger than 2 MB.',
             'education_certificates.*.max' => 'Each education certificate must not be larger than 2 MB.',
             'aadhar_card.max' => 'The aadhaar card must not be larger than 2 MB.',
@@ -112,82 +95,63 @@ class CoordinatorController extends Controller
             $data['highest_qual'] = $request->highest_qualification;
         }
 
-        $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->coordinator_name);
+        $staffName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->ss_name);
         // File uploads
         if ($request->hasFile('cv')) {
             $file = $request->file('cv');
             $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['cv'] = $file->storeAs("coordinators/{$coordinatorName}/cv", $filename, 'public');
+            $data['cv'] = $file->storeAs("supportingstaff/{$staffName}/cv", $filename, 'public');
         }
-        if ($request->hasFile('experience_certificate')) {
-            $file = $request->file('experience_certificate');
-            $filename = $file->getClientOriginalName();
-            $data['experience_certificate'] = $file->storeAs("coordinators/{$coordinatorName}/experience", $filename, 'public');
+        if ($request->hasFile('aadhar_card')) {
+            $file = $request->file('aadhar_card');
+            $filename = $file->getClientOriginalName(); // to avoid overwriting
+            $data['aadhar_card'] = $file->storeAs("supportingstaff/{$staffName}/aadhar_card", $filename, 'public');
         }
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = $file->getClientOriginalName();
-            $data['photo'] = $file->storeAs("coordinators/{$coordinatorName}/photos", $filename, 'public');
+            $data['photo'] = $file->storeAs("supportingstaff/{$staffName}/photos", $filename, 'public');
         }
         if ($request->hasFile('education_certificates')) {
             $paths = [];
             foreach ($request->file('education_certificates') as $file) {
                 $filename = $file->getClientOriginalName();
-                $paths[] = $file->storeAs("coordinators/{$coordinatorName}/education", $filename, 'public');
+                $paths[] = $file->storeAs("supportingstaff/{$staffName}/education", $filename, 'public');
             }
             $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
-        }
-        if ($request->hasFile('aadhar_card')) {
-            $file = $request->file('aadhar_card');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
         }
 
         
         $user_data=([
-            'name' => $data['coordinator_name'],
+            'name' => $data['ss_name'],
             'email' => $data['email'],
             'district_id' => $data['dist_id'],
             'institute_id' => $data['scm_id'],
-            'password' => Hash::make('Coordinator@ET'),
-            'role_id'=>6,
+            'password' => Hash::make('Staff@ET'),
+            'role_id'=>7,
             'assignUnder_id'=>$userId,
             'created_at'=>now()
             
         ]);
         $User_dtls=User::create($user_data);
         $data['user_id'] = $User_dtls->id;
-        Coordinator::create($data);
-
-
-        return redirect()->route('coordinators.index')->with('success', 'Coordinator added successfully!');
+        SuppStaff::create($data);
+        
+        return redirect()->route('supstaff.index')->with('success', 'Supporting Staff added successfully.');
     }
 
-
-    public function edit(Coordinator $coordinator)
+    public function edit(SuppStaff $supstaff)
     {
-        return response()->json($coordinator); // for modal edit via AJAX
+        return response()->json($supstaff); // for modal edit via AJAX
     }
-
-
-
-    public function update(Request $request, Coordinator $coordinator)
+        
+    public function update(Request $request, SuppStaff $supstaff )
     {
-        // // Ensure storage/app/public exists
-        // $storagePublicPath = storage_path('app/public');
-        // if (!File::exists($storagePublicPath)) {
-        //     File::makeDirectory($storagePublicPath, 0775, true);
-        // }
-
-        // // Ensure public/storage symlink exists
-        // $publicStorage = public_path('storage');
-        // if (!file_exists($publicStorage)) {
-        //     Artisan::call('storage:link');
-        // }
+        
         
         $validated = $request->validate([
-            'coordinator_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:coordinator_mst,email,' . $coordinator->coordinator_id . ',coordinator_id',
+            'ss_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:support_staff_mst,email,' . $supstaff->ss_id . ',ss_id',
             'phone' => 'nullable|string|max:20',
             'whatsapp_number' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
@@ -197,14 +161,12 @@ class CoordinatorController extends Controller
             'pincode' => 'nullable|digits:6',
             'highest_qualification' => 'required|string|max:255',
             'other_qualification' => 'nullable|string|max:255',
-            'cv' => 'nullable|file|mimes:pdf|max:2048',
-            'experience_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'cv' => 'nullable|file|mimes:pdf,application/pdf|max:2048',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'education_certificates.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'aadhar_card' => 'nullable|file|mimes:pdf,application/pdf|max:2048',
         ], [
             'cv.max' => 'The CV must not be larger than 2 MB.',
-            'experience_certificate.max' => 'The experience certificate must not be larger than 2 MB.',
             'photo.max' => 'The photo must not be larger than 2 MB.',
             'education_certificates.*.max' => 'Each education certificate must not be larger than 2 MB.',
             'aadhar_card.max' => 'The aadhaar card must not be larger than 2 MB.',
@@ -218,54 +180,46 @@ class CoordinatorController extends Controller
             $data['highest_qual'] = $request->highest_qualification;
         }
 
-        $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->coordinator_name);
+        $supportingstaffName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->ss_name);
         // Handle file uploads and deletions
         if ($request->hasFile('cv')) {
-            if ($coordinator->cv && Storage::disk('public')->exists($coordinator->cv)) {
-                Storage::disk('public')->delete($coordinator->cv);
+            if ($supstaff->cv && Storage::disk('public')->exists($supstaff->cv)) {
+                Storage::disk('public')->delete($supstaff->cv);
             }
             $file = $request->file('cv');
             $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['cv'] = $file->storeAs("coordinators/{$coordinatorName}/cv", $filename, 'public');
+            $data['cv'] = $file->storeAs("supportingstaff/{$supportingstaffName}/cv", $filename, 'public');
         }
+        
         if ($request->hasFile('aadhar_card')) {
-            if ($coordinator->aadhar_card && Storage::disk('public')->exists($coordinator->aadhar_card)) {
-                Storage::disk('public')->delete($coordinator->aadhar_card);
+            if ($supstaff->aadhar_card && Storage::disk('public')->exists($supstaff->aadhar_card)) {
+                Storage::disk('public')->delete($supstaff->aadhar_card);
             }
             $file = $request->file('aadhar_card');
             $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
+            $data['aadhar_card'] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar_card", $filename, 'public');
         }
-        if ($request->hasFile('experience_certificate')) {
-            if ($coordinator->experience_certificate  && Storage::disk('public')->exists($coordinator->experience_certificate)) {
-                Storage::disk('public')->delete($coordinator->experience_certificate);
-            }
-            $file = $request->file('experience_certificate');
-            $filename = $file->getClientOriginalName();
-            $data['experience_certificate'] = $file->storeAs("coordinators/{$coordinatorName}/experience", $filename,  'public');
-        }
-
+        
         if ($request->hasFile('photo')) {
-            if ($coordinator->photo && Storage::disk('public')->exists($coordinator->photo)) {
-                Storage::disk('public')->delete($coordinator->photo);
+            if ($supstaff->photo && Storage::disk('public')->exists($supstaff->photo)) {
+                Storage::disk('public')->delete($supstaff->photo);
             }
             $file = $request->file('photo');
             $filename = $file->getClientOriginalName();
-            $data['photo'] = $file->storeAs("coordinators/{$coordinatorName}/photos", $filename, 'public');
+            $data['photo'] = $file->storeAs("supportingstaff/{$supportingstaffName}/photos", $filename, 'public');
         }
 
         // Handle Education Certificates
         if ($request->hasFile('education_certificates')) {
             // Delete old files if any
             $oldFiles = [];
-            if ($coordinator->education_certificates) {
-                if (is_string($coordinator->education_certificates)) {
-                    $oldFiles = json_decode($coordinator->education_certificates, true) ?? [];
-                } elseif (is_array($coordinator->education_certificates)) {
-                    $oldFiles = $coordinator->education_certificates;
+            if ($supstaff->education_certificates) {
+                if (is_string($supstaff->education_certificates)) {
+                    $oldFiles = json_decode($supstaff->education_certificates, true) ?? [];
+                } elseif (is_array($supstaff->education_certificates)) {
+                    $oldFiles = $supstaff->education_certificates;
                 }
             }
-
             foreach ($oldFiles as $path) {
                 if (Storage::disk('public')->exists($path)) {
                     Storage::disk('public')->delete($path);
@@ -276,45 +230,74 @@ class CoordinatorController extends Controller
             $paths = [];
             foreach ($request->file('education_certificates') as $file) {
                 $filename = $file->getClientOriginalName();
-                $paths[] = $file->storeAs("coordinators/{$coordinatorName}/education", $file->getClientOriginalName(), 'public');
+                $paths[] = $file->storeAs("supportingstaff/{$supportingstaffName}/education", $file->getClientOriginalName(), 'public');
             }
             $data['education_certificates'] = json_encode($paths);
         }
+        // if ($request->hasFile('aadhar_card')) {
+        //     // Delete old files if any
+        //     $oldFiles = [];
+        //     if ($request->hasFile('aadhar_card')) {
+        //         if ($supstaff->aadhar_card && Storage::disk('public')->exists($supstaff->aadhar_card)) {
+        //             Storage::disk('public')->delete($supstaff->aadhar_card);
+        //         }
+        //         $file = $request->file('aadhar_card');
+        //         $filename = $file->getClientOriginalName(); // to avoid overwriting
+        //         $data['aadhar_card'] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar_card", $filename, 'public');
+        //     }
+
+        //     foreach ($oldFiles as $path) {
+        //         if (Storage::disk('public')->exists($path)) {
+        //             Storage::disk('public')->delete($path);
+        //         }
+        //     }
+
+        //     // Store new files
+        //     $paths = [];
+        //     foreach ($request->file('aadhar_card') as $file) {
+        //         $filename = $file->getClientOriginalName();
+        //         $paths[] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar-card", $file->getClientOriginalName(), 'public');
+        //     }
+        //     $data['education_certificates'] = json_encode($paths);
+        // }
         $data['scm_id']=$data['school'];
-        $coordinator->update($data);
-        $user_id = Coordinator::select('user_id')->where('coordinator_id', $coordinator->coordinator_id)->first()->user_id;
+        $supstaff->update($data);
+        
+        $user_id = SuppStaff::select('user_id')->where('ss_id', $supstaff->ss_id)->first()->user_id;
+
         $user = User::where('id', $user_id)->first();
+        
         if ($user) {
             $user->update([
-                'name' => $data['coordinator_name'],
+                'name' => $data['ss_name'],
                 'email' => $data['email'],
                 'institute_id' => $data['scm_id'],
             ]);
         }
 
-        return redirect()->route('coordinators.index')->with('success', 'Coordinator updated successfully!');
+        return redirect()->route('supstaff.index')->with('success', 'Supporting Staff updated successfully!');
     }
 
-    public function destroy(Coordinator $coordinator)
+    public function destroy(SuppStaff $supstaff)
     {
         try {
-            // Build coordinator folder path (same logic as in store/update)
-            $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $coordinator->coordinator_name);
-            $folderPath = "coordinators/{$coordinatorName}";
+            // Build Supporting Staff folder path (same logic as in store/update)
+            $supportingstaffName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $supstaff->ss_name);
+            $folderPath = "supportingstaff/{$supportingstaffName}";
 
             // Delete entire folder
             if (Storage::disk('public')->exists($folderPath)) {
                 Storage::disk('public')->deleteDirectory($folderPath);
             }
 
-            // Delete coordinator record
-            $coordinator->delete();
+            // Delete Supporting Staff record
+            $supstaff->delete();
 
-            return redirect()->route('coordinators.index')
-                ->with('success', 'Coordinator deleted successfully!');
+            return redirect()->route('supstaff.index')
+                ->with('success', 'Supporting Staff deleted successfully!');
         } catch (\Exception $e) {
-            return redirect()->route('coordinators.index')
-                ->with('error', 'Error deleting coordinator: ' . $e->getMessage());
+            return redirect()->route('supstaff.index')
+                ->with('error', 'Error deleting Supporting Staff: ' . $e->getMessage());
         }
     }
 }

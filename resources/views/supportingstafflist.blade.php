@@ -7,15 +7,15 @@
         color: gray;
     }
 
-    #coordinatorTable {
+    #sustaffTable {
         table-layout: auto;
         /* allow natural sizing */
         width: 100%;
         /* still stretch full table */
     }
 
-    #coordinatorTable th,
-    #coordinatorTable td {
+    #sustaffTable th,
+    #sustaffTable td {
         white-space: nowrap;
         /* prevent text wrapping */
     }
@@ -32,12 +32,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 text-dark">Coordinator List</h1>
+                            <h1 class="m-0 text-dark">Supporting Staff</h1>
                         </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Coordinator List</a></li>
-                                <li class="breadcrumb-item active">Coordinator & Trainer</li>
+                                <li class="breadcrumb-item"><a href="#">Supporting Staff</a></li>
+                                <li class="breadcrumb-item active">Program Team</li>
                             </ol>
                         </div><!-- /.col -->
                     </div><!-- /.row -->
@@ -53,11 +53,11 @@
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
-                                    <h2 class="text-2xl font-semibold text-center mb-6"></i>Coordinator List</h2>
+                                    <h2 class="text-2xl font-semibold text-center mb-6"></i>Supporting Staff List</h2>
                                     <div class="mb-4 flex justify-end">
-                                        <button id="addCoordinatorBtn"
+                                        <button id="addStaffBtn"
                                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-user-plus"></i> Add Coordinator
+                                            <i class="fas fa-user-plus"></i> Add Supporting Staff
                                         </button>
                                     </div>
                                     @if (session('success'))
@@ -90,9 +90,9 @@
                                         </div>
                                     </div>
 
-                                    <!-- Coordinator Table -->
+                                    <!-- Staff Table -->
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                                        <table id="coordinatorTable" class="w-full border-collapse">
+                                        <table id="sustaffTable" class="w-full border-collapse">
                                             <thead>
                                                 <tr class="bg-gray-100 text-left">
                                                     <th class="p-2 border">SNO</th>
@@ -101,27 +101,26 @@
                                                     <th class="p-2 border">Phone</th>
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
-                                                    <th class="p-2 border">Experience</th>
                                                     <th class="p-2 border">Education Certificates</th>
                                                     <th class="p-2 border">Aadhaar Card</th>
                                                     <th class="p-2 border text-center">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($coordinators as $index => $coordinator)
+                                                @foreach ($suppstaffs as $index => $suppstaff)
                                                     <tr>
                                                         <td class="p-2 border">{{ $index + 1 }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->coordinator_name }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->email }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->phone }}</td>
+                                                        <td class="p-2 border">{{ $suppstaff->ss_name }}</td>
+                                                        <td class="p-2 border">{{ $suppstaff->email }}</td>
+                                                        <td class="p-2 border">{{ $suppstaff->phone }}</td>
 
                                                         {{-- Photo --}}
                                                         <td class="p-2 border">
-                                                            @if ($coordinator->photo)
-                                                                <a href="{{ asset('storage/' . $coordinator->photo) }}"
+                                                            @if ($suppstaff->photo)
+                                                                <a href="{{ asset('storage/' . $suppstaff->photo) }}"
                                                                     target="_blank">
-                                                                    <img src="{{ asset('storage/' . $coordinator->photo) }}"
-                                                                        alt="Coordinator Photo"
+                                                                    <img src="{{ asset('storage/' . $suppstaff->photo) }}"
+                                                                        alt="suppstaff Photo"
                                                                         class="h-12 w-12 object-cover rounded-full mx-auto hover:scale-110 transition">
                                                                 </a>
                                                             @else
@@ -129,38 +128,26 @@
                                                             @endif
                                                         </td>
                                                         <td class="p-2 border">
-                                                            @if ($coordinator->cv)
-                                                                <a href="{{ asset('storage/' . $coordinator->cv) }}"
+                                                            @if ($suppstaff->cv)
+                                                                <a href="{{ asset('storage/' . $suppstaff->cv) }}"
                                                                     target="_blank" class="text-blue-600">View CV</a>
                                                             @else
                                                                 -
                                                             @endif
                                                         </td>
-
-                                                        {{-- Experience --}}
-                                                        <td class="p-2 border">
-                                                            @if ($coordinator->experience_certificate)
-                                                                <a href="{{ asset('storage/' . $coordinator->experience_certificate) }}"
-                                                                    target="_blank" class="text-blue-600">View</a>
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
-
-
                                                         {{-- Education Certificates --}}
                                                         <td class="p-2 border">
                                                             @php
                                                                 $educationCertificates = [];
-                                                                if (is_string($coordinator->education_certificates)) {
+                                                                if (is_string($suppstaff->education_certificates)) {
                                                                     $educationCertificates =
                                                                         json_decode(
-                                                                            $coordinator->education_certificates,
+                                                                            $suppstaff->education_certificates,
                                                                             true,
                                                                         ) ?? [];
-                                                                } elseif (is_array($coordinator->education_certificates)) {
+                                                                } elseif (is_array($suppstaff->education_certificates)) {
                                                                     $educationCertificates =
-                                                                        $coordinator->education_certificates;
+                                                                        $suppstaff->education_certificates;
                                                                 }
                                                             @endphp
 
@@ -174,9 +161,10 @@
                                                                 -
                                                             @endif
                                                         </td>
+
                                                         <td class="p-2 border">
-                                                            @if ($coordinator->aadhar_card)
-                                                                <a href="{{ asset('storage/' . $coordinator->aadhar_card) }}"
+                                                            @if ($suppstaff->aadhar_card)
+                                                                <a href="{{ asset('storage/' . $suppstaff->aadhar_card) }}"
                                                                     target="_blank" class="text-blue-600">View</a>
                                                             @else
                                                                 -
@@ -185,21 +173,23 @@
                                                         {{-- Actions --}}
                                                         <td class="p-2 border text-center">
                                                             <button type="button" class="text-green-500 mx-1 editBtn"
-                                                                data-id="{{ $coordinator->coordinator_id }}"
-                                                                data-name="{{ $coordinator->coordinator_name }}"
-                                                                data-email="{{ $coordinator->email }}"
-                                                                data-phone="{{ $coordinator->phone }}"
-                                                                data-whatsapp_number="{{ $coordinator->whatsapp_number}}"
-                                                                data-dist_id="{{ $coordinator->dist_id }}"
-                                                                data-district="{{ $coordinator->district }}"
-                                                                data-pincode="{{ $coordinator->pincode}}"
-                                                                data-address="{{ $coordinator->address}}"
-                                                                data-school_id="{{ $coordinator->scm_id }}"
-                                                                data-highest_qualification="{{ $coordinator->highest_qual }}">
+                                                                data-id="{{ $suppstaff->ss_id }}"
+                                                                data-name="{{ $suppstaff->ss_name }}"
+                                                                data-email="{{ $suppstaff->email }}"
+                                                                data-phone="{{ $suppstaff->phone }}"
+                                                                data-whatsapp_number="{{ $suppstaff->whatsapp_number}}"
+                                                                data-dist_id="{{ $suppstaff->dist_id }}"
+                                                                data-district="{{ $suppstaff->district }}"
+                                                                data-pincode="{{ $suppstaff->pincode}}"
+                                                                data-address="{{ $suppstaff->address}}"
+                                                                data-school_id="{{ $suppstaff->scm_id }}"
+                                                                data-photo="{{ $suppstaff->photo }}"
+                                                                data-cv="{{ $suppstaff->cv }}" 
+                                                                data-highest_qualification="{{ $suppstaff->highest_qual }}">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
                                                             {{-- <button type="button" class="text-red-500 mx-1 deleteBtn"
-                                                                data-id="{{ $coordinator->coordinator_id }}">
+                                                                data-id="{{ $suppstaff->ss_id }}">
                                                                 <i class="fas fa-trash-alt"></i>
                                                             </button> --}}
                                                         </td>
@@ -211,15 +201,17 @@
                                     </div>
 
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
-                                    <!-- Add Coordinator Modal -->
-                                    <div id="addCoordinatorModal"
+
+
+                                    <!-- Add Staff Modal -->
+                                    <div id="addStaffModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div
                                             class="bg-white rounded-lg shadow-lg  max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
 
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-xl font-semibold">Add Coordinator</h3>
+                                                <h3 class="text-xl font-semibold">Add Supporting Staff</h3>
                                                 <button id="closeModal"
                                                     class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                                             </div>
@@ -236,16 +228,16 @@
                                                 </div>
                                             @endif
                                             <!-- Form -->
-                                            <form id="coordinatorForm" method="POST"
-                                                action="{{ route('coordinators.store') }}" enctype="multipart/form-data">
+                                            <form id="suppstaffForm" method="POST"
+                                                action="{{ route('supstaff.store') }}" enctype="multipart/form-data">
                                                 @csrf
                                                 <div class="grid grid-cols-2 gap-8">
-                                                    <!-- Left Column: Coordinator Info -->
+                                                    <!-- Left Column: Staff Info -->
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Coordinator Name</label>
-                                                            <input type="text" name="coordinator_name"
+                                                                class="block text-sm font-medium text-gray-700">Supporting Staff Name</label>
+                                                            <input type="text" name="ss_name"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
                                                         <div>
@@ -290,7 +282,7 @@
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Pincode</label>
-                                                            <input type="text" name="pincode"
+                                                            <input type="number" name="pincode"
                                                                 class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode" required>
                                                         </div>
                                                     </div>
@@ -305,7 +297,7 @@
                                                 </div>
 
                                                  <div class="grid grid-cols-2 gap-8 mt-3">
-                                                    <!-- Left Column: Coordinator Info -->
+                                                    <!-- Left Column: Staff Info -->
                                                     <div class="space-y-4">
                                                         
                                                         <div>
@@ -334,10 +326,10 @@
 
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Experience
-                                                                Certificate</label>
-                                                            <input type="file" name="experience_certificate"
-                                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                                class="block text-sm font-medium text-gray-700">Educational
+                                                                Qualification Certificates</label>
+                                                            <input type="file" name="education_certificates[]"
+                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -345,7 +337,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-8 mt-3">
-                                                    <!-- Left Column: Coordinator Info -->
+                                                    <!-- Left Column: staff Info -->
                                                     <div class="space-y-4">
                                                         
                                                         <div>
@@ -357,16 +349,12 @@
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
                                                                 PNG. Max size: 2 MB</p>
                                                         </div>
-                                                        
                                                         <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Educational
-                                                                Qualification Certificates</label>
-                                                            <input type="file" name="education_certificates[]"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card"
+                                                                accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                JPG, PNG. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                         
                                                     </div>
@@ -383,13 +371,6 @@
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
-                                                        <div>
-                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                accept=".pdf"
-                                                                class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
-                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -399,7 +380,7 @@
                                                         class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
                                                     <button type="submit"
                                                         class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md">
-                                                        Save Coordinator
+                                                        Save Staff
                                                     </button>
                                                 </div>
                                             </form>
@@ -407,41 +388,41 @@
                                         </div>
                                     </div>
 
-                                    <!-- Edit Coordinator Modal -->
-                                    <div id="editCoordinatorModal"
+                                    <!-- Edit Staff Modal -->
+                                    <div id="editStaffModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div
                                             class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-xl font-semibold">Edit Coordinator</h3>
+                                                <h3 class="text-xl font-semibold">Edit Supporting Staff</h3>
                                                 <button id="closeEditModal"
                                                     class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                                             </div>
 
-                                            <form id="editCoordinatorForm" method="POST" enctype="multipart/form-data">
+                                            <form id="editStaffForm" method="POST" enctype="multipart/form-data">
                                                 @csrf
                                                 @method('PUT')
-                                                <input type="hidden" name="coordinator_id" id="editCoordinatorId">
+                                                <input type="hidden" name="ss_id" id="editStaffId">
 
                                                 <div class="grid grid-cols-2 gap-8">
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Coordinator Name</label>
-                                                            <input type="text" name="coordinator_name"
-                                                                id="editCoordinatorName"
+                                                            <label class="block text-sm font-medium">Supporting Staff Name</label>
+                                                            <input type="text" name="ss_name"
+                                                                id="editStaffName"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium">Email</label>
                                                             <input type="email" name="email"
-                                                                id="editCoordinatorEmail"
+                                                                id="editStaffEmail"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="editCoordinatorSchool" class="w-full border rounded p-2 mt-1" required>
+                                                            <select name="school" id="editStaffSchool" class="w-full border rounded p-2 mt-1" required>
                                                                 <option value="">-- Select School --</option>
                                                                 @foreach ($schools as $school)
                                                                     <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
@@ -454,23 +435,23 @@
 
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Phone</label>
+                                                            <label class="block text-sm font-medium">Phone Number</label>
                                                             <input type="text" name="phone"
-                                                                id="editCoordinatorPhone"
+                                                                id="editStaffPhone" required
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
                                                             <input type="text" name="whatsapp_number"
-                                                                id="editCoordinatorWhatsapp"
+                                                                id="editStaffWhatsapp" required
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                             class="block text-sm font-medium text-gray-700">Pincode</label>
-                                                            <input type="text" name="pincode"
-                                                            id="editCoordinatorPincode"
+                                                            <input type="text" name="pincode" required
+                                                            id="editStaffPincode"
                                                             class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
                                                         </div>
                                                     </div>
@@ -478,7 +459,7 @@
 
                                                 <div class="mt-4">
                                                     <label class="block text-sm font-medium">Address</label>
-                                                    <textarea name="address" id="editCoordinatorAddress" rows="3" class="w-full border rounded p-2 mt-1"></textarea>
+                                                    <textarea name="address" id="editStaffAddress" rows="3" class="w-full border rounded p-2 mt-1" required></textarea>
                                                 </div>
 
                                                 <!-- File fields -->
@@ -498,7 +479,7 @@
 
                                                                 <div id="editOtherQualificationDiv" class="hidden">
                                                                     <input type="text" id="editOtherQualification" name="other_qualification"
-                                                                            class="w-full border rounded p-2 mt-1"
+                                                                            class="w-full border rounded p-2 mt-1" 
                                                                             placeholder="Please specify your qualification">
                                                                 </div>
                                                            </div>
@@ -508,30 +489,35 @@
                                                         <div>
                                                             <label class="block text-sm font-medium">Photo</label>
                                                             <input type="file" name="photo"
-                                                                id="editCoordinatorPhoto"
-                                                                accept=".jpg,.jpeg,.png"
+                                                                id="editStaffPhoto"
+                                                                accept=".jpg,.jpeg,.png" 
                                                                 class="w-full border rounded p-2 mt-1">
+
+                                                            <div id="editPhotoPreviewContainer" class="mt-2 hidden">
+                                                                <p class="text-sm text-gray-600">Current Photo:</p>
+                                                                <img id="editPhotoPreview" src="" alt="Current Photo"
+                                                                    class="h-16 w-16 object-cover rounded-full border">
+                                                            </div>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
                                                                 PNG. Max size: 2 MB</p>
                                                         </div>
+
                                                         <div>
-                                                            <label class="block text-sm font-medium">Educational
-                                                                Qualification Certificates</label>
-                                                            <input type="file" name="education_certificates[]"
-                                                                id="editCoordinatorEdu"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                            <label class="block text-sm font-medium">Aadhaar Card (with address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card"
+                                                                id="editStaffAadhar"
+                                                                accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                JPG, PNG. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Experience
-                                                                Certificate</label>
-                                                            <input type="file" name="experience_certificate"
-                                                                id="editCoordinatorExp"
-                                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                            <label class="block text-sm font-medium">Educational
+                                                                Qualification Certificates</label>
+                                                            <input type="file" name="education_certificates[]"
+                                                                id="editStaffEdu"
+                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -540,21 +526,14 @@
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
                                                             <input type="file" name="cv"
-                                                                id="editCoordinatorcv"
+                                                                id="editStaffcv"
                                                                 accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                DOC, DOCX. Max size: 2 MB</p>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block text-sm font-medium">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                id="editCoordinatorAadhar"
-                                                                accept=".pdf"
-                                                                class="w-full border rounded p-2 mt-1">
+                                                                
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
                                                         </div>
                                                         
+                                            
                                                     </div>
                                                 </div>
 
@@ -563,7 +542,7 @@
                                                         class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
                                                     <button type="submit"
                                                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md">
-                                                        Update Coordinator
+                                                        Update Supporting Staff
                                                     </button>
                                                 </div>
                                             </form>
@@ -572,12 +551,12 @@
 
 
                                     <!-- Delete Confirmation Modal -->
-                                    <div id="deleteCoordinatorModal"
+                                    <div id="deleteStaffModal"
                                         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div class="bg-white rounded-lg shadow-lg max-w-md p-6">
                                             <h3 class="text-xl font-semibold mb-4">Confirm Delete</h3>
-                                            <p class="mb-6">Are you sure you want to delete this coordinator?</p>
-                                            <form id="deleteCoordinatorForm" method="POST">
+                                            <p class="mb-6">Are you sure you want to delete this Supporting Staff?</p>
+                                            <form id="deleteStaffForm" method="POST">
                                                 @csrf
                                                 @method('DELETE')
                                                 <div class="flex justify-end gap-3">
@@ -655,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             function renderTable() {
                 let searchText = $("#searchInput").val().toLowerCase();
-                let rows = $("#coordinatorTable tbody tr");
+                let rows = $("#sustaffTable tbody tr");
 
                 // Filter rows
                 rows.each(function() {
@@ -709,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
                 let asc = sortDirection[columnIndex];
 
-                let rows = $("#coordinatorTable tbody tr").get();
+                let rows = $("#sustaffTable tbody tr").get();
 
                 rows.sort(function(a, b) {
                     let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
@@ -724,7 +703,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
 
                 $.each(rows, function(index, row) {
-                    $("#coordinatorTable tbody").append(row);
+                    $("#sustaffTable tbody").append(row);
                 });
 
                 currentPage = 1; // reset pagination after sort
@@ -737,11 +716,11 @@ document.addEventListener("DOMContentLoaded", function() {
     </script>
     <script>
         $(document).ready(function() {
-            $("#addCoordinatorBtn").on("click", function() {
-                $("#addCoordinatorModal").removeClass("hidden");
+            $("#addStaffBtn").on("click", function() {
+                $("#addStaffModal").removeClass("hidden");
             });
             $("#closeModal, #cancelModal").on("click", function() {
-                $("#addCoordinatorModal").addClass("hidden");
+                $("#addStaffModal").addClass("hidden");
             });
         });
     </script>
@@ -757,7 +736,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 // Open modal if there are validation errors
-                document.getElementById("addCoordinatorModal").classList.remove("hidden");
+                document.getElementById("addStaffModal").classList.remove("hidden");
             });
         </script>
     @endif
@@ -766,15 +745,16 @@ document.addEventListener("DOMContentLoaded", function() {
             // Edit Modal
             $(".editBtn").on("click", function() {
                 let id = $(this).data("id");
-                $("#editCoordinatorId").val(id);
-                $("#editCoordinatorName").val($(this).data("name"));
-                $("#editCoordinatorEmail").val($(this).data("email"));
-                $("#editCoordinatorSchool").val($(this).data("school_id"));
-                $("#editCoordinatorPhone").val($(this).data("phone"));
-                $("#editCoordinatorWhatsapp").val($(this).data("whatsapp_number"));
-                $("#editCoordinatorPincode").val($(this).data("pincode"));
-                $("#editCoordinatorAddress").val($(this).data("address"));
-
+                $("#editStaffId").val(id);
+                $("#editStaffName").val($(this).data("name"));
+                $("#editStaffEmail").val($(this).data("email"));
+                $("#editStaffSchool").val($(this).data("school_id"));
+                $("#editStaffPhone").val($(this).data("phone"));
+                $("#editStaffWhatsapp").val($(this).data("whatsapp_number"));
+                $("#editStaffPincode").val($(this).data("pincode"));
+                $("#editStaffAddress").val($(this).data("address"));
+                // $("#editStaffPhoto").val($(this).data("photo"));
+                
                 let qual = $(this).data("highest_qualification");
                     const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
 
@@ -799,26 +779,36 @@ document.addEventListener("DOMContentLoaded", function() {
                 $("#editDistrictName").val(distName); // hidden input
 
                 // Set form action dynamically
-                $("#editCoordinatorForm").attr("action", "/coordinators/" + id);
+                $("#editStaffForm").attr("action", "/supp-staff/" + id);
 
-                $("#editCoordinatorModal").removeClass("hidden");
+                $("#editStaffModal").removeClass("hidden");
+
+                let photoPath = $(this).data("photo");
+                if (photoPath) {
+                    $("#editPhotoPreview").attr("src", "/storage/" + photoPath);
+                    $("#editPhotoPreviewContainer").removeClass("hidden");
+                } else {
+                    $("#editPhotoPreviewContainer").addClass("hidden");
+                }
+
+
 
                 
             });
 
             $("#closeEditModal, #cancelEditModal").on("click", function() {
-                $("#editCoordinatorModal").addClass("hidden");
+                $("#editStaffModal").addClass("hidden");
             });
 
             // Delete Modal
             $(".deleteBtn").on("click", function() {
                 let id = $(this).data("id");
-                $("#deleteCoordinatorForm").attr("action", "/coordinators/" + id);
-                $("#deleteCoordinatorModal").removeClass("hidden");
+                $("#deleteStaffForm").attr("action", "/supp-staff/" + id);
+                $("#deleteStaffModal").removeClass("hidden");
             });
 
             $("#cancelDeleteModal").on("click", function() {
-                $("#deleteCoordinatorModal").addClass("hidden");
+                $("#deleteStaffModal").addClass("hidden");
             });
         });
     </script>

@@ -162,12 +162,12 @@
         @if($user->role_id == 3 || $user->role_id == 1 || $user->role_id == 2)
         {{-- coordinator & Trainer --}}
           <li
-            class="nav-item has-treeview {{ request()->routeIs('', 'coordinators.index', 'trainers.index') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('', 'coordinators.index', 'trainers.index', 'supstaff.index') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('', 'coordinators.index', 'trainers.index') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('', 'coordinators.index', 'trainers.index', 'supstaff.index') ? 'active' : '' }}">
               <i class="nav-icon fas fa-user-tie "></i>
               <p>
-                Coordinator & Trainer
+                Program Team
                 <i class="fas fa-angle-left right"></i>
                 {{-- <span class="badge badge-info right">6</span> --}}
               </p>
@@ -187,6 +187,15 @@
                   class="nav-link {{ request()->routeIs('trainers.index') ? 'active' : '' }}">
                   <i class="fas fa-users  nav-icon"></i>
                   <p>Trainer's List</p>
+                </a>
+              </li>
+            </ul>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{route('supstaff.index')}}"
+                  class="nav-link {{ request()->routeIs('supstaff.index') ? 'active' : '' }}">
+                  <i class="fas fa-people-carry  nav-icon"></i>
+                  <p>Supporting Staff List</p>
                 </a>
               </li>
             </ul>

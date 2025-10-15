@@ -12,6 +12,7 @@ use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\OneDriveController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TrainingEvidenceController;
 use App\Http\Controllers\TrainingUploadController;
 use App\Http\Middleware\RoleMiddleware;
@@ -90,9 +91,6 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/uploadtravelbills',[BillController::class,'uploadtravelbills'])->name('uploadtravelbills');
     Route::get('/uploadexpensebills',[BillController::class,'uploadexpensebills'])->name('uploadexpensebills');
     
-    
-
-
     Route::get('/schools', [SchoolController::class, 'index'])->name('index');
     Route::get('/schools/get-by-dlc/{dlc_id}', [SchoolController::class, 'getByDlc'])->name('schools.getByDlc');
 });
@@ -109,7 +107,12 @@ Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,DLC'])->group(function ()
     Route::get('/trainers/{trainer}/edit', [TrainerController::class, 'edit'])->name('trainers.edit');   
     Route::put('/trainers/{trainer}', [TrainerController::class, 'update'])->name('trainers.update'); 
     Route::delete('/trainers/{trainer}', [TrainerController::class, 'destroy'])->name('trainers.destroy');
-
+    
+    Route::get('/supp-staff', [StaffController::class, 'index'])->name('supstaff.index');
+    Route::post('/supp-staff/store', [StaffController::class, 'store'])->name('supstaff.store');
+    Route::get('/supp-staff/{supstaff}/edit', [StaffController::class, 'edit'])->name('supstaff.edit');   
+    Route::put('/supp-staff/{supstaff}', [StaffController::class, 'update'])->name('supstaff.update'); 
+    Route::delete('/supp-staff/{supstaff}', [StaffController::class, 'destroy'])->name('supstaff.destroy');  
 });
 
 Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');

@@ -95,11 +95,11 @@ class TrainerController extends Controller
             'pincode' => 'required|digits:6',
             'highest_qualification' => 'required|string|max:255',
             'other_qualification' => 'nullable|string|max:255',
-            'cv' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
+            'cv' => 'file|mimes:pdf,application/pdf|max:2048',
             'experience_certificate' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
             'photo' => 'image|mimes:jpg,jpeg,png|max:2048',
             'education_certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'aadhar_card' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
+            'aadhar_card' => 'file|mimes:pdf,application/pdf|max:2048',
         ], [
             'cv.max' => 'The CV must not be larger than 2 MB.',
             'experience_certificate.max' => 'The experience certificate must not be larger than 2 MB.',
@@ -129,6 +129,11 @@ class TrainerController extends Controller
         $filename = $file->getClientOriginalName(); // to avoid overwriting
         $data['cv'] = $file->storeAs("trainers/{$trainerName}/cv",$filename, 'public');
     }
+    if ($request->hasFile('aadhar_card')) {
+        $file = $request->file('aadhar_card');
+        $filename = $file->getClientOriginalName(); // to avoid overwriting
+        $data['aadhar_card'] = $file->storeAs("trainers/{$trainerName}/aadhar_card",$filename, 'public');
+    }
     if ($request->hasFile('experience_certificate')) {
         $file = $request->file('experience_certificate');
         $filename = $file->getClientOriginalName();
@@ -147,11 +152,6 @@ class TrainerController extends Controller
         }
         $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
     }
-    if ($request->hasFile('aadhar_card')) {
-            $file = $request->file('aadhar_card');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['aadhar_card'] = $file->storeAs("trainers/{$trainerName}/aadhar_card", $filename, 'public');
-        }
         $user_data=([
             'name' => $data['trainer_name'],
             'email' => $data['email'],
@@ -205,11 +205,11 @@ class TrainerController extends Controller
         'pincode' => 'nullable|digits:6',
         'highest_qualification' => 'required|string|max:255',
         'other_qualification' => 'nullable|string|max:255',
-        'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        'cv' => 'nullable|file|mimes:pdf|max:2048',
         'experience_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         'education_certificates.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        'aadhar_card' => 'nullable|file|mimes:pdf,application/pdf,doc,docx|max:2048',
+        'aadhar_card' => 'nullable|file|mimes:pdf,application/pdf|max:2048',
         ], [
             'cv.max' => 'The CV must not be larger than 2 MB.',
             'experience_certificate.max' => 'The experience certificate must not be larger than 2 MB.',
@@ -237,7 +237,15 @@ class TrainerController extends Controller
             $file = $request->file('cv');
             $filename = $file->getClientOriginalName(); // to avoid overwriting
             $data['cv'] = $file->storeAs("trainers/{$trainerName}/cv",$filename, 'public');
-        }
+    }
+    if ($request->hasFile('aadhar_card')) {
+                if ($trainer->aadhar_card && Storage::disk('public')->exists($trainer->aadhar_card)) {
+                    Storage::disk('public')->delete($trainer->aadhar_card);
+                }
+                $file = $request->file('aadhar_card');
+                $filename = $file->getClientOriginalName(); // to avoid overwriting
+                $data['aadhar_card'] = $file->storeAs("trainers/{$trainerName}/aadhar_card", $filename, 'public');
+            }
     if ($request->hasFile('experience_certificate')) {
             if ($trainer->experience_certificate  && Storage::disk('public')->exists($trainer->experience_certificate)) {
                 Storage::disk('public')->delete($trainer->experience_certificate);
@@ -267,14 +275,7 @@ if ($request->hasFile('education_certificates')) {
             $oldFiles = $trainer->education_certificates;
         }
     }
-     if ($request->hasFile('aadhar_card')) {
-                if ($trainer->aadhar_card && Storage::disk('public')->exists($trainer->aadhar_card)) {
-                    Storage::disk('public')->delete($trainer->aadhar_card);
-                }
-                $file = $request->file('aadhar_card');
-                $filename = $file->getClientOriginalName(); // to avoid overwriting
-                $data['aadhar_card'] = $file->storeAs("trainers/{$trainerName}/aadhar_card", $filename, 'public');
-            }
+     
 
     foreach ($oldFiles as $path) {
         if (Storage::disk('public')->exists($path)) {
