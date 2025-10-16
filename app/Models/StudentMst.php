@@ -27,7 +27,6 @@ class StudentMst extends Model
         'stu_schoolname',
         'stu_distid',
         'stu_dist',
-        'stu_blockid',
-        'stu_block',
+        'stu_address',
     ];
 }

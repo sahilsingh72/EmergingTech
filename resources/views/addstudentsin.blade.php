@@ -68,115 +68,130 @@
                                             </ul>
                                         </div>
                                     @endif
-                                   
+
                                     <!-- Form -->
-                            <form action="{{ route('student.store') }}" method="POST" class="space-y-6">
-                                @csrf
+                                    <form action="{{ route('student.store') }}" method="POST" class="space-y-6">
+                                        @csrf
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <!-- Name -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Name</label>
-                                        <input type="text" name="stu_name" value="{{ old('stu_name') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <!-- School Name -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">School
+                                                    Name</label>
+                                                <select name="stu_schoolname" id="editTrainerSchool"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                                    <option value="">-- Select School --</option>
+                                                    @foreach ($schools as $school)
+                                                        <option value="{{ $school->scm_id }}">
+                                                            {{ $school->scm_name }} - {{ $school->scm_udise_code }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!-- Name -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                                <input type="text" name="stu_name" value="{{ old('stu_name') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                            </div>
 
-                                    <!-- Roll Number -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Roll Number</label>
-                                        <input type="text" name="stu_roll_number" value="{{ old('stu_roll_number') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
+                                            <!-- Roll Number -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Roll
+                                                    Number</label>
+                                                <input type="text" name="stu_roll_number"
+                                                    value="{{ old('stu_roll_number') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                            </div>
 
-                                    <!-- Class -->
-                                    <div>
-    <label class="block text-sm font-medium text-gray-700">Class</label>
-    <select name="stu_classid" id="stu_classid" class="w-full border rounded px-3 py-2" required>
-        <option value="">-- Select Class --</option>
-        <option value="1" data-name="8">Class 8</option>
-        <option value="2" data-name="9">Class 9</option>
-        <option value="3" data-name="10">Class 10</option>
-        <option value="4" data-name="11">Class 11</option>
-        <option value="5" data-name="12">Class 12</option>
-    </select>
-</div>
-<input type="hidden" name="stu_class" id="stu_class">
+                                            <!-- Class -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Class</label>
+                                                <select name="stu_classid" id="stu_classid"
+                                                    class="w-full border rounded px-3 py-2" required>
+                                                    <option value="">-- Select Class --</option>
+                                                    <option value="1" data-name="8">Class 8</option>
+                                                    <option value="2" data-name="9">Class 9</option>
+                                                    <option value="3" data-name="10">Class 10</option>
+                                                    <option value="4" data-name="11">Class 11</option>
+                                                    <option value="5" data-name="12">Class 12</option>
+                                                </select>
+                                            </div>
+                                            <input type="hidden" name="stu_class" id="stu_class">
 
-                                    <!-- Section -->
-                                    <div>
-    <label class="block text-sm font-medium text-gray-700">Section</label>
-    <select name="stu_sectionid" id="stu_sectionid" class="w-full border rounded px-3 py-2" required>
-        <option value="">-- Select Section --</option>
-        <option value="1" data-name="A">A</option>
-        <option value="2" data-name="B">B</option>
-        <option value="3" data-name="C">C</option>
-        <option value="4" data-name="D">D</option>
-        <option value="5" data-name="E">E</option>
-        <option value="6" data-name="F">F</option>
-    </select>
-</div>
-<input type="hidden" name="stu_section" id="stu_section">
+                                            <!-- Section -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Section</label>
+                                                <select name="stu_sectionid" id="stu_sectionid"
+                                                    class="w-full border rounded px-3 py-2" required>
+                                                    <option value="">-- Select Section --</option>
+                                                    <option value="1" data-name="A">A</option>
+                                                    <option value="2" data-name="B">B</option>
+                                                    <option value="3" data-name="C">C</option>
+                                                    <option value="4" data-name="D">D</option>
+                                                    <option value="5" data-name="E">E</option>
+                                                    <option value="6" data-name="F">F</option>
+                                                </select>
+                                            </div>
+                                            <input type="hidden" name="stu_section" id="stu_section">
 
-                                    <!-- Gender -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Gender</label>
-                                        <select name="stu_gender" class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                            <option value="">Select Gender</option>
-                                            <option value="Male" {{ old('stu_gender') == 'Male' ? 'selected' : '' }}>Male</option>
-                                            <option value="Female" {{ old('stu_gender') == 'Female' ? 'selected' : '' }}>Female</option>
-                                            <option value="Other" {{ old('stu_gender') == 'Other' ? 'selected' : '' }}>Other</option>
-                                        </select>
-                                    </div>
+                                            <!-- Gender -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Gender</label>
+                                                <select name="stu_gender"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male" {{ old('stu_gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                                    <option value="Female" {{ old('stu_gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                                    <option value="Other" {{ old('stu_gender') == 'Other' ? 'selected' : '' }}>Other</option>
+                                                </select>
+                                            </div>
 
-                                    <!-- Date of Birth -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                                        <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
+                                            <!-- Date of Birth -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Date of
+                                                    Birth</label>
+                                                <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                            </div>
 
-                                    <!-- Father's Name -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Father's Name</label>
-                                        <input type="text" name="stu_fathername" value="{{ old('stu_fathername') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
+                                            <!-- Father's Name -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Father's
+                                                    Name</label>
+                                                <input type="text" name="stu_fathername"
+                                                    value="{{ old('stu_fathername') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                            </div>
 
-                                    <!-- UDISE -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">UDISE Code</label>
-                                        <input type="text" name="stu_scm_udise" value="{{ old('stu_scm_udise') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
 
-                                    <!-- School Name -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">School Name</label>
-                                        <input type="text" name="stu_schoolname" value="{{ old('stu_schoolname') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
 
-                                    <!-- Block -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Block</label>
-                                        <input type="text" name="stu_block" value="{{ old('stu_block') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
+                                            <!-- Address -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Address</label>
+                                                <textarea name="stu_address"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    rows="2" required></textarea>
+                                            </div>
 
-                                    <!-- District -->
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">District</label>
-                                        <input type="text" name="stu_dist" value="{{ old('stu_dist') }}"
-                                            class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" required>
-                                    </div>
-                                </div>
 
-                                <!-- Buttons -->
-                                <div class="flex justify-end space-x-4 pt-6">
-                                    <a href="{{ route('studentlist') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg">Cancel</a>
-                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg">Add Student</button>
-                                </div>
-                            </form>
+                                        </div>
+
+                                        <!-- Buttons -->
+                                        <div class="flex justify-end space-x-4 pt-6">
+                                            <a href="{{ route('studentlist') }}"
+                                                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg">Cancel</a>
+                                            <button type="submit"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg">Add
+                                                Student</button>
+                                        </div>
+                                    </form>
 
 
                                 </div>
@@ -188,17 +203,17 @@
         </div>
     </div>
     </div>
-<script>
-document.getElementById("stu_classid").addEventListener("change", function() {
-    let selected = this.options[this.selectedIndex];
-    document.getElementById("stu_class").value = selected.getAttribute("data-name");
-});
+    <script>
+        document.getElementById("stu_classid").addEventListener("change", function () {
+            let selected = this.options[this.selectedIndex];
+            document.getElementById("stu_class").value = selected.getAttribute("data-name");
+        });
 
-document.getElementById("stu_sectionid").addEventListener("change", function() {
-    let selected = this.options[this.selectedIndex];
-    document.getElementById("stu_section").value = selected.getAttribute("data-name");
-});
-</script>
+        document.getElementById("stu_sectionid").addEventListener("change", function () {
+            let selected = this.options[this.selectedIndex];
+            document.getElementById("stu_section").value = selected.getAttribute("data-name");
+        });
+    </script>
 
 
 

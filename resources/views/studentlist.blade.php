@@ -122,9 +122,7 @@
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="9">School Name</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="10">Block</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="11">District</th>
+                                                        data-column="10">Address</th>
                                                     <th class="border px-4 py-2 text-center">Actions</th>
                                                 </tr>
                                             </thead>
@@ -146,8 +144,7 @@
                                                         <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_schoolname }}
                                                         </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_block }}</td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_dist }}</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_address}}</td>
 
                                                         <td class="border px-4 py-2 text-center">
                                                             <!-- View -->
@@ -263,27 +260,22 @@
 
                                                 <div>
                                                     <label class="block text-sm font-medium">School Name</label>
-                                                    <input type="text" id="editSchool" name="stu_schoolname"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                    <select name="stu_schoolname" id="editSchool" class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                        <option value="">-- Select School --</option>
+                                                        @foreach ($schools as $school)
+                                                            <option value="{{ $school->scm_id }}">
+                                                                {{ $school->scm_name }} - {{ $school->scm_udise_code }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
 
                                                 <div>
-                                                    <label class="block text-sm font-medium">UDISE Code</label>
-                                                    <input type="text" id="editUDISE" name="stu_scm_udise"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                    <label class="block text-sm font-medium">Address</label>
+                                                    <textarea id="editAddress" name="stu_address"
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"></textarea>
                                                 </div>
 
-                                                <div>
-                                                    <label class="block text-sm font-medium">Block</label>
-                                                    <input type="text" id="editBlock" name="stu_block"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium">District</label>
-                                                    <input type="text" id="editDist" name="stu_dist"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
                                                 <div class="text-right">
                                                     <button type="button" onclick="closeModal('editStudentModal')"
                                                         class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
@@ -408,18 +400,17 @@
 
             $.get("{{ route('student.view', ':id') }}".replace(':id', stuId), function(data) {
                 let details = `
-            <p><strong>Name:</strong> ${data.stu_name}</p>
-            <p><strong>Roll No:</strong> ${data.stu_roll_number}</p>
-            <p><strong>Class:</strong> ${data.stu_class}</p>
-            <p><strong>Section:</strong> ${data.stu_section}</p>
-            <p><strong>Gender:</strong> ${data.stu_gender}</p>
-            <p><strong>DOB:</strong> ${data.stu_dob}</p>
-            <p><strong>Father:</strong> ${data.stu_fathername}</p>
-            <p><strong>School:</strong> ${data.stu_schoolname}</p>
-            <p><strong>UDISE:</strong> ${data.stu_scm_udise}</p>
-            <p><strong>Block:</strong> ${data.stu_block}</p>
-            <p><strong>District:</strong> ${data.stu_dist}</p>
-        `;
+                    <p><strong>School:</strong> ${data.stu_schoolname}</p>
+                    <p><strong>UDISE:</strong> ${data.stu_scm_udise}</p>
+                    <p><strong>Name:</strong> ${data.stu_name}</p>
+                    <p><strong>Roll No:</strong> ${data.stu_roll_number}</p>
+                    <p><strong>Class:</strong> ${data.stu_class}</p>
+                    <p><strong>Section:</strong> ${data.stu_section}</p>
+                    <p><strong>Gender:</strong> ${data.stu_gender}</p>
+                    <p><strong>DOB:</strong> ${data.stu_dob}</p>
+                    <p><strong>Father:</strong> ${data.stu_fathername}</p>
+                    <p><strong>Address:</strong> ${data.stu_address}</p>
+                `;
                 $("#studentDetails").html(details);
                 openModal("viewStudentModal");
             });
@@ -438,9 +429,9 @@
                 $("#editGender").val(data.stu_gender);
                 $("#editDOB").val(data.stu_dob);
                 $("#editFather").val(data.stu_fathername);
-                $("#editSchool").val(data.stu_schoolname);
+                $("#editSchool").val(data.stu_scm_id);
                 $("#editUDISE").val(data.stu_scm_udise);
-                $("#editBlock").val(data.stu_block);
+                $("#editAddress").val(data.stu_address);
                 $("#editDist").val(data.stu_dist);
                 openModal("editStudentModal");
             });

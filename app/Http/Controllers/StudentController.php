@@ -6,15 +6,13 @@ use Illuminate\Http\Request;
 use App\Imports\StudentsImport;
 use App\Models\School;
 use App\Models\StudentMst;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 
 class StudentController extends Controller
 {
-    public function attendance(){
-        return view('studentattendance');
-    }
     public function addstudent(){
 
         $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id', Auth::user()->district_id)->orderBy('scm_name', 'asc')->get();
@@ -25,10 +23,20 @@ class StudentController extends Controller
     {
 
         $request->validate([
-            'file' => 'required|mimes:xls,xlsx,csv'
+            'file' => 'required|mimes:xls,xlsx,csv',
+            'school' => 'required'
         ]);
 
-        Excel::import(new StudentsImport, $request->file('file'));
+         // Get logged-in user's district
+        $userId = Auth::id();
+        $district = User::where('id', $userId)->value('district_id');
+
+        // Get selected school info
+        $school = School::select('scm_id', 'scm_name', 'scm_udise_code')
+                        ->where('scm_id', $request->school)
+                        ->first();
+
+        Excel::import(new StudentsImport($district, $school), $request->file('file'));
 
         return back()->with('success', 'Students imported successfully!');
     }
@@ -38,16 +46,29 @@ class StudentController extends Controller
         $students = StudentMst::orderBy('stu_class')
                             ->orderBy('stu_section')
                             ->get();
+        $userId   = Auth::id();
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        
         // $students = StudentMst::all(); // fetch all students
-        return view('studentlist', compact('students'));
+        return view('studentlist', compact('students', 'schools'));
     }
     public function addstudentsin() {
-        return view('addstudentsin'); // loads add student form
+
+        $userId   = Auth::id();
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        return view('addstudentsin',compact( 'schools')); // loads add student form
     }
 
 public function store(Request $request) {
-    // Validate input
-    $request->validate([
+    $userId = Auth::id();
+
+    $districtID= User::select('district_id')->where('id', $userId )->get('district_id');    
+    // $Udise= School::select('scm_udise_code')->where('scm_id', $request->stu_schoolname )->get('scm_udise_code');
+    $school= School::select('scm_name', 'scm_udise_code')->where('scm_id', $request->stu_schoolname )->first();
+
+    $validated = $request->validate([
         'stu_name' => 'required',
         'stu_roll_number' => 'required',
         'stu_class' => 'required',
@@ -58,15 +79,18 @@ public function store(Request $request) {
         'stu_dob' => 'required|date',
         'stu_fathername' => 'required',
         'stu_schoolname' => 'required',
-        'stu_scm_udise' => 'required',
-        'stu_block' => 'required',
-        'stu_dist' => 'required'
+        'stu_address' => 'required',
     ]);
 
-    // Create student
-    StudentMst::create($request->all());
 
-    // Redirect back to student list with success message
+    $validated['stu_schoolname'] = $school->scm_name;
+    $validated['stu_scm_udise'] = $school->scm_udise_code;
+    $validated['stu_distid'] = $districtID[0]->district_id;
+
+    $validated['stu_scm_id'] = $request->stu_schoolname;
+    
+    StudentMst::create($validated);
+
     return redirect()->route('studentlist')->with('success', 'Student added successfully!');
 }
 
@@ -87,8 +111,31 @@ public function edit($id)
 public function update(Request $request, $id)
 {
     $student = StudentMst::findOrFail($id);
+    $userId = Auth::id();
 
-    $student->update($request->all()); // you may validate first
+    $districtID= User::select('district_id')->where('id', $userId )->get('district_id');    
+    // $Udise= School::select('scm_udise_code')->where('scm_id', $request->stu_schoolname )->get('scm_udise_code');
+    $school= School::select('scm_name', 'scm_udise_code')->where('scm_id', $request->stu_schoolname )->first();
+
+    $validated = $request->validate([
+        'stu_name' => 'required',
+        'stu_roll_number' => 'required',
+        'stu_class' => 'required',
+        'stu_section' => 'required',
+        'stu_gender' => 'required',
+        'stu_dob' => 'required|date',
+        'stu_fathername' => 'required',
+        'stu_address' => 'required',
+        'stu_schoolname' => 'required',
+        'stu_address' => 'required',
+    ]);
+
+    $validated['stu_schoolname'] = $school->scm_name;
+    $validated['stu_scm_udise'] = $school->scm_udise_code;
+
+    $validated['stu_scm_id'] = $request->stu_schoolname;
+
+    $student->update($validated);
 
     return response()->json(['success' => true, 'message' => 'Student updated successfully!']);
 }

@@ -71,11 +71,9 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     // View student details
     Route::get('/students/{id}', [StudentController::class, 'show'])->name('student.view');
-
     // Edit student
     Route::get('/students/{id}/edit', [StudentController::class, 'edit'])->name('student.edit');
     Route::put('/students/{id}', [StudentController::class, 'update'])->name('student.update');
-
     // Delete student
     Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('student.delete');
     
