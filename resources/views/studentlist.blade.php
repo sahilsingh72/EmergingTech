@@ -110,17 +110,15 @@
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="3">Class</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="4">Section</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="5">Gender</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="6">DOB</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="7">Father's Name</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="8">UDISE Code</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="9">School Name</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="8">UDISE Code</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="10">Address</th>
                                                     <th class="border px-4 py-2 text-center">Actions</th>
@@ -134,16 +132,15 @@
                                                         <td class="border px-4 py-2">{{ $student->stu_name }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_roll_number }}
                                                         </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_class }}</td>
-                                                        <td class="border px-4 py-2">
-                                                            {{ strtoupper($student->stu_section) }}</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_class }}({{ strtoupper($student->stu_section) }})</td>
+                                                        
                                                         <td class="border px-4 py-2">{{ $student->stu_gender }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_dob }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_fathername }}
                                                         </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_schoolname }}
                                                         </td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_address}}</td>
 
                                                         <td class="border px-4 py-2 text-center">
@@ -448,7 +445,7 @@
                 method: "PUT",
                 data: formData,
                 success: function(res) {
-                    alert(res.message);
+                    //alert(res.message);
                     closeModal("editStudentModal");
                     location.reload(); // refresh table
                 },
@@ -468,10 +465,6 @@
                     type: "DELETE",
                     data: {
                         _token: "{{ csrf_token() }}"
-                    }, // important for Laravel
-                    success: function(res) {
-                        alert("Student deleted successfully!");
-                        $("a.btn-delete[data-id='" + stuId + "']").closest("tr").remove();
                     },
                     error: function(xhr) {
                         alert("Failed to delete student!");

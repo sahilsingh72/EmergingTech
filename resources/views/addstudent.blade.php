@@ -89,7 +89,7 @@
                                  <!-- Example File Link -->
                                 <div class="mt-6">
                                     <p class="text-sm text-gray-600">Need a template? 
-                                        <a href="{{ asset('sample/student_template.xlsx') }}" 
+                                        <a href="{{ asset('studentimport/student_template.xlsx') }}" 
                                            class="text-blue-600 hover:underline">Download Sample Excel</a>
                                     </p>
                                 </div>
@@ -105,7 +105,7 @@
     <script>
         document.getElementById("downloadBtn").addEventListener("click", () => {
             // Example: Download certificate template (replace with backend file route)
-            const fileUrl =  src="{{ asset('images/FeedbackFormQR.png') }}";
+            const fileUrl =  src="{{ asset('studentimport/student_template.xlsx') }}";
             const link = document.createElement("a");
             link.href = fileUrl;
             link.download = "FeedbackFormQR.png";

@@ -29,4 +29,9 @@ class StudentMst extends Model
         'stu_dist',
         'stu_address',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

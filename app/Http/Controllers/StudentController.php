@@ -47,6 +47,18 @@ class StudentController extends Controller
                             ->orderBy('stu_section')
                             ->get();
         $userId   = Auth::id();
+        $roleId = Auth::user()->role_id;
+
+        // if (in_array($roleId, [1, 2])) {
+        //     //  Role 1 or 2 can see ALL 
+        //     $students = StudentMst::latest()->get();
+        // } else {
+        //     //  Others see only students created by dlc
+        //     $students = StudentMst::whereHas('user', function ($query) use ($userId) {
+        //         $query->where('assignUnder_id', $userId);
+        //     })->latest()->get();
+        // }
+
         $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
         $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         
