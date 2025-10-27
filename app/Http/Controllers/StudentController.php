@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Imports\StudentsImport;
+use App\Models\District;
 use App\Models\School;
 use App\Models\StudentMst;
 use App\Models\User;
@@ -15,7 +16,17 @@ class StudentController extends Controller
 {
     public function addstudent(){
 
-        $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id', Auth::user()->district_id)->orderBy('scm_name', 'asc')->get();
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+        // $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id', Auth::user()->district_id)->orderBy('scm_name', 'asc')->get();
 
         return view('addstudent', compact('schools'));
     }
@@ -41,35 +52,60 @@ class StudentController extends Controller
         return back()->with('success', 'Students imported successfully!');
     }
     
-    public function studentlist(){
-        // Fetch all students, optionally order by class and section
-        $students = StudentMst::orderBy('stu_class')
-                            ->orderBy('stu_section')
-                            ->get();
+    public function studentlist(Request $request){
+
         $userId   = Auth::id();
         $roleId = Auth::user()->role_id;
-
-        // if (in_array($roleId, [1, 2])) {
-        //     //  Role 1 or 2 can see ALL 
-        //     $students = StudentMst::latest()->get();
-        // } else {
-        //     //  Others see only students created by dlc
-        //     $students = StudentMst::whereHas('user', function ($query) use ($userId) {
-        //         $query->where('assignUnder_id', $userId);
-        //     })->latest()->get();
-        // }
-
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         
-        // $students = StudentMst::all(); // fetch all students
-        return view('studentlist', compact('students', 'schools'));
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        
+        $schoolId = $request->input('school_id');
+
+        $studentsQuery = StudentMst::orderBy('stu_class')
+            ->orderBy('stu_section');
+
+        if ($schoolId) {
+            $studentsQuery->where('stu_scm_id', $schoolId);
+        } else {
+            // Show empty list initially if no school is selected
+            $studentsQuery->whereNull('stu_scm_id');
+        }
+
+        $students = $studentsQuery->get();
+
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+
+        return view('studentlist', compact('students', 'schools', 'schoolId'));
+    }
+
+    public function getStudentsBySchool($schoolId)
+    {
+        $students = StudentMst::where('stu_schoolname', $schoolId)
+            ->orderBy('stu_class')
+            ->orderBy('stu_section')
+            ->get();
+
+        return response()->json($students);
     }
     public function addstudentsin() {
 
         $userId   = Auth::id();
+        $roleId = Auth::user()->role_id;
+
         $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+
+        // $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         return view('addstudentsin',compact( 'schools')); // loads add student form
     }
 
@@ -162,13 +198,6 @@ public function update(Request $request, $id)
     
     
 
-    public function writtenfeedback(){
-        return view('writtenfeedback');
-    }
-
-    public function uploadfeedback(){
-        return view('uploadfeedback');
-    }
     public function onlinefeedback(){
         return view('onlinefeedback');
     }

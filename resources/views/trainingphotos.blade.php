@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         progressBar.textContent = Math.floor(final) + '%';
                     } else {
                         clearInterval(finishTimer);
-                        progressStatus.textContent = '✅ Upload Complete!';
+                        progressStatus.textContent = 'Upload Complete!';
                         setTimeout(() => {
                             Swal.fire('✅ Success', 'Images uploaded successfully!', 'success');
                             overlay.classList.add('hidden');
@@ -381,7 +381,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 text: "{{ session('success') }}",
                 icon: 'success',
                 confirmButtonText: 'OK'
-            })
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ route('trainingphotos.list') }}";
+                }
+            });
         </script>
     @endif
 </body>

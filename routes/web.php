@@ -41,6 +41,8 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/attendance-list',[AttendanceController::class,'attendanceList'])->name('attendance.list');
     Route::get('/attendance-list/{id}/edit', [AttendanceController::class, 'edit'])->name('attendance.list.edit');
     Route::put('/attendance-list/{id}', [AttendanceController::class, 'update'])->name('attendance.list.update');
+    Route::get('/preview-file', [AttendanceController::class, 'previewFile'])->name('preview.file');
+
 
     Route::get('/trainingphotos',[TrainingEvidenceController::class,'trainingphotos'])->name('trainingphotos');
     Route::post('/trainingphotos',[TrainingEvidenceController::class,'upload'])->name('upload.trainingphotos');
@@ -48,7 +50,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/trainingphotos-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingPhoto'])->name('training.photo.edit');
     Route::put('/trainingphotos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingPhoto'])->name('training.photo.update');
     Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
-
+    Route::get('/training-gallery', [DashboardController::class, 'gallery'])->name('gallery');
 
     
     Route::get('/trainingvideos',[TrainingEvidenceController::class,'trainingvideos'])->name('trainingvideos');
@@ -56,7 +58,8 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/trainingvideos-list',[TrainingEvidenceController::class,'trainingvideoslist'])->name('trainingvideos.list');
     Route::get('/trainingvideos-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingVideo'])->name('training.video.edit');
     Route::put('/trainingvideos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingVideo'])->name('training.video.update');
-    // Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
+    Route::get('/preview-video', [TrainingEvidenceController::class, 'previewVideo'])->name('preview.video');
+
 
     Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
     Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadcertificate'])->name('upload.certificate');
@@ -71,6 +74,8 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     // View student details
     Route::get('/students/{id}', [StudentController::class, 'show'])->name('student.view');
+    
+    // Route::get('/students/by-school/{schoolId}', [StudentController::class, 'getStudentsBySchool'])->name('students.bySchool');
     // Edit student
     Route::get('/students/{id}/edit', [StudentController::class, 'edit'])->name('student.edit');
     Route::put('/students/{id}', [StudentController::class, 'update'])->name('student.update');
@@ -79,8 +84,13 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     Route::get('/feedback',[FeedbackController::class,'writtenfeedback'])->name('writtenfeedback');
     Route::post('/feedback',[FeedbackController::class,'uploadwrittenfeedback'])->name('upload.writtenfeedback');
-    Route::get('/uploadfeedback',[FeedbackController::class,'uploadfeedback'])->name('uploadfeedback');
+
+    Route::get('/uploadfeedback',[FeedbackController::class,'videofeedback'])->name('uploadfeedback');
     Route::post('/uploadfeedback',[FeedbackController::class,'uploadvideofeedback'])->name('upload.videofeedback');
+    Route::get('/uploadfeedback-list',[FeedbackController::class,'videofeedbacklist'])->name('videofeedback.list');
+    Route::get('/uploadfeedback-list/{id}/edit', [FeedbackController::class, 'editFeedbackVideo'])->name('feedback.video.edit');
+    Route::put('/uploadfeedback-list/{id}', [FeedbackController::class, 'updatevideofeedback'])->name('feedback.video.update');
+
     Route::get('/onlinefeedback',[FeedbackController::class,'onlinefeedback'])->name('onlinefeedback');
 
     Route::get('/uploadreport',[ReportController::class,'uploadreport'])->name('uploadreport');

@@ -84,9 +84,9 @@
                                         </div>
 
                                         <!-- Search -->
-                                        <div>
+                                        <div class="w-full sm:w-auto">
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-64">
+                                                class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
                                     </div>
 
@@ -166,8 +166,7 @@
 
                                                             @if (count($educationCertificates) > 0)
                                                                 @foreach ($educationCertificates as $certificate)
-                                                                    <a href="{{ asset('storage/' . $certificate) }}"
-                                                                        target="_blank"
+                                                                    <a href="{{ asset('storage/' . $certificate) }}" target="_blank"
                                                                         class="text-blue-600 block">View</a>
                                                                 @endforeach
                                                             @else
@@ -213,20 +212,19 @@
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                     <!-- Add Coordinator Modal -->
                                     <div id="addCoordinatorModal"
-                                        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+                                        class="content-wrapper fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
                                         <div
-                                            class="bg-white rounded-lg shadow-lg  max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
+                                            class="bg-white rounded-lg shadow-lg w-[95%] sm:w-[90%] lg:max-w-5xl p-4 sm:p-6 lg:p-8 max-h-[80vh] overflow-y-auto">
 
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
-                                                <h3 class="text-xl font-semibold">Add Coordinator</h3>
+                                                <h3 class="text-lg sm:text-xl font-semibold">Add Coordinator</h3>
                                                 <button id="closeModal"
                                                     class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
                                             </div>
 
-
                                             @if ($errors->any())
-                                                <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+                                                <div class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm sm:text-base">
                                                     <strong>Whoops! Something went wrong:</strong>
                                                     <ul class="mt-2 list-disc list-inside">
                                                         @foreach ($errors->all() as $error)
@@ -235,183 +233,183 @@
                                                     </ul>
                                                 </div>
                                             @endif
+
                                             <!-- Form -->
                                             <form id="coordinatorForm" method="POST"
-                                                action="{{ route('coordinators.store') }}" enctype="multipart/form-data">
+                                                action="{{ route('coordinators.store') }}"
+                                                enctype="multipart/form-data">
                                                 @csrf
-                                                <div class="grid grid-cols-2 gap-8">
-                                                    <!-- Left Column: Coordinator Info -->
+
+                                                <!-- Basic Info -->
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Coordinator Name</label>
+                                                                class="block text-sm font-medium text-gray-700">Coordinator
+                                                                Name</label>
                                                             <input type="text" name="coordinator_name"
-                                                                class="w-full border rounded p-2 mt-1" required>
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                required>
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Email</label>
                                                             <input type="email" name="email"
-                                                                class="w-full border rounded p-2 mt-1" required>
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                required>
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="schoolSelect" class="w-full border rounded p-2 mt-1" required>
+                                                            <select name="school" id="schoolSelect"
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                                 <option value="">-- Select School --</option>
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                                    <option value="{{ $school->scm_id }}"
+                                                                        data-name="{{ $school->scm_name }}">
                                                                         {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-
                                                         </div>
-                                                        
-                                                        <!-- hidden input to store district name -->
                                                         <input type="hidden" name="district" id="districtName">
-
                                                     </div>
 
-                                                    <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                                            <label class="block text-sm font-medium text-gray-700">Phone
+                                                                Number</label>
                                                             <input type="text" name="phone"
-                                                                class="w-full border rounded p-2 mt-1" required>
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                required>
                                                         </div>
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                                                                class="block text-sm font-medium text-gray-700">WhatsApp
+                                                                Number</label>
                                                             <input type="text" name="whatsapp_number"
-                                                                class="w-full border rounded p-2 mt-1" required>
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                required>
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Pincode</label>
                                                             <input type="text" name="pincode"
-                                                                class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode" required>
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                placeholder="Enter 6-digit Pincode" required>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="grid grid-cols-1">
+                                                <!-- Address -->
+                                                <div class="mt-4">
+                                                    <label class="block text-sm font-medium text-gray-700">Address
+                                                        (Full)</label>
+                                                    <textarea name="address" rows="3"
+                                                        class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                        required></textarea>
+                                                </div>
+
+                                                <!-- Qualification + Experience -->
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-4">
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-700">Highest
+                                                            Qualification</label>
+                                                        <select id="qualification" name="highest_qualification"
+                                                            class="w-full border rounded p-2 mt-1 mb-3 focus:ring focus:ring-green-200"
+                                                            required>
+                                                            <option value="">-- Select Qualification --</option>
+                                                            <option value="B-Tech">B-Tech</option>
+                                                            <option value="BCA">BCA</option>
+                                                            <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                            <option value="Other">Other (Equivalent)</option>
+                                                        </select>
+
+                                                        <div id="otherQualificationDiv" class="hidden">
+                                                            <input type="text" id="otherQualification"
+                                                                name="other_qualification"
+                                                                class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
+                                                                placeholder="Specify your qualification">
+                                                        </div>
+                                                    </div>
+
                                                     <div>
                                                         <label
-                                                            class="block text-sm font-medium text-gray-700 mt-3">Address (Enter full address)</label>
-                                                        <textarea name="address" rows="3" class="w-full border rounded p-2 mt-1" required></textarea>
+                                                            class="block text-sm font-medium text-gray-700">Experience
+                                                            Certificate</label>
+                                                        <input type="file" name="experience_certificate"
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            class="w-full border rounded p-2 mt-1" required>
+                                                        <p class="text-xs text-gray-600 mt-1">Allowed: PDF, JPG, PNG |
+                                                            Max 2MB</p>
                                                     </div>
                                                 </div>
 
-                                                 <div class="grid grid-cols-2 gap-8 mt-3">
-                                                    <!-- Left Column: Coordinator Info -->
+                                                <!-- File Uploads -->
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-4">
                                                     <div class="space-y-4">
-                                                        
-                                                        <div>
-                                                           <div>
-                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
-                                                               <select id="qualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
-                                                                   <option value="">-- Select Qualification --</option>
-                                                                   <option value="B-Tech">B-Tech</option>
-                                                                   <option value="BCA">BCA</option>
-                                                                   <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
-                                                                   <option value="Other">Other (Equivalent)</option>
-                                                                </select>
-
-                                                                <!-- Hidden text input for "Other" -->
-                                                                <div id="otherQualificationDiv" class="hidden">
-                                                                    <input type="text" id="otherQualification" name="other_qualification" 
-                                                                        class="w-full border rounded p-2 mt-1" 
-                                                                        placeholder="Please specify your qualification">
-                                                                </div>
-                                                           </div>
-                                                        </div>    
-                                                    </div>
-
-                                                    <!-- Right Column: File Uploads -->
-                                                    <div class="space-y-4">
-
-                                                        <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Experience
-                                                                Certificate</label>
-                                                            <input type="file" name="experience_certificate"
-                                                                accept=".pdf,.jpg,.jpeg,.png"
-                                                                class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                JPG, PNG. Max size: 2 MB</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="grid grid-cols-2 gap-8 mt-3">
-                                                    <!-- Left Column: Coordinator Info -->
-                                                    <div class="space-y-4">
-                                                        
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Photo</label>
-                                                            <input type="file" name="photo"
-                                                                accept=".jpg,.jpeg,.png"
+                                                            <input type="file" name="photo" accept=".jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
-                                                                PNG. Max size: 2 MB</p>
+                                                            <p class="text-xs text-gray-600 mt-1">Allowed: JPG, PNG |
+                                                                Max 2MB</p>
                                                         </div>
-                                                        
+
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Educational
-                                                                Qualification Certificates</label>
-                                                            <input type="file" name="education_certificates[]"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                                Certificates</label>
+                                                            <input type="file" name="education_certificates[]" multiple
+                                                                accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
-                                                                JPG, PNG. Max size: 2 MB</p>
+                                                            <p class="text-xs text-gray-600 mt-1">Allowed: PDF, JPG, PNG
+                                                                | Max 2MB</p>
                                                         </div>
-                                                        
                                                     </div>
 
-                                                    <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
-
-                                                        
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">CV /
                                                                 Resume</label>
-                                                            <input type="file" name="cv"
-                                                                accept=".pdf"
+                                                            <input type="file" name="cv" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <p class="text-xs text-gray-600 mt-1">Allowed: PDF | Max 2MB
+                                                            </p>
                                                         </div>
+
                                                         <div>
-                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                accept=".pdf"
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Aadhaar
+                                                                Card (PDF)</label>
+                                                            <input type="file" name="aadhar_card" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <p class="text-xs text-gray-600 mt-1">Allowed: PDF | Max 2MB
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <!-- Buttons -->
-                                                <div class="mt-6 flex justify-end gap-3">
+                                                <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                                                     <button type="button" id="cancelModal"
-                                                        class="px-4 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
+                                                        class="px-4 py-2 border rounded-lg hover:bg-gray-100 w-full sm:w-auto">Cancel</button>
                                                     <button type="submit"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md">
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md w-full sm:w-auto">
                                                         Save Coordinator
                                                     </button>
                                                 </div>
                                             </form>
-
                                         </div>
                                     </div>
 
+
                                     <!-- Edit Coordinator Modal -->
                                     <div id="editCoordinatorModal"
-                                        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+                                        class="content-wrapper fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-2">
                                         <div
-                                            class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
+                                            class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[80vh] overflow-y-auto">
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
                                                 <h3 class="text-xl font-semibold">Edit Coordinator</h3>
@@ -427,24 +425,26 @@
                                                 <div class="grid grid-cols-2 gap-8">
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Coordinator Name</label>
+                                                            <label class="block text-sm font-medium">Coordinator
+                                                                Name</label>
                                                             <input type="text" name="coordinator_name"
                                                                 id="editCoordinatorName"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium">Email</label>
-                                                            <input type="email" name="email"
-                                                                id="editCoordinatorEmail"
+                                                            <input type="email" name="email" id="editCoordinatorEmail"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="editCoordinatorSchool" class="w-full border rounded p-2 mt-1" required>
+                                                            <select name="school" id="editCoordinatorSchool"
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                                 <option value="">-- Select School --</option>
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                                    <option value="{{ $school->scm_id }}"
+                                                                        data-name="{{ $school->scm_name }}">
                                                                         {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
@@ -455,30 +455,32 @@
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label class="block text-sm font-medium">Phone</label>
-                                                            <input type="text" name="phone"
-                                                                id="editCoordinatorPhone"
+                                                            <input type="text" name="phone" id="editCoordinatorPhone"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                                                                class="block text-sm font-medium text-gray-700">WhatsApp
+                                                                Number</label>
                                                             <input type="text" name="whatsapp_number"
                                                                 id="editCoordinatorWhatsapp"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
-                                                            class="block text-sm font-medium text-gray-700">Pincode</label>
+                                                                class="block text-sm font-medium text-gray-700">Pincode</label>
                                                             <input type="text" name="pincode"
-                                                            id="editCoordinatorPincode"
-                                                            class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
+                                                                id="editCoordinatorPincode"
+                                                                class="w-full border rounded p-2"
+                                                                placeholder="Enter 6-digit Pincode">
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="mt-4">
                                                     <label class="block text-sm font-medium">Address</label>
-                                                    <textarea name="address" id="editCoordinatorAddress" rows="3" class="w-full border rounded p-2 mt-1"></textarea>
+                                                    <textarea name="address" id="editCoordinatorAddress" rows="3"
+                                                        class="w-full border rounded p-2 mt-1"></textarea>
                                                 </div>
 
                                                 <!-- File fields -->
@@ -486,9 +488,14 @@
                                                     <div class="space-y-4">
 
                                                         <div>
-                                                           <div>
-                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
-                                                                <select id="editQualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-sm font-medium text-gray-700">Highest
+                                                                    Qualification</label>
+                                                                <select id="editQualification"
+                                                                    name="highest_qualification"
+                                                                    class="w-full border rounded p-2 mt-1 mb-4"
+                                                                    required>
                                                                     <option value="">-- Select Qualification --</option>
                                                                     <option value="B-Tech">B-Tech</option>
                                                                     <option value="BCA">BCA</option>
@@ -497,18 +504,18 @@
                                                                 </select>
 
                                                                 <div id="editOtherQualificationDiv" class="hidden">
-                                                                    <input type="text" id="editOtherQualification" name="other_qualification"
-                                                                            class="w-full border rounded p-2 mt-1"
-                                                                            placeholder="Please specify your qualification">
+                                                                    <input type="text" id="editOtherQualification"
+                                                                        name="other_qualification"
+                                                                        class="w-full border rounded p-2 mt-1"
+                                                                        placeholder="Please specify your qualification">
                                                                 </div>
-                                                           </div>
+                                                            </div>
                                                         </div>
 
-                                                        
+
                                                         <div>
                                                             <label class="block text-sm font-medium">Photo</label>
-                                                            <input type="file" name="photo"
-                                                                id="editCoordinatorPhoto"
+                                                            <input type="file" name="photo" id="editCoordinatorPhoto"
                                                                 accept=".jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
@@ -518,8 +525,8 @@
                                                             <label class="block text-sm font-medium">Educational
                                                                 Qualification Certificates</label>
                                                             <input type="file" name="education_certificates[]"
-                                                                id="editCoordinatorEdu"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                                id="editCoordinatorEdu" multiple
+                                                                accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -530,8 +537,7 @@
                                                             <label class="block text-sm font-medium">Experience
                                                                 Certificate</label>
                                                             <input type="file" name="experience_certificate"
-                                                                id="editCoordinatorExp"
-                                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                                id="editCoordinatorExp" accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -539,22 +545,21 @@
                                                         <div>
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
-                                                            <input type="file" name="cv"
-                                                                id="editCoordinatorcv"
-                                                                accept=".pdf"
-                                                                class="w-full border rounded p-2 mt-1">
+                                                            <input type="file" name="cv" id="editCoordinatorcv"
+                                                                accept=".pdf" class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 DOC, DOCX. Max size: 2 MB</p>
                                                         </div>
                                                         <div>
-                                                            <label class="block text-sm font-medium">Aadhaar Card (with address in one pdf)</label>
+                                                            <label class="block text-sm font-medium">Aadhaar Card (with
+                                                                address in one pdf)</label>
                                                             <input type="file" name="aadhar_card"
-                                                                id="editCoordinatorAadhar"
-                                                                accept=".pdf"
+                                                                id="editCoordinatorAadhar" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF.
+                                                                Max size: 2 MB</p>
                                                         </div>
-                                                        
+
                                                     </div>
                                                 </div>
 
@@ -603,52 +608,52 @@
     </div>
     </div>
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Add modal
-    document.getElementById('qualification').addEventListener('change', function () {
-        const otherDiv = document.getElementById('otherQualificationDiv');
-        const otherInput = document.getElementById('otherQualification');
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add modal
+            document.getElementById('qualification').addEventListener('change', function () {
+                const otherDiv = document.getElementById('otherQualificationDiv');
+                const otherInput = document.getElementById('otherQualification');
 
-        if (this.value === 'Other') {
-            otherDiv.classList.remove('hidden');
-            otherInput.required = true;
-        } else {
-            otherDiv.classList.add('hidden');
-            otherInput.required = false;
-            otherInput.value = '';
-        }
-    });
+                if (this.value === 'Other') {
+                    otherDiv.classList.remove('hidden');
+                    otherInput.required = true;
+                } else {
+                    otherDiv.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = '';
+                }
+            });
 
-    // Edit modal
-    document.getElementById('editQualification').addEventListener('change', function () {
-        const otherDiv = document.getElementById('editOtherQualificationDiv');
-        const otherInput = document.getElementById('editOtherQualification');
+            // Edit modal
+            document.getElementById('editQualification').addEventListener('change', function () {
+                const otherDiv = document.getElementById('editOtherQualificationDiv');
+                const otherInput = document.getElementById('editOtherQualification');
 
-        if (this.value === 'Other') {
-            otherDiv.classList.remove('hidden');
-            otherInput.required = true;
-        } else {
-            otherDiv.classList.add('hidden');
-            otherInput.required = false;
-            otherInput.value = '';
-        }
-    });
-});
-</script>
+                if (this.value === 'Other') {
+                    otherDiv.classList.remove('hidden');
+                    otherInput.required = true;
+                } else {
+                    otherDiv.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = '';
+                }
+            });
+        });
+    </script>
     <script>
         // add
-        document.getElementById("districtSelect").addEventListener("change", function() {
+        document.getElementById("districtSelect").addEventListener("change", function () {
             let selected = this.options[this.selectedIndex];
             document.getElementById("districtName").value = selected.getAttribute("data-name");
         });
         // edit #// For Edit Modal
-        document.getElementById("editDistrictSelect").addEventListener("change", function() {
+        document.getElementById("editDistrictSelect").addEventListener("change", function () {
             let selected = this.options[this.selectedIndex];
             document.getElementById("editDistrictName").value = selected.getAttribute("data-name");
         });
     </script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
             let currentPage = 1;
             let sortDirection = {}; // keep track of each column's sorting state
@@ -658,7 +663,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 let rows = $("#coordinatorTable tbody tr");
 
                 // Filter rows
-                rows.each(function() {
+                rows.each(function () {
                     let rowText = $(this).text().toLowerCase();
                     $(this).toggle(rowText.indexOf(searchText) > -1);
                 });
@@ -685,33 +690,33 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             // Change rows per page
-            $("#rowsPerPage").on("change", function() {
+            $("#rowsPerPage").on("change", function () {
                 rowsPerPage = parseInt($(this).val());
                 currentPage = 1;
                 renderTable();
             });
 
             // Search filter
-            $("#searchInput").on("keyup", function() {
+            $("#searchInput").on("keyup", function () {
                 currentPage = 1;
                 renderTable();
             });
 
             // Pagination click
-            $(document).on("click", ".page-btn", function() {
+            $(document).on("click", ".page-btn", function () {
                 currentPage = parseInt($(this).text());
                 renderTable();
             });
 
             // 🔽 Sorting click
-            $(document).on("click", ".sort", function() {
+            $(document).on("click", ".sort", function () {
                 let columnIndex = $(this).data("column");
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
                 let asc = sortDirection[columnIndex];
 
                 let rows = $("#coordinatorTable tbody tr").get();
 
-                rows.sort(function(a, b) {
+                rows.sort(function (a, b) {
                     let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
                     let B = $(b).children("td").eq(columnIndex).text().toLowerCase();
 
@@ -723,7 +728,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 });
 
-                $.each(rows, function(index, row) {
+                $.each(rows, function (index, row) {
                     $("#coordinatorTable tbody").append(row);
                 });
 
@@ -736,11 +741,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     </script>
     <script>
-        $(document).ready(function() {
-            $("#addCoordinatorBtn").on("click", function() {
+        $(document).ready(function () {
+            $("#addCoordinatorBtn").on("click", function () {
                 $("#addCoordinatorModal").removeClass("hidden");
             });
-            $("#closeModal, #cancelModal").on("click", function() {
+            $("#closeModal, #cancelModal").on("click", function () {
                 $("#addCoordinatorModal").addClass("hidden");
             });
         });
@@ -748,23 +753,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <script>
         // Auto fetch Date
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             let today = new Date().toISOString().split('T')[0];
             document.getElementById("training_date").value = today;
         });
     </script>
     @if ($errors->any())
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
+            document.addEventListener("DOMContentLoaded", function () {
                 // Open modal if there are validation errors
                 document.getElementById("addCoordinatorModal").classList.remove("hidden");
             });
         </script>
     @endif
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Edit Modal
-            $(".editBtn").on("click", function() {
+            $(".editBtn").on("click", function () {
                 let id = $(this).data("id");
                 $("#editCoordinatorId").val(id);
                 $("#editCoordinatorName").val($(this).data("name"));
@@ -776,25 +781,25 @@ document.addEventListener("DOMContentLoaded", function() {
                 $("#editCoordinatorAddress").val($(this).data("address"));
 
                 let qual = $(this).data("highest_qualification");
-                    const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
+                const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
 
-                    if (standardOptions.includes(qual)) {
-                        $("#editQualification").val(qual);
-                        $("#editOtherQualificationDiv").addClass("hidden");
-                        $("#editOtherQualification").val('');
-                    } else {
-                        $("#editQualification").val('Other');
-                        $("#editOtherQualificationDiv").removeClass("hidden");
-                        $("#editOtherQualification").val(qual);
-                    }
+                if (standardOptions.includes(qual)) {
+                    $("#editQualification").val(qual);
+                    $("#editOtherQualificationDiv").addClass("hidden");
+                    $("#editOtherQualification").val('');
+                } else {
+                    $("#editQualification").val('Other');
+                    $("#editOtherQualificationDiv").removeClass("hidden");
+                    $("#editOtherQualification").val(qual);
+                }
 
                 // Get district values
                 let distId = $(this).data("dist_id");   // DSM_DSCD
                 let distName = $(this).data("district"); // DSM_DSNM
                 let schoolId = $(this).data("school");
-                
-                $("#schoolSelect").val(schoolId); 
-                
+
+                $("#schoolSelect").val(schoolId);
+
                 $("#editDistrictSelect").val(distId); // select correct option
                 $("#editDistrictName").val(distName); // hidden input
 
@@ -803,21 +808,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 $("#editCoordinatorModal").removeClass("hidden");
 
-                
+
             });
 
-            $("#closeEditModal, #cancelEditModal").on("click", function() {
+            $("#closeEditModal, #cancelEditModal").on("click", function () {
                 $("#editCoordinatorModal").addClass("hidden");
             });
 
             // Delete Modal
-            $(".deleteBtn").on("click", function() {
+            $(".deleteBtn").on("click", function () {
                 let id = $(this).data("id");
                 $("#deleteCoordinatorForm").attr("action", "/coordinators/" + id);
                 $("#deleteCoordinatorModal").removeClass("hidden");
             });
 
-            $("#cancelDeleteModal").on("click", function() {
+            $("#cancelDeleteModal").on("click", function () {
                 $("#deleteCoordinatorModal").addClass("hidden");
             });
         });

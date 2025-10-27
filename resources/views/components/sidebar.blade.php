@@ -336,10 +336,13 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="#" class="nav-link ">
-                  <i class="fas fa-sign-out-alt nav-icon"></i>
-                  <p>Logout</p>
-                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <a href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="nav-link ">
+                    <i class="fas fa-sign-out-alt nav-icon"></i>
+                    <p>Logout</p>
+                  </a>
+                </form> 
               </li>
             </ul>
           </li>

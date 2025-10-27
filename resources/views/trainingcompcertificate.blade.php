@@ -344,7 +344,7 @@
                                 progressBar.textContent = Math.floor(final) + '%';
                             } else {
                                 clearInterval(finishTimer);
-                                progressStatus.textContent = '✅ Upload Complete!';
+                                progressStatus.textContent = 'Upload Complete!';
                                 setTimeout(() => {
                                     Swal.fire('✅ Success', 'Certificate uploaded successfully!', 'success');
                                     overlay.classList.add('hidden');

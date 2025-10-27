@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (xhr.status === 200) {
                     Swal.fire({
                         icon: "success",
-                        title: "✅ Upload complete!",
+                        title: "Upload complete!",
                         text: "Your videos have been uploaded successfully."
                     })
                     // .then(() => {

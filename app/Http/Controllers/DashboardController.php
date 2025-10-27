@@ -20,6 +20,16 @@ class DashboardController extends Controller
         $user = Auth::user(); // full user object
         $userId = $user->id;  // just the ID
         $roleName = $user->role->name;
+        $districtId = $user->district_id;
+        $students = 0;
+
+        if ($roleName === 'OCAC' || $roleName === 'OKCL') {
+            // ✅ OCAC or OKCL: see all students
+            $students = StudentMst::count();
+        } else {
+            // ✅ DLC / Coordinator / Trainer: only students in their district
+            $students = StudentMst::where('stu_distid', $districtId)->count();
+        }
 
         if ($roleName === 'DLC') {
             $totalCoordinators = Coordinator::whereHas('user', function ($query) use ($userId) {
@@ -28,16 +38,21 @@ class DashboardController extends Controller
             $totalTrainers = Trainer::whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->count();
-        } 
-        // elseif (in_array($user->role->name, ['DLC'])) {
-        //     $totalCoordinators = Coordinator::where('user_id', $user->id)->count();
-        //     $totalTrainers = Trainer::where('user_id', $user->id)->count();
-        // } 
-        else {
+        } elseif ($roleName === 'Coordinator' || $roleName === 'Trainer') {
+
+            $dlcId = $user->assignUnder_id;
+
+            $totalTrainers = Trainer::whereHas('user', function ($query) use ($dlcId) {
+                $query->where('assignUnder_id', $dlcId);
+            })->count();
+            $totalCoordinators = Coordinator::whereHas('user', function ($query) use ($dlcId) {
+                $query->where('assignUnder_id', $dlcId);
+            })->count();
+        } elseif ($roleName === 'OCAC' || 'OKCL') {
             $totalCoordinators = Coordinator::count();
             $totalTrainers = Trainer::count();
         }
-        // Zone-wise completed trainings
+
         $zoneWise = School::select('scm_zone_id')
             ->selectRaw('COUNT(*) as total, SUM(training_completed) as completed')
             ->groupBy('scm_zone_id')
@@ -49,25 +64,25 @@ class DashboardController extends Controller
             ->groupBy('scm_dist_id')
             ->get();
 
-        
-        $students = StudentMst::count();
+
+
         $totalSchools = School::count();
         $completedSchools = School::where('training_completed', 1)->count();
         $schools = School::all();
-        
 
 
         return view('dashboard', compact(
-    'totalCoordinators',
-    'totalTrainers',
-                'totalSchools',
-                'completedSchools',
-                'zoneWise',
-                'districtWise',
-                'students',
-                'schools',
- ));
+            'totalCoordinators',
+            'totalTrainers',
+            'totalSchools',
+            'completedSchools',
+            'zoneWise',
+            'districtWise',
+            'students',
+            'schools',
+        ));
     }
+
 
     public function getChartData(Request $request)
     {
@@ -124,7 +139,8 @@ class DashboardController extends Controller
             foreach ($fileTypes as $index => $type) {
                 $datasets[] = [
                     'label' => ucfirst(str_replace('_', ' ', $type)),
-                    'data' => $labels->map(fn($label) =>
+                    'data' => $labels->map(
+                        fn($label) =>
                         optional($grouped[$label]->firstWhere('file_type', $type))->total ?? 0
                     )->values(),
                     'backgroundColor' => self::colorPalette($index, 0.6),
@@ -155,74 +171,72 @@ class DashboardController extends Controller
         ];
         return $colors[$index % count($colors)];
     }
-public function getCampCompletionChartData(Request $request)
-{
-    $filter = $request->query('filter', 'day'); // day, week, month, custom
-    $zoneId = $request->query('zone_id');
-    $distId = $request->query('dist_id');
-    $start = $request->query('start');
-    $end = $request->query('end');
+    public function getCampCompletionChartData(Request $request)
+    {
+        $filter = $request->query('filter', 'day'); // day, week, month, custom
+        $zoneId = $request->query('zone_id');
+        $distId = $request->query('dist_id');
+        $start = $request->query('start');
+        $end = $request->query('end');
 
-    $cacheKey = "camp_completion_{$filter}_{$zoneId}_{$distId}_" . md5($start . $end);
+        $cacheKey = "camp_completion_{$filter}_{$zoneId}_{$distId}_" . md5($start . $end);
 
-    return Cache::remember($cacheKey, 300, function () use ($filter, $zoneId, $distId, $start, $end) {
+        return Cache::remember($cacheKey, 300, function () use ($filter, $zoneId, $distId, $start, $end) {
 
-        $query = School::query();
+            $query = School::query();
 
-        // Filter by zone or district if provided
-        if ($zoneId) $query->where('scm_zone_id', $zoneId);
-        if ($distId) $query->where('scm_dist_id', $distId);
+            // Filter by zone or district if provided
+            if ($zoneId) $query->where('scm_zone_id', $zoneId);
+            if ($distId) $query->where('scm_dist_id', $distId);
 
-        $schools = $query->get();
+            $schools = $query->get();
 
-        $labels = [];
-        $completed = [];
+            $labels = [];
+            $completed = [];
 
-        switch ($filter) {
-            case 'day':
-                $startDate = Carbon::today();
-                $endDate = Carbon::today();
-                break;
+            switch ($filter) {
+                case 'day':
+                    $startDate = Carbon::today();
+                    $endDate = Carbon::today();
+                    break;
 
-            case 'week':
-                $startDate = Carbon::now()->startOfWeek();
-                $endDate = Carbon::now()->endOfWeek();
-                break;
+                case 'week':
+                    $startDate = Carbon::now()->startOfWeek();
+                    $endDate = Carbon::now()->endOfWeek();
+                    break;
 
-            case 'month':
-                $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfMonth();
-                break;
+                case 'month':
+                    $startDate = Carbon::now()->startOfMonth();
+                    $endDate = Carbon::now()->endOfMonth();
+                    break;
 
-            case 'custom':
-                $startDate = Carbon::parse($start);
-                $endDate = Carbon::parse($end);
-                break;
+                case 'custom':
+                    $startDate = Carbon::parse($start);
+                    $endDate = Carbon::parse($end);
+                    break;
 
-            default:
-                $startDate = Carbon::today();
-                $endDate = Carbon::today();
-        }
+                default:
+                    $startDate = Carbon::today();
+                    $endDate = Carbon::today();
+            }
 
-        // Build day labels
-        for ($d = $startDate->copy(); $d <= $endDate; $d->addDay()) {
-            $labels[] = $d->format('Y-m-d');
+            // Build day labels
+            for ($d = $startDate->copy(); $d <= $endDate; $d->addDay()) {
+                $labels[] = $d->format('Y-m-d');
 
-            // Count schools completed on that day
-            $count = TrainingUpload::whereIn('school_id', $schools->pluck('scm_id'))
-                ->where('file_type', 'training_completion_certificate')
-                ->whereDate('training_date', $d->format('Y-m-d'))
-                ->count();
+                // Count schools completed on that day
+                $count = TrainingUpload::whereIn('school_id', $schools->pluck('scm_id'))
+                    ->where('file_type', 'training_completion_certificate')
+                    ->whereDate('training_date', $d->format('Y-m-d'))
+                    ->count();
 
-            $completed[] = $count;
-        }
+                $completed[] = $count;
+            }
 
-        return [
-            'labels' => $labels,
-            'completed' => $completed
-        ];
-    });
-}
-
-    
+            return [
+                'labels' => $labels,
+                'completed' => $completed
+            ];
+        });
+    }
 }

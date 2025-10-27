@@ -67,16 +67,13 @@
                                 <div class="bg-white p-8 rounded-lg w-full">
 
                                     <h2 class="text-2xl font-semibold text-center mb-6">Upload Feedback</h2>
-                                    <div class="flex justify-end mb-6">
-                                        <button id="downloadBtn"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition flex items-center space-x-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                                            </svg>
-                                            <span>Download Training Feedback Form</span>
-                                        </button>
+                                    
+                                    <!-- list button -->
+                                    <div class="mb-4 flex justify-end">
+                                        <a href="#"><button
+                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                            <i class="fas fa-list"></i>  View uploaded Feedback
+                                        </button></a>
                                     </div>
                                     <form id="feedbackUploadForm" method="POST" action="{{ route('upload.writtenfeedback') }}"
                                         enctype="multipart/form-data">
@@ -159,7 +156,11 @@
                                             Submit Feedback
                                         </button>
                                     </form>
-
+                                    <div class="mt-6">
+                                        <i class="fas fa-download"></i>
+                                        <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
+                                        class="text-blue-600 hover:underline" target="_blank">Download Training Feedback Form</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -236,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         progressBar.textContent = Math.floor(final) + '%';
                     } else {
                         clearInterval(finishTimer);
-                        progressStatus.textContent = '✅ Upload Complete!';
+                        progressStatus.textContent = 'Upload Complete!';
                         setTimeout(() => {
                             Swal.fire('✅ Success', 'Feedback uploaded successfully!', 'success');
                             overlay.classList.add('hidden');
@@ -259,16 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-    <script>
-        document.getElementById("downloadBtn").addEventListener("click", () => {
-            // Example: Download certificate template (replace with backend file route)
-            const fileUrl = "/feedbackform/training_camp_feedback_form_image.pdf";
-            const link = document.createElement("a");
-            link.href = fileUrl;
-            link.download = "training_camp_feedback_form.pdf";
-            link.click();
-        });
-    </script>
+    
     <script>
         const dropZone = document.getElementById("dropZone");
         const fileInput = document.getElementById("fileUpload");

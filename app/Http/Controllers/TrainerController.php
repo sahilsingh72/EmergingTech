@@ -22,9 +22,12 @@ class TrainerController extends Controller
     public function index()
     {
 
-        $userId   = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
         $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $roleId = Auth::user()->role_id;
+        
 
         if (in_array($roleId, [1, 2])) {
             // ✅ Role 1 or 2 can see ALL trainer
@@ -38,7 +41,11 @@ class TrainerController extends Controller
 
         // $trainers = Trainer::latest()->get();
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
-        $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
         return view('trainerlist', compact('trainers', 'districts', 'schools'));
     }
 
@@ -50,18 +57,6 @@ class TrainerController extends Controller
         $userId   = Auth::id();
         $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
  
-        // // Ensure storage/app/public exists
-        // $storagePublicPath = storage_path('app/public');
-        // if (!File::exists($storagePublicPath)) {
-        //     File::makeDirectory($storagePublicPath, 0775, true);
-        // }
-
-        // // Ensure public/storage symlink exists
-        // $publicStorage = public_path('storage');
-        // if (!file_exists($publicStorage)) {
-        //     Artisan::call('storage:link');
-        // }
-
         $validated = $request->validate([
             'trainer_name' => 'required|string|max:255',
             'email' => [

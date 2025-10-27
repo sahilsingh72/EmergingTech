@@ -178,14 +178,41 @@ class OneDriveService
         ];
         
     }
-    public function getThumbnailUrl($onedrivePath)
+    // public function getThumbnailUrl($onedrivePath)
+    // {
+    //     $accessToken = $this->getAccessToken();
+    //     $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/thumbnails/0/medium/content";
+
+    //     return [
+    //         'thumbnail_url' => $url,
+    //         'headers' => ['Authorization' => "Bearer {$accessToken}"]
+    //     ];
+    // }
+    public function getFileInfo($path)
     {
         $accessToken = $this->getAccessToken();
-        $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/thumbnails/0/medium/content";
 
-        return [
-            'thumbnail_url' => $url,
-            'headers' => ['Authorization' => "Bearer {$accessToken}"]
-        ];
+        $response = Http::withToken($accessToken)
+            ->get("https://graph.microsoft.com/v1.0/me/drive/root:/$path");
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        throw new \Exception('Failed to get file info from OneDrive');
     }
+    public function deleteFile($path)
+    {
+        $accessToken = $this->getAccessToken();
+
+        $response = Http::withToken($accessToken)
+            ->delete("https://graph.microsoft.com/v1.0/me/drive/root:/$path");
+
+        if ($response->successful()) {
+            return true;
+        }
+
+        throw new \Exception('Failed to delete file from OneDrive');
+    }
+
 }

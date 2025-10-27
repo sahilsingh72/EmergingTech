@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         progressBar.textContent = Math.floor(final) + '%';
                     } else {
                         clearInterval(finishTimer);
-                        progressStatus.textContent = '✅ Upload Complete!';
+                        progressStatus.textContent = 'Upload Complete!';
                         setTimeout(() => {
                             Swal.fire('✅ Success', 'File uploaded successfully!', 'success');
                             overlay.classList.add('hidden');
@@ -483,15 +483,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     </script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @if (session('success'))
+        @if (session('success'))
         <script>
             Swal.fire({
                 title: '✅ Success!',
                 text: "{{ session('success') }}",
                 icon: 'success',
                 confirmButtonText: 'OK'
-            })
-        </script>
-    @endif
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to another page
+                    window.location.href = "{{ route('attendance.list') }}"; 
+                    
+                }
+            });
+            </script>
+            @endif
 </body>
 @include('components.footer')

@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coordinator;
 use App\Models\School;
+use App\Models\Trainer;
 use App\Models\TrainingUpload;
+use App\Models\User;
 use App\Services\OneDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class TrainingEvidenceController extends Controller
@@ -23,17 +27,21 @@ class TrainingEvidenceController extends Controller
     public function trainingphotos()
     {
         
-        $userId   = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
         //  Check if this user already uploaded training photos
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
         $existingUpload = TrainingUpload::where('uploaded_by', $userId)
             ->where('file_type', 'training_photo')
             ->first();
 
-        // if ($existingUpload) {
-        //     return redirect()->route('trainingphotos.list')
-        //         ->with('info', 'You have already uploaded your training photos.');
-        // }
-        $schools = School::all();
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
         return view('trainingphotos', compact('schools'));
     }
 
@@ -75,7 +83,7 @@ class TrainingEvidenceController extends Controller
             }
             TrainingUpload::create([
                 'school_id'      => $schoolId,
-                'coordinator_id' => $userId,
+                // 'coordinator_id' => $userId,
                 'file_type'      => 'training_photo',
                 'filetype_id'    => $fileTypeMap['training_photo'],
                 'file_name'      => $fileNames,
@@ -92,9 +100,33 @@ class TrainingEvidenceController extends Controller
 
     public function trainingphotoslist(){
         $user = Auth::user();
-        $uploads = TrainingUpload::where('uploaded_by', $user->id)->latest()->get();
+        $userId = $user->id;
+        $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
+        
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
-        return view('trainingphotoslist', compact('uploads'));
+        if ($roleId == 1 || $roleId == 2) {
+            $uploads = TrainingUpload::latest()->get();
+        }else{
+            $visibleUserIds = collect([$userId]); // Always include self
+
+            if ($roleId == 3) {
+                // DLC: see uploads by themselves + coordinators + trainers under them
+                $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
+                $visibleUserIds = $visibleUserIds->merge($subUsers);
+                
+            }elseif ($roleId == 6 || $roleId == 5) {
+            
+                // Coordinator: see own uploads + DLC + trainers under same DLC
+                $dlcId = $user->assignUnder_id; // DLC user_id
+                $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
+                $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
+            }
+            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+        }
+        
+        return view('trainingphotoslist', compact('uploads', 'schools'));
     }
 
     public function editTrainingPhoto($id)
@@ -156,20 +188,39 @@ class TrainingEvidenceController extends Controller
     public function previewImage(Request $request)
     {
         $path = $request->query('path');
-        $thumbnail = $this->oneDrive->getThumbnailUrl($path);
 
-        // Stream the image directly
-        return response()->stream(function () use ($thumbnail) {
-            $response = Http::withHeaders($thumbnail['headers'])->get($thumbnail['thumbnail_url']);
+        // $thumbnail = $this->oneDrive->getThumbnailUrl($path);
+
+        $fileInfo = $this->oneDrive->getFileInfo($path);
+        if (!isset($fileInfo['@microsoft.graph.downloadUrl'])) {
+            return response('Download URL not found', 404);
+        }
+
+        $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
+
+        // Stream the full-quality image directly to the browser
+        return response()->stream(function () use ($downloadUrl) {
+            $response = Http::get($downloadUrl);
             echo $response->body();
         }, 200, ['Content-Type' => 'image/jpeg']);
+
+
     }
 
 
 
     public function trainingvideos()
     {
-        $schools = School::all();
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+        
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        if ($roleId == 1 || $roleId == 2){
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        }else{
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
         return view('trainingvideos', compact('schools'));
     }
     public function uploadvideo(Request $request)
@@ -207,7 +258,7 @@ class TrainingEvidenceController extends Controller
         }
         TrainingUpload::create([
             'school_id'      => $schoolId,
-            'coordinator_id' => $userId,
+            // 'coordinator_id' => $userId,
             'file_type'      => 'training_video',
             'filetype_id'    => $fileTypeMap['training_video'] ?? null,
             'file_name'      => $fileNames,
@@ -223,18 +274,62 @@ class TrainingEvidenceController extends Controller
             ->with('success', 'training video uploaded successfully!');
     }
 
+    public function previewVideo(Request $request)
+    {
+        $path = $request->query('path');
+
+        // Cache download URL for performance
+        $downloadUrl = Cache::remember("onedrive_video_$path", 300, function () use ($path) {
+            $fileInfo = $this->oneDrive->getFileInfo($path);
+            return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
+        });
+
+        if (!$downloadUrl) {
+            return response('Video not found', 404);
+        }
+
+        // Stream video directly from OneDrive
+        $response = Http::get($downloadUrl);
+
+        return response($response->body(), 200)
+            ->header('Content-Type', 'video/mp4'); // use video/mp4
+    }
     public function trainingvideoslist(){
         $user = Auth::user();
-        $uploads = TrainingUpload::where('uploaded_by', $user->id)->latest()->get();
+        $userId = $user->id;
+        $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
+        
+        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
-        return view('trainingvideoslist', compact('uploads'));
+        if ($roleId == 1 || $roleId == 2) {
+            $uploads = TrainingUpload::latest()->get();
+        }else{
+            $visibleUserIds = collect([$userId]); // Always include self
+
+            if ($roleId == 3) {
+                // DLC: see uploads by themselves + coordinators + trainers under them
+                $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
+                $visibleUserIds = $visibleUserIds->merge($subUsers);
+                
+            }elseif ($roleId == 6 || $roleId == 5) {
+            
+                // Coordinator: see own uploads + DLC + trainers under same DLC
+                $dlcId = $user->assignUnder_id; // DLC user_id
+                $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
+                $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
+            }
+            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+        }
+
+        return view('trainingvideoslist', compact('uploads', 'schools'));
     }
 
     public function editTrainingVideo($id)
     {
         $upload = TrainingUpload::findOrFail($id);
 
-        // Make sure it’s a training_photo type
+        // Make sure it’s a training_video type
         if ($upload->file_type !== 'training_video') {
             abort(403, 'Invalid file type');
         }
@@ -283,7 +378,7 @@ class TrainingEvidenceController extends Controller
             'onedrive_url'  => array_values($existingUrls),
         ]);
 
-        return back()->with('success', 'Training photos updated successfully!');
+        return back()->with('success', 'Training Video updated successfully!');
     }
 
     public function trainingcompcertificate()

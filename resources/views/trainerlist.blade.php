@@ -84,9 +84,9 @@
                                         </div>
 
                                         <!-- Search -->
-                                        <div>
+                                        <div class="w-full sm:w-auto">
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-64">
+                                                class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
                                     </div>
 
@@ -224,9 +224,9 @@
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                     <!-- Add Trainer Modal -->
                                     <div id="addTrainerModal"
-                                        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+                                        class="content-wrapper fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-2">
                                         <div
-                                            class="bg-white rounded-lg shadow-lg  max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
+                                            class="bg-white rounded-lg shadow-lg  max-w-5xl p-6 max-h-[80vh] overflow-y-auto">
 
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
@@ -333,8 +333,7 @@
                                                                <select id="qualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
                                                                    <option value="">-- Select Qualification --</option>
                                                                    <option value="B-Tech">B-Tech</option>
-                                                                   <option value="BCA">BCA</option>
-                                                                   <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                                   <option value="MCA">MCA</option>
                                                                    <option value="Other">Other (Equivalent)</option>
                                                                 </select>
 
@@ -423,9 +422,9 @@
 
                                     <!-- Edit Trainer Modal -->
                                     <div id="editTrainerModal"
-                                        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+                                        class="content-wrapper fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 px-2">
                                         <div
-                                            class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[90vh] overflow-y-auto">
+                                            class="bg-white rounded-lg shadow-lg max-w-5xl p-6 max-h-[80vh] overflow-y-auto">
                                             <!-- Header -->
                                             <div class="flex justify-between items-center mb-4">
                                                 <h3 class="text-xl font-semibold">Edit Trainer</h3>
@@ -517,8 +516,7 @@
                                                                 <select id="editQualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
                                                                     <option value="">-- Select Qualification --</option>
                                                                     <option value="B-Tech">B-Tech</option>
-                                                                    <option value="BCA">BCA</option>
-                                                                    <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                                    <option value="MCA">MCA</option>
                                                                     <option value="Other">Other (Equivalent)</option>
                                                                 </select>
 

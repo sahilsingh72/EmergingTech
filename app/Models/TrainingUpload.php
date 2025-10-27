@@ -23,6 +23,7 @@ class TrainingUpload extends Model
         'uploaded_by',
         'training_date',
         'description',
+        'designation',
     ];
 
     // Cast JSON fields automatically
@@ -52,6 +53,6 @@ class TrainingUpload extends Model
     
     public function uploadby()
     {
-        return $this->belongsTo(User::class, 'uploaded_by', 'id');
+        return $this->belongsTo(User::class, 'uploaded_by');
     }
 }

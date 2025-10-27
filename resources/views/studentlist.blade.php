@@ -97,6 +97,18 @@
                                                 class="border rounded p-2 w-64">
                                         </div>
                                     </div>
+<div class="mb-4 flex justify-end items-center gap-3">
+    <label for="filterSchool" class="font-semibold text-gray-700">Select School:</label>
+    <select id="filterSchool" class="border rounded px-3 py-2">
+        <option value="">-- Select School --</option>
+        @foreach ($schools as $school)
+            <option value="{{ $school->scm_id }}" 
+                {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+            </option>
+        @endforeach
+    </select>
+</div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
                                         <table id="studentTable" class="w-full border-collapse">
                                             <thead class="bg-gray-100">
@@ -173,7 +185,7 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="13" class="text-center py-4">No students found.
+                                                        <td colspan="13" class="text-center py-4">No students found(Select School)
                                                         </td>
                                                     </tr>
                                                 @endforelse
@@ -292,6 +304,28 @@
         </div>
     </div>
     </div>
+<script>
+    $(document).ready(function() {
+        $("#filterSchool").on("change", function() {
+            const schoolId = $(this).val();
+
+            $.ajax({
+                url: "{{ route('studentlist') }}", // your route name
+                method: "GET",
+                data: { school_id: schoolId },
+                success: function(response) {
+                    const html = $(response).find("#studentTable tbody").html();
+                    $("#studentTable tbody").html(html);
+                },
+                error: function() {
+                    alert("Failed to fetch students.");
+                }
+            });
+        });
+    });
+</script>
+
+
     <script>
         $(document).ready(function() {
             let rowsPerPage = parseInt($("#rowsPerPage").val());

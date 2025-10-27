@@ -19,7 +19,68 @@
 
 <head>
   <title>EmergingTech | Dashboard</title>
-  
+  <style>
+    #gallery {
+      border-collapse: collapse;
+      line-height: 0;
+      gap: 0;
+      width: 100%;
+      height: 33%;
+    }
+
+    #gallery>div {
+      padding: 0;
+      margin: 0;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: translate(0, 0);
+      transition: all 1s ease-in-out;
+    }
+
+    .slide.show {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+
+    /* Random animation directions */
+    .from-top {
+      transform: translateY(-100%);
+    }
+
+    .from-bottom {
+      transform: translateY(100%);
+    }
+
+    .from-left {
+      transform: translateX(-100%);
+    }
+
+    .from-right {
+      transform: translateX(100%);
+    }
+
+    /* Ensure no tiny gap from subpixel rounding */
+    @media (max-width: 768px) {
+      #gallery {
+        width: 60%;
+        margin-left: calc(-50vw + 50%);
+      }
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <!-- Navbar -->
 @include('components.navbar')
@@ -88,7 +149,8 @@
                   <i class="nav-icon fas fa-user-graduate"></i>
                 </div>
 
-                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                <a href="{{ route('studentlist') }}" class="small-box-footer">More info <i
+                    class="fas fa-arrow-circle-right"></i></a>
               </div>
             </div>
             <!-- ./col -->
@@ -148,23 +210,7 @@
                 </div><!-- /.card-body -->
               </div> --}}
 
-              {{-- <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">
-                    <i class="fas fa-image mr-1"></i>
-                    Training Gallery
-                  </h3>
-                </div><!-- /.card-header -->
-                <div class="card-body">
-                  <div class="tab-content p-0">
-                    <div class="" style="position: relative; height: 300px;">
-  
 
-                    </div>
-                  </div>
-                </div><!-- /.card-body -->
-              </div> --}}
-              <!-- /.card -->
 
 
               @if($user->role_id == 1 || $user->role_id == 2)
@@ -206,39 +252,6 @@
 
               @endif
 
-
-
-
-            </section>
-            <!-- /.Left col -->
-            <!-- right col (We are only adding the ID to make the widgets sortable)-->
-            <section class="col-lg-5 connectedSortable">
-
-              @if($user->role_id == 1 || $user->role_id == 2)
-                <div class="card bg-gradient-primary">
-                  <div class="card-header border-0">
-                    <h3 class="card-title">
-                      <i class="fas fa-map-marker-alt mr-1"></i>
-                      District View
-                    </h3>
-                    <!-- card tools -->
-                    <div class="card-tools">
-                      <button type="button" class="btn btn-primary btn-sm" data-card-widget="collapse"
-                        data-toggle="tooltip" title="Collapse">
-                        <i class="fas fa-minus"></i>
-                      </button>
-                    </div>
-                    <!-- /.card-tools -->
-                  </div>
-                  <div class="card-body">
-                    <div id="odishaMap" style="height: 300px; width:100%;"></div>
-
-
-                  </div>
-                </div>
-
-
-              @endif
               <!-- Calendar -->
               <div class="card bg-gradient-success">
                 <div class="card-header border-0">
@@ -277,6 +290,65 @@
                 </div>
                 <!-- /.card-body -->
               </div>
+
+
+            </section>
+            <!-- /.Left col -->
+            <!-- right col (We are only adding the ID to make the widgets sortable)-->
+            <section class="col-lg-5 connectedSortable">
+
+              @if($user->role_id == 1 || $user->role_id == 2)
+                <div class="card bg-gradient-primary">
+                  <div class="card-header border-0">
+                    <h3 class="card-title">
+                      <i class="fas fa-map-marker-alt mr-1"></i>
+                      District View
+                    </h3>
+                    <!-- card tools -->
+                    <div class="card-tools">
+                      <button type="button" class="btn btn-primary btn-sm" data-card-widget="collapse"
+                        data-toggle="tooltip" title="Collapse">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                    </div>
+                    <!-- /.card-tools -->
+                  </div>
+                  <div class="card-body">
+                    <div id="odishaMap" style="height: 300px; width:100%;"></div>
+
+
+                  </div>
+                </div>
+              @endif
+
+
+              {{-- <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-image mr-1"></i>
+                    Training Gallery
+                  </h3>
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                  <div class="tab-content p-0">
+                    <div class="relative flex items-center justify-center py-2">
+                      <div id="gallery" class="w-full max-w-3xl mx-auto grid grid-cols-3">
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div> --}}
+              <!-- /.card -->
+
+
+
 
 
 
@@ -347,6 +419,63 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    // ✅ Image URLs (from Unsplash)
+    const imageUrls = [
+      "https://letsenhance.io/static/73136da51c245e80edc6ccfe44888a99/396e9/MainBefore.jpg",
+      "https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1495567720989-cebdbdd97913?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473187983305-f615310e7daa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1499084732479-de2c02d45fc4?auto=format&fit=crop&w=600&q=80"
+    ];
+
+    const directions = ['from-top', 'from-bottom', 'from-left', 'from-right'];
+    const containers = document.querySelectorAll('#gallery > div');
+    let usedImages = [];
+
+    // Initialize images
+    containers.forEach(container => {
+      const img = document.createElement('img');
+      img.src = getRandomImage();
+      img.className = "slide show";
+      img.style.objectFit = "cover";
+      container.appendChild(img);
+    });
+
+    function getRandomImage() {
+      if (usedImages.length >= imageUrls.length) usedImages = [];
+      let randomImg;
+      do {
+        randomImg = imageUrls[Math.floor(Math.random() * imageUrls.length)];
+      } while (usedImages.includes(randomImg));
+      usedImages.push(randomImg);
+      return randomImg;
+    }
+
+    // Auto change every 3 seconds
+    setInterval(() => {
+      containers.forEach(container => {
+        const oldImg = container.querySelector('img');
+        const newImg = document.createElement('img');
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+
+        newImg.src = getRandomImage();
+        newImg.className = `slide ${dir}`;
+        newImg.style.objectFit = "cover";
+
+        container.appendChild(newImg);
+
+        setTimeout(() => newImg.classList.add('show'), 50);
+        setTimeout(() => oldImg && oldImg.remove(), 1000);
+      });
+    }, 3000);
+  </script>
 
   <script>
     const zoneLabels = @json($zoneWise->pluck('scm_zone_id'));

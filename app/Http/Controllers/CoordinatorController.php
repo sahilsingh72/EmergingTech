@@ -18,9 +18,12 @@ class CoordinatorController extends Controller
 {
     public function index()
     {
-        $userId   = Auth::id();
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $roleId = Auth::user()->role_id;
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
 
         if (in_array($roleId, [1, 2])) {
             // ✅ Role 1 or 2 can see ALL coordinators
@@ -33,18 +36,21 @@ class CoordinatorController extends Controller
         }
         // $coordinators = Coordinator::latest()->get();
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
-        $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
 
         return view('coordinatorlist', compact('coordinators', 'districts', 'schools'));
-       
     }
 
     public function store(Request $request, Coordinator $coordinator)
     {
 
         $userId   = Auth::id();
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
         // // Ensure storage/app/public exists
         // $storagePublicPath = storage_path('app/public');
         // if (!File::exists($storagePublicPath)) {
@@ -68,12 +74,12 @@ class CoordinatorController extends Controller
                         ->where('email', $value)
                         ->where('coordinator_id', '<>', $coordinator->coordinator_id)
                         ->exists();
-        
+
                     // Check user table
                     $existsInUsers = DB::table('users')
                         ->where('email', $value)
                         ->exists();
-        
+
                     if ($existsInTrainers || $existsInUsers) {
                         $fail('The email has already been taken.');
                     }
@@ -105,10 +111,10 @@ class CoordinatorController extends Controller
 
         $data['scm_id'] = $request->school;
         $data['dist_id'] = $districtID[0]->district_id;
-        
+
         if ($request->highest_qualification === 'Other') {
             $data['highest_qual'] = $request->other_qualification; // save custom input
-        }else {
+        } else {
             $data['highest_qual'] = $request->highest_qualification;
         }
 
@@ -143,22 +149,21 @@ class CoordinatorController extends Controller
             $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
         }
 
-        
-        $user_data=([
+
+        $user_data = ([
             'name' => $data['coordinator_name'],
             'email' => $data['email'],
             'district_id' => $data['dist_id'],
             'institute_id' => $data['scm_id'],
             'password' => Hash::make('Coordinator@ET'),
-            'role_id'=>6,
-            'assignUnder_id'=>$userId,
-            'created_at'=>now()
-            
+            'role_id' => 6,
+            'assignUnder_id' => $userId,
+            'created_at' => now()
+
         ]);
-        $User_dtls=User::create($user_data);
+        $User_dtls = User::create($user_data);
         $data['user_id'] = $User_dtls->id;
         Coordinator::create($data);
-
 
         return redirect()->route('coordinators.index')->with('success', 'Coordinator added successfully!');
     }
@@ -184,7 +189,7 @@ class CoordinatorController extends Controller
         // if (!file_exists($publicStorage)) {
         //     Artisan::call('storage:link');
         // }
-        
+
         $validated = $request->validate([
             'coordinator_name' => 'required|string|max:255',
             'email' => 'required|email|unique:coordinator_mst,email,' . $coordinator->coordinator_id . ',coordinator_id',
@@ -280,7 +285,7 @@ class CoordinatorController extends Controller
             }
             $data['education_certificates'] = json_encode($paths);
         }
-        $data['scm_id']=$data['school'];
+        $data['scm_id'] = $data['school'];
         $coordinator->update($data);
         $user_id = Coordinator::select('user_id')->where('coordinator_id', $coordinator->coordinator_id)->first()->user_id;
         $user = User::where('id', $user_id)->first();
