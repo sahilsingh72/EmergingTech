@@ -49,17 +49,35 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class="bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6"></i>Supporting Staff List</h2>
-                                    <div class="mb-4 flex justify-end">
-                                        <button id="addStaffBtn"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-user-plus"></i> Add Supporting Staff
-                                        </button>
-                                    </div>
+                                   @php
+                                        $roleId = Auth::user()->role_id;
+                                        $SahiluserId = Auth::user()->id;
+                                    @endphp
+                                    @if($roleId == 3 || $SahiluserId == 1)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="addStaffBtn"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-user-plus"></i> Add Supporting Staff
+                                            </button>
+                                        </div>
+                                    @endif
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                    @endphp
+                                    @if($roleId == 2)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="exportBtn"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-file-excel"></i> Export Report
+                                            </button>
+                                        </div>
+                                    @endif
+
                                     @if (session('success'))
                                         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
                                             {{ session('success') }}
@@ -83,36 +101,99 @@
                                             </select>
                                         </div>
 
+                                        <!-- District Filter -->
+                                        <div>
+                                            <label for="districtFilter" class="mr-2">District:</label>
+                                            <select id="districtFilter" class="border rounded pl-2 pr-5">
+                                                <option value="">All</option>
+                                                @foreach($districts as $d)
+                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
                                         <!-- Search -->
                                         <div class="w-full sm:w-auto">
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                                class="border rounded p-2 h-7 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
+
                                     </div>
 
                                     <!-- Staff Table -->
-                                    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+                                    <div class="bg-white shadow rounded-lg p-3 overflow-x-auto">
                                         <table id="sustaffTable" class="w-full border-collapse">
                                             <thead>
                                                 <tr class="bg-gray-100 text-left">
                                                     <th class="p-2 border">SNO</th>
+                                                    <th class="p-2 border">District</th>
+                                                    <th class="p-2 border">School</th>
                                                     <th class="p-2 border">Name</th>
-                                                    <th class="p-2 border">Email</th>
                                                     <th class="p-2 border">Phone</th>
+                                                    <th class="p-2 border">Email</th>
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
                                                     <th class="p-2 border">Education Certificates</th>
                                                     <th class="p-2 border">Aadhaar Card</th>
-                                                    <th class="p-2 border text-center">Actions</th>
+                                                    @php
+                                                        $roleId = Auth::user()->role_id;
+                                                        $SahiluserId = Auth::user()->id;
+                                                    @endphp
+                                                    @if($roleId == 3 || $SahiluserId == 1)
+                                                        <th class="p-2 border text-center">Actions</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($suppstaffs as $index => $suppstaff)
                                                     <tr>
                                                         <td class="p-2 border">{{ $index + 1 }}</td>
+                                                        @php
+                                                            $dist_id = $suppstaff->dist_id;
+                                                            $dist_nm = 'N/A';
+                                                            foreach ($districts as $d) {
+                                                                if ($d->DSM_DSCD == $dist_id) {
+                                                                    $dist_nm = $d->DSM_DSNM;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <td class="p-2 border" data-district-code="{{ $dist_id }}">
+                                                            {{ $dist_nm }}
+                                                        </td>
+                                                        {{-- <td class="p-2 border"> @php
+                                                            $dist_id = $suppstaff->dist_id;
+                                                            foreach ($districts as $key => $d) {
+                                                            if($d->DSM_DSCD == $dist_id){
+                                                            $dist_nm=$d->DSM_DSNM;
+                                                            }
+                                                            }
+                                                            @endphp
+                                                            {{ $dist_nm ?: 'N/A' }}
+                                                        </td> --}}
+                                                        <td class="p-2 border">
+                                                            @if($suppstaff->schools->isNotEmpty())
+                                                                @foreach($suppstaff->schools as $school)
+                                                                    <span
+                                                                        class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs mr-1">
+                                                                        {{ $school->scm_name }},
+                                                                    </span></br>
+                                                                @endforeach
+                                                            @else
+                                                                <span class="text-gray-500">No School Assigned</span>
+                                                            @endif
+                                                        </td>
                                                         <td class="p-2 border">{{ $suppstaff->ss_name }}</td>
-                                                        <td class="p-2 border">{{ $suppstaff->email }}</td>
                                                         <td class="p-2 border">{{ $suppstaff->phone }}</td>
+                                                        <td class="p-2 border">{{ $suppstaff->email }}</td>
+                                                        {{-- <td class="p-2 border">
+                                                            @php
+                                                            $creator = \App\Models\User::where('id',
+                                                            optional($suppstaff->user)->assignUnder_id)->value('email');
+                                                            @endphp
+
+                                                            {{ $creator ?? '-' }}
+                                                        </td> --}}
 
                                                         {{-- Photo --}}
                                                         <td class="p-2 border">
@@ -153,8 +234,7 @@
 
                                                             @if (count($educationCertificates) > 0)
                                                                 @foreach ($educationCertificates as $certificate)
-                                                                    <a href="{{ asset('storage/' . $certificate) }}"
-                                                                        target="_blank"
+                                                                    <a href="{{ asset('storage/' . $certificate) }}" target="_blank"
                                                                         class="text-blue-600 block">View</a>
                                                                 @endforeach
                                                             @else
@@ -171,28 +251,40 @@
                                                             @endif
                                                         </td>
                                                         {{-- Actions --}}
-                                                        <td class="p-2 border text-center">
-                                                            <button type="button" class="text-green-500 mx-1 editBtn"
-                                                                data-id="{{ $suppstaff->ss_id }}"
-                                                                data-name="{{ $suppstaff->ss_name }}"
-                                                                data-email="{{ $suppstaff->email }}"
-                                                                data-phone="{{ $suppstaff->phone }}"
-                                                                data-whatsapp_number="{{ $suppstaff->whatsapp_number}}"
-                                                                data-dist_id="{{ $suppstaff->dist_id }}"
-                                                                data-district="{{ $suppstaff->district }}"
-                                                                data-pincode="{{ $suppstaff->pincode}}"
-                                                                data-address="{{ $suppstaff->address}}"
-                                                                data-school_id="{{ $suppstaff->scm_id }}"
-                                                                data-photo="{{ $suppstaff->photo }}"
-                                                                data-cv="{{ $suppstaff->cv }}" 
-                                                                data-highest_qualification="{{ $suppstaff->highest_qual }}">
-                                                                <i class="fas fa-edit"></i>
-                                                            </button>
-                                                            {{-- <button type="button" class="text-red-500 mx-1 deleteBtn"
-                                                                data-id="{{ $suppstaff->ss_id }}">
-                                                                <i class="fas fa-trash-alt"></i>
-                                                            </button> --}}
-                                                        </td>
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                            $SahiluserId = Auth::user()->id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $SahiluserId == 1)
+                                                            <td class="p-2 border text-center">
+                                                                <button type="button" class="text-green-500 mx-1 editBtn"
+                                                                    data-id="{{ $suppstaff->ss_id }}"
+                                                                    data-name="{{ $suppstaff->ss_name }}"
+                                                                    data-email="{{ $suppstaff->email }}"
+                                                                    data-phone="{{ $suppstaff->phone }}"
+                                                                    data-whatsapp_number="{{ $suppstaff->whatsapp_number}}"
+                                                                    data-dist_id="{{ $suppstaff->dist_id }}"
+                                                                    data-district="{{ $suppstaff->district }}"
+                                                                    data-pincode="{{ $suppstaff->pincode}}"
+                                                                    data-address="{{ $suppstaff->address}}" {{--
+                                                                    data-school_id="{{ $suppstaff->scm_id }}" --}}
+                                                                    data-school="{{ implode(',', $suppstaff->school_ids ?? []) }}"
+                                                                    data-photo="{{ $suppstaff->photo }}"
+                                                                    data-cv="{{ $suppstaff->cv }}"
+                                                                    data-highest_qualification="{{ $suppstaff->highest_qual }}">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                @php
+                                                                    $SahiluserId = Auth::user()->id;
+                                                                @endphp
+                                                                @if($SahiluserId == 1)
+                                                                    <button type="button" class="text-red-500 mx-1 deleteBtn"
+                                                                        data-id="{{ $suppstaff->ss_id }}">
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </td>
+                                                        @endif
                                                     </tr>
                                                 @endforeach
 
@@ -236,7 +328,8 @@
                                                     <div class="space-y-4">
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">Supporting Staff Name</label>
+                                                                class="block text-sm font-medium text-gray-700">Supporting
+                                                                Staff Name</label>
                                                             <input type="text" name="ss_name"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
@@ -246,20 +339,33 @@
                                                             <input type="email" name="email"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
-                                                        <div>
+                                                        {{-- <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="schoolSelect" class="w-full border rounded p-2 mt-1" required>
+                                                            <select name="school" id="schoolSelect"
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                                 <option value="">-- Select School --</option>
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
+                                                                <option value="{{ $school->scm_id }}"
+                                                                    data-name="{{ $school->scm_name }}">
+                                                                    {{ $school->scm_name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+
+                                                        </div> --}}
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="schoolSelect" multiple
+                                                                class="w-full border-gray-300 rounded-md shadow-sm">
+                                                                @foreach ($schools as $school)
+                                                                    <option value="{{ $school->scm_id }}">
                                                                         {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
-
                                                         </div>
-                                                        
                                                         <!-- hidden input to store district name -->
                                                         <input type="hidden" name="district" id="districtName">
 
@@ -268,14 +374,15 @@
                                                     <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                                            <label class="block text-sm font-medium text-gray-700">Phone
+                                                                Number</label>
                                                             <input type="text" name="phone"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                                                                class="block text-sm font-medium text-gray-700">WhatsApp
+                                                                Number</label>
                                                             <input type="text" name="whatsapp_number"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                         </div>
@@ -283,7 +390,8 @@
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Pincode</label>
                                                             <input type="number" name="pincode"
-                                                                class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode" required>
+                                                                class="w-full border rounded p-2"
+                                                                placeholder="Enter 6-digit Pincode" required>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -291,34 +399,42 @@
                                                 <div class="grid grid-cols-1">
                                                     <div>
                                                         <label
-                                                            class="block text-sm font-medium text-gray-700 mt-3">Address (Enter full address)</label>
-                                                        <textarea name="address" rows="3" class="w-full border rounded p-2 mt-1" required></textarea>
+                                                            class="block text-sm font-medium text-gray-700 mt-3">Address
+                                                            (Enter full address)</label>
+                                                        <textarea name="address" rows="3"
+                                                            class="w-full border rounded p-2 mt-1" required></textarea>
                                                     </div>
                                                 </div>
 
-                                                 <div class="grid grid-cols-2 gap-8 mt-3">
+                                                <div class="grid grid-cols-2 gap-8 mt-3">
                                                     <!-- Left Column: Staff Info -->
                                                     <div class="space-y-4">
-                                                        
+
                                                         <div>
-                                                           <div>
-                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
-                                                               <select id="qualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
-                                                                   <option value="">-- Select Qualification --</option>
-                                                                   <option value="Graduation">Graduation</option>
-                                                                   {{-- <option value="BCA">BCA</option>
-                                                                   <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
-                                                                   <option value="Other">Other (Equivalent)</option> --}}
+                                                            <div>
+                                                                <label
+                                                                    class="block text-sm font-medium text-gray-700">Highest
+                                                                    Qualification</label>
+                                                                <select id="qualification" name="highest_qualification"
+                                                                    class="w-full border rounded p-2 mt-1 mb-4"
+                                                                    required>
+                                                                    <option value="">-- Select Qualification --</option>
+                                                                    <option value="Graduation">Graduation</option>
+                                                                    {{-- <option value="BCA">BCA</option>
+                                                                    <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
+                                                                    <option value="Other">Other (Equivalent)</option>
+                                                                    --}}
                                                                 </select>
 
                                                                 <!-- Hidden text input for "Other" -->
                                                                 <div id="otherQualificationDiv" class="hidden">
-                                                                    <input type="text" id="otherQualification" name="other_qualification" 
-                                                                        class="w-full border rounded p-2 mt-1" 
+                                                                    <input type="text" id="otherQualification"
+                                                                        name="other_qualification"
+                                                                        class="w-full border rounded p-2 mt-1"
                                                                         placeholder="Please specify your qualification">
                                                                 </div>
-                                                           </div>
-                                                        </div>    
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <!-- Right Column: File Uploads -->
@@ -328,8 +444,8 @@
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Educational
                                                                 Qualification Certificates</label>
-                                                            <input type="file" name="education_certificates[]"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                            <input type="file" name="education_certificates[]" multiple
+                                                                accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -339,37 +455,38 @@
                                                 <div class="grid grid-cols-2 gap-8 mt-3">
                                                     <!-- Left Column: staff Info -->
                                                     <div class="space-y-4">
-                                                        
+
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Photo</label>
-                                                            <input type="file" name="photo"
-                                                                accept=".jpg,.jpeg,.png"
+                                                            <input type="file" name="photo" accept=".jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1" required>
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: JPG,
                                                                 PNG. Max size: 2 MB</p>
                                                         </div>
                                                         <div>
-                                                            <label class="block text-sm font-medium text-gray-700">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                accept=".pdf"
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700">Aadhaar
+                                                                Card (with address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF.
+                                                                Max size: 2 MB</p>
                                                         </div>
-                                                        
+
                                                     </div>
 
                                                     <!-- Right Column: File Uploads -->
                                                     <div class="space-y-4">
 
-                                                        
+
                                                         <div>
                                                             <label class="block text-sm font-medium text-gray-700">CV /
                                                                 Resume</label>
-                                                            <input type="file" name="cv"
-                                                                accept=".pdf"
+                                                            <input type="file" name="cv" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF.
+                                                                Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -408,25 +525,40 @@
                                                 <div class="grid grid-cols-2 gap-8">
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Supporting Staff Name</label>
-                                                            <input type="text" name="ss_name"
-                                                                id="editStaffName"
+                                                            <label class="block text-sm font-medium">Supporting Staff
+                                                                Name</label>
+                                                            <input type="text" name="ss_name" id="editStaffName"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-medium">Email</label>
-                                                            <input type="email" name="email"
-                                                                id="editStaffEmail"
+                                                            <input type="email" name="email" id="editStaffEmail"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
-                                                        <div>
+                                                        {{-- <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="editStaffSchool" class="w-full border rounded p-2 mt-1" required>
+                                                            <select name="school" id="editStaffSchool"
+                                                                class="w-full border rounded p-2 mt-1" required>
                                                                 <option value="">-- Select School --</option>
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
-                                                                        {{ $school->scm_name }}
+                                                                <option value="{{ $school->scm_id }}"
+                                                                    data-name="{{ $school->scm_name }}">
+                                                                    {{ $school->scm_name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div> --}}
+
+                                                        <div>
+                                                            <label
+                                                                class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="editSchoolSelect" multiple
+                                                                class="w-full border-gray-300 rounded-md shadow-sm">
+                                                                @foreach ($schools as $school)
+                                                                    <option value="{{ $school->scm_id }}"
+                                                                        @if(in_array($school->scm_id, $trainer->school_ids ?? [])) selected @endif>
+                                                                        {{ $school->scm_name }}_{{ $school->scm_udise_code }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
@@ -435,31 +567,33 @@
 
                                                     <div class="space-y-4">
                                                         <div>
-                                                            <label class="block text-sm font-medium">Phone Number</label>
-                                                            <input type="text" name="phone"
-                                                                id="editStaffPhone" required
+                                                            <label class="block text-sm font-medium">Phone
+                                                                Number</label>
+                                                            <input type="text" name="phone" id="editStaffPhone" required
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">WhatsApp Number</label>
+                                                                class="block text-sm font-medium text-gray-700">WhatsApp
+                                                                Number</label>
                                                             <input type="text" name="whatsapp_number"
                                                                 id="editStaffWhatsapp" required
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
                                                             <label
-                                                            class="block text-sm font-medium text-gray-700">Pincode</label>
+                                                                class="block text-sm font-medium text-gray-700">Pincode</label>
                                                             <input type="text" name="pincode" required
-                                                            id="editStaffPincode"
-                                                            class="w-full border rounded p-2" placeholder="Enter 6-digit Pincode">
+                                                                id="editStaffPincode" class="w-full border rounded p-2"
+                                                                placeholder="Enter 6-digit Pincode">
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="mt-4">
                                                     <label class="block text-sm font-medium">Address</label>
-                                                    <textarea name="address" id="editStaffAddress" rows="3" class="w-full border rounded p-2 mt-1" required></textarea>
+                                                    <textarea name="address" id="editStaffAddress" rows="3"
+                                                        class="w-full border rounded p-2 mt-1" required></textarea>
                                                 </div>
 
                                                 <!-- File fields -->
@@ -467,30 +601,36 @@
                                                     <div class="space-y-4">
 
                                                         <div>
-                                                           <div>
-                                                               <label class="block text-sm font-medium text-gray-700">Highest Qualification</label>
-                                                                <select id="editQualification" name="highest_qualification" class="w-full border rounded p-2 mt-1 mb-4" required>
+                                                            <div>
+                                                                <label
+                                                                    class="block text-sm font-medium text-gray-700">Highest
+                                                                    Qualification</label>
+                                                                <select id="editQualification"
+                                                                    name="highest_qualification"
+                                                                    class="w-full border rounded p-2 mt-1 mb-4"
+                                                                    required>
                                                                     <option value="">-- Select Qualification --</option>
                                                                     <option value="Graduation">Graduation</option>
                                                                     {{-- <option value="BCA">BCA</option>
                                                                     <option value="B.Sc (CS/IT)">B.Sc (CS/IT)</option>
-                                                                    <option value="Other">Other (Equivalent)</option> --}}
+                                                                    <option value="Other">Other (Equivalent)</option>
+                                                                    --}}
                                                                 </select>
 
                                                                 <div id="editOtherQualificationDiv" class="hidden">
-                                                                    <input type="text" id="editOtherQualification" name="other_qualification"
-                                                                            class="w-full border rounded p-2 mt-1" 
-                                                                            placeholder="Please specify your qualification">
+                                                                    <input type="text" id="editOtherQualification"
+                                                                        name="other_qualification"
+                                                                        class="w-full border rounded p-2 mt-1"
+                                                                        placeholder="Please specify your qualification">
                                                                 </div>
-                                                           </div>
+                                                            </div>
                                                         </div>
 
-                                                        
+
                                                         <div>
                                                             <label class="block text-sm font-medium">Photo</label>
-                                                            <input type="file" name="photo"
-                                                                id="editStaffPhoto"
-                                                                accept=".jpg,.jpeg,.png" 
+                                                            <input type="file" name="photo" id="editStaffPhoto"
+                                                                accept=".jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
 
                                                             <div id="editPhotoPreviewContainer" class="mt-2 hidden">
@@ -503,12 +643,12 @@
                                                         </div>
 
                                                         <div>
-                                                            <label class="block text-sm font-medium">Aadhaar Card (with address in one pdf)</label>
-                                                            <input type="file" name="aadhar_card"
-                                                                id="editStaffAadhar"
-                                                                accept=".pdf"
-                                                                class="w-full border rounded p-2 mt-1">
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+                                                            <label class="block text-sm font-medium">Aadhaar Card (with
+                                                                address in one pdf)</label>
+                                                            <input type="file" name="aadhar_card" id="editStaffAadhar"
+                                                                accept=".pdf" class="w-full border rounded p-2 mt-1">
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF.
+                                                                Max size: 2 MB</p>
                                                         </div>
                                                     </div>
                                                     <div class="space-y-4">
@@ -516,8 +656,7 @@
                                                             <label class="block text-sm font-medium">Educational
                                                                 Qualification Certificates</label>
                                                             <input type="file" name="education_certificates[]"
-                                                                id="editStaffEdu"
-                                                                multiple accept=".pdf,.jpg,.jpeg,.png"
+                                                                id="editStaffEdu" multiple accept=".pdf,.jpg,.jpeg,.png"
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
@@ -525,15 +664,14 @@
                                                         <div>
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
-                                                            <input type="file" name="cv"
-                                                                id="editStaffcv"
-                                                                accept=".pdf"
+                                                            <input type="file" name="cv" id="editStaffcv" accept=".pdf"
                                                                 class="w-full border rounded p-2 mt-1">
-                                                                
-                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF. Max size: 2 MB</p>
+
+                                                            <p class="text-[12px] text-gray-600">*Allowed formats: PDF.
+                                                                Max size: 2 MB</p>
                                                         </div>
-                                                        
-                                            
+
+
                                                     </div>
                                                 </div>
 
@@ -581,53 +719,96 @@
         </div>
     </div>
     </div>
+
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Add modal
-    document.getElementById('qualification').addEventListener('change', function () {
-        const otherDiv = document.getElementById('otherQualificationDiv');
-        const otherInput = document.getElementById('otherQualification');
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('#schoolSelect')) {
+                window.addSchoolSelect = new TomSelect('#schoolSelect', {
+                    plugins: ['remove_button'],
+                    create: false,
+                    maxItems: null,
+                    placeholder: '-- Select one or more schools --',
+                    sortField: { field: "text", direction: "asc" },
+                });
+            }
 
-        if (this.value === 'Other') {
-            otherDiv.classList.remove('hidden');
-            otherInput.required = true;
-        } else {
-            otherDiv.classList.add('hidden');
-            otherInput.required = false;
-            otherInput.value = '';
-        }
-    });
+            // 🏫 TomSelect for Edit Modal (School)
+            if (document.querySelector('#editSchoolSelect')) {
+                window.editSchoolSelect = new TomSelect('#editSchoolSelect', {
+                    plugins: ['remove_button'],
+                    create: false,
+                    maxItems: null,
+                    placeholder: '-- Select one or more schools --',
+                    sortField: { field: "text", direction: "asc" },
+                });
+            }
+            $(document).on("click", ".editBtn", function () {
+                // let trainerId = $(this).data("id");
+                let schoolIds = $(this).data("school").toString().split(",");
 
-    // Edit modal
-    document.getElementById('editQualification').addEventListener('change', function () {
-        const otherDiv = document.getElementById('editOtherQualificationDiv');
-        const otherInput = document.getElementById('editOtherQualification');
+                // ✅ Update TomSelect (School)
+                window.editSchoolSelect.clear();
+                schoolIds.forEach(id => {
+                    window.editSchoolSelect.addItem(id.trim());
+                });
 
-        if (this.value === 'Other') {
-            otherDiv.classList.remove('hidden');
-            otherInput.required = true;
-        } else {
-            otherDiv.classList.add('hidden');
-            otherInput.required = false;
-            otherInput.value = '';
-        }
-    });
-});
-</script>
+                $("#editStaffModal").removeClass("hidden");
+            });
+
+        });
+
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add modal
+            document.getElementById('qualification').addEventListener('change', function () {
+                const otherDiv = document.getElementById('otherQualificationDiv');
+                const otherInput = document.getElementById('otherQualification');
+
+                if (this.value === 'Other') {
+                    otherDiv.classList.remove('hidden');
+                    otherInput.required = true;
+                } else {
+                    otherDiv.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = '';
+                }
+            });
+
+            // Edit modal
+            document.getElementById('editQualification').addEventListener('change', function () {
+                const otherDiv = document.getElementById('editOtherQualificationDiv');
+                const otherInput = document.getElementById('editOtherQualification');
+
+                if (this.value === 'Other') {
+                    otherDiv.classList.remove('hidden');
+                    otherInput.required = true;
+                } else {
+                    otherDiv.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = '';
+                }
+            });
+        });
+    </script>
     <script>
         // add
-        document.getElementById("districtSelect").addEventListener("change", function() {
+        document.getElementById("districtSelect").addEventListener("change", function () {
             let selected = this.options[this.selectedIndex];
             document.getElementById("districtName").value = selected.getAttribute("data-name");
         });
         // edit #// For Edit Modal
-        document.getElementById("editDistrictSelect").addEventListener("change", function() {
+        document.getElementById("editDistrictSelect").addEventListener("change", function () {
             let selected = this.options[this.selectedIndex];
             document.getElementById("editDistrictName").value = selected.getAttribute("data-name");
         });
     </script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
             let currentPage = 1;
             let sortDirection = {}; // keep track of each column's sorting state
@@ -637,7 +818,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 let rows = $("#sustaffTable tbody tr");
 
                 // Filter rows
-                rows.each(function() {
+                rows.each(function () {
                     let rowText = $(this).text().toLowerCase();
                     $(this).toggle(rowText.indexOf(searchText) > -1);
                 });
@@ -664,33 +845,33 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             // Change rows per page
-            $("#rowsPerPage").on("change", function() {
+            $("#rowsPerPage").on("change", function () {
                 rowsPerPage = parseInt($(this).val());
                 currentPage = 1;
                 renderTable();
             });
 
             // Search filter
-            $("#searchInput").on("keyup", function() {
+            $("#searchInput").on("keyup", function () {
                 currentPage = 1;
                 renderTable();
             });
 
             // Pagination click
-            $(document).on("click", ".page-btn", function() {
+            $(document).on("click", ".page-btn", function () {
                 currentPage = parseInt($(this).text());
                 renderTable();
             });
 
             // 🔽 Sorting click
-            $(document).on("click", ".sort", function() {
+            $(document).on("click", ".sort", function () {
                 let columnIndex = $(this).data("column");
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
                 let asc = sortDirection[columnIndex];
 
                 let rows = $("#sustaffTable tbody tr").get();
 
-                rows.sort(function(a, b) {
+                rows.sort(function (a, b) {
                     let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
                     let B = $(b).children("td").eq(columnIndex).text().toLowerCase();
 
@@ -702,7 +883,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 });
 
-                $.each(rows, function(index, row) {
+                $.each(rows, function (index, row) {
                     $("#sustaffTable tbody").append(row);
                 });
 
@@ -715,11 +896,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     </script>
     <script>
-        $(document).ready(function() {
-            $("#addStaffBtn").on("click", function() {
+        $(document).ready(function () {
+            $("#addStaffBtn").on("click", function () {
                 $("#addStaffModal").removeClass("hidden");
             });
-            $("#closeModal, #cancelModal").on("click", function() {
+            $("#closeModal, #cancelModal").on("click", function () {
                 $("#addStaffModal").addClass("hidden");
             });
         });
@@ -727,56 +908,63 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <script>
         // Auto fetch Date
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             let today = new Date().toISOString().split('T')[0];
             document.getElementById("training_date").value = today;
         });
     </script>
     @if ($errors->any())
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
+            document.addEventListener("DOMContentLoaded", function () {
                 // Open modal if there are validation errors
                 document.getElementById("addStaffModal").classList.remove("hidden");
             });
         </script>
     @endif
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Edit Modal
-            $(".editBtn").on("click", function() {
+            $(".editBtn").on("click", function () {
                 let id = $(this).data("id");
                 $("#editStaffId").val(id);
                 $("#editStaffName").val($(this).data("name"));
                 $("#editStaffEmail").val($(this).data("email"));
-                $("#editStaffSchool").val($(this).data("school_id"));
+                // $("#editStaffSchool").val($(this).data("school_id"));
                 $("#editStaffPhone").val($(this).data("phone"));
                 $("#editStaffWhatsapp").val($(this).data("whatsapp_number"));
                 $("#editStaffPincode").val($(this).data("pincode"));
                 $("#editStaffAddress").val($(this).data("address"));
-                // $("#editStaffPhoto").val($(this).data("photo"));
-                
-                let qual = $(this).data("highest_qualification");
-                    const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
 
-                    if (standardOptions.includes(qual)) {
-                        $("#editQualification").val(qual);
-                        $("#editOtherQualificationDiv").addClass("hidden");
-                        $("#editOtherQualification").val('');
-                    } else {
-                        $("#editQualification").val('Other');
-                        $("#editOtherQualificationDiv").removeClass("hidden");
-                        $("#editOtherQualification").val(qual);
-                    }
+                let qual = $(this).data("highest_qualification");
+                const standardOptions = ["B-Tech", "BCA", "B.Sc (CS/IT)"];
+
+                if (standardOptions.includes(qual)) {
+                    $("#editQualification").val(qual);
+                    $("#editOtherQualificationDiv").addClass("hidden");
+                    $("#editOtherQualification").val('');
+                } else {
+                    $("#editQualification").val('Other');
+                    $("#editOtherQualificationDiv").removeClass("hidden");
+                    $("#editOtherQualification").val(qual);
+                }
 
                 // Get district values
                 let distId = $(this).data("dist_id");   // DSM_DSCD
                 let distName = $(this).data("district"); // DSM_DSNM
                 let schoolId = $(this).data("school");
-                
-                $("#schoolSelect").val(schoolId); 
-                
+
+                $("#schoolSelect").val(schoolId);
+
                 $("#editDistrictSelect").val(distId); // select correct option
                 $("#editDistrictName").val(distName); // hidden input
+
+
+                // ✅ Set schools (multi-select)
+                let schoolIds = $(this).data("school").toString().split(",");
+                $("#editSchoolSelect option").prop("selected", false);
+                schoolIds.forEach(id => {
+                    $("#editSchoolSelect option[value='" + id.trim() + "']").prop("selected", true);
+                });
 
                 // Set form action dynamically
                 $("#editStaffForm").attr("action", "/supp-staff/" + id);
@@ -793,22 +981,86 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-                
+
             });
 
-            $("#closeEditModal, #cancelEditModal").on("click", function() {
+            $("#closeEditModal, #cancelEditModal").on("click", function () {
                 $("#editStaffModal").addClass("hidden");
             });
 
             // Delete Modal
-            $(".deleteBtn").on("click", function() {
+            $(".deleteBtn").on("click", function () {
                 let id = $(this).data("id");
                 $("#deleteStaffForm").attr("action", "/supp-staff/" + id);
                 $("#deleteStaffModal").removeClass("hidden");
             });
 
-            $("#cancelDeleteModal").on("click", function() {
+            $("#cancelDeleteModal").on("click", function () {
                 $("#deleteStaffModal").addClass("hidden");
+            });
+        });
+    </script>
+    <script>
+        document.getElementById("exportBtn").addEventListener("click", function () {
+
+            let table = document.getElementById("sustaffTable");
+
+            // Columns to skip (0-based index)
+            // sno=0, name=1, email=2, phone=3,Specialization=4, address=5, district=6, school=7
+            // unwanted: Photo=8, CV=8, Edu Cert=9, Aadhar=10, Actions=11
+            let skipCols = [6, 7, 8, 9, 10, 11, 12];
+
+            let exportedData = [];
+            let rows = table.querySelectorAll("tr");
+
+            rows.forEach((row, rowIndex) => {
+                let rowData = [];
+                let cols = row.querySelectorAll("th, td");
+
+                cols.forEach((cell, colIndex) => {
+                    if (!skipCols.includes(colIndex)) {
+                        rowData.push(cell.innerText.trim());
+                    }
+                });
+
+                exportedData.push(rowData);
+            });
+
+            // Create Excel sheet
+            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.aoa_to_sheet(exportedData);
+
+            XLSX.utils.book_append_sheet(wb, ws, "SupportingStaff");
+
+            // Download it
+            XLSX.writeFile(wb, "SupportingStaff.xlsx");
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <script>
+        //dist filter
+        document.addEventListener("DOMContentLoaded", function () {
+            const districtFilter = document.getElementById("districtFilter");
+            const table = document.getElementById("sustaffTable");
+            const rows = table.getElementsByTagName("tr");
+
+            districtFilter.addEventListener("change", function () {
+                const selectedDistrict = this.value;
+
+                for (let i = 1; i < rows.length; i++) {
+                    const distCell = rows[i].getElementsByTagName("td")[1]; // District column
+                    if (!distCell) continue;
+
+                    const districtCode = distCell.getAttribute("data-district-code");
+
+                    if (selectedDistrict === "" || districtCode === selectedDistrict) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
             });
         });
     </script>

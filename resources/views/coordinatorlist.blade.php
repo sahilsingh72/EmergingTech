@@ -23,7 +23,8 @@
 
 <body class="hold-transition sidebar-mini layout-fixed">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{--
+    <script src="https://cdn.tailwindcss.com"></script> --}}
     <div class="wrapper">
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
@@ -49,17 +50,36 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class="bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6"></i>Coordinator List</h2>
-                                    <div class="mb-4 flex justify-end">
-                                        <button id="addCoordinatorBtn"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-user-plus"></i> Add Coordinator
-                                        </button>
-                                    </div>
+
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                        $SahiluserId = Auth::user()->id;
+                                    @endphp
+                                    @if($roleId == 3 || $SahiluserId == 1)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="addCoordinatorBtn"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-user-plus"></i> Add Coordinator
+                                            </button>
+                                        </div>
+                                    @endif
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                    @endphp
+                                    @if($roleId == 2)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="exportBtn"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-file-excel"></i> Export Report
+                                            </button>
+                                        </div>
+                                    @endif
+
                                     @if (session('success'))
                                         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
                                             {{ session('success') }}
@@ -71,7 +91,8 @@
                                             {{ session('error') }}
                                         </div>
                                     @endif
-                                    <div class="flex justify-between items-center mb-4">
+                                    <div class="flex justify-between items-center mb-4 ">
+
                                         <!-- Rows per page -->
                                         <div>
                                             <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -80,42 +101,88 @@
                                                 <option value="10" selected>10</option>
                                                 <option value="25">25</option>
                                                 <option value="50">50</option>
+                                                <option value="100">100</option>
                                             </select>
                                         </div>
 
+                                        <!-- District Filter -->
+                                        <div>
+                                            <label for="districtFilter" class="mr-2">District:</label>
+                                            <select id="districtFilter" class="border rounded pl-2 pr-5">
+                                                <option value="">All</option>
+                                                @foreach($districts as $d)
+                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                         <!-- Search -->
                                         <div class="w-full sm:w-auto">
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                                class="border rounded p-2 h-7 w-full sm:w-64  focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
+
+
                                     </div>
 
                                     <!-- Coordinator Table -->
-                                    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+                                    <div class="p-3 bg-white shadow rounded-lg overflow-x-auto">
                                         <table id="coordinatorTable" class="w-full border-collapse">
                                             <thead>
                                                 <tr class="bg-gray-100 text-left">
                                                     <th class="p-2 border">SNO</th>
+                                                    <th class="p-2 border">District</th>
+                                                    <th class="p-2 border">School</th>
                                                     <th class="p-2 border">Name</th>
-                                                    <th class="p-2 border">Email</th>
                                                     <th class="p-2 border">Phone</th>
+                                                    <th class="p-2 border">Email</th>
+                                                    <th class="p-2 border">Address</th>
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
-                                                    <th class="p-2 border">Experience</th>
+                                                    {{-- <th class="p-2 border">Experience</th> --}}
                                                     <th class="p-2 border">Education Certificates</th>
                                                     <th class="p-2 border">Aadhaar Card</th>
-                                                    <th class="p-2 border text-center">Actions</th>
+                                                    @php
+                                                        $roleId = Auth::user()->role_id;
+                                                        $SahiluserId = Auth::user()->id;
+                                                    @endphp
+                                                    @if($roleId == 3 || $SahiluserId == 1)
+                                                        <th class="p-2 border text-center">Actions</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($coordinators as $index => $coordinator)
                                                     <tr>
                                                         <td class="p-2 border">{{ $index + 1 }}</td>
+                                                        @php
+                                                            $dist_id = $coordinator->dist_id;
+                                                            $dist_nm = 'N/A';
+                                                            foreach ($districts as $d) {
+                                                                if ($d->DSM_DSCD == $dist_id) {
+                                                                    $dist_nm = $d->DSM_DSNM;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <td class="p-2 border" data-district-code="{{ $dist_id }}">
+                                                            {{ $dist_nm }}
+                                                        </td>
+                                                        <td class="p-2 border">
+                                                            @if($coordinator->schools->isNotEmpty())
+                                                                @foreach($coordinator->schools as $school)
+                                                                    <span
+                                                                        class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs mr-1">
+                                                                        {{ $school->scm_name }},
+                                                                    </span></br>
+                                                                @endforeach
+                                                            @else
+                                                                <span class="text-gray-500">No School Assigned</span>
+                                                            @endif
+                                                        </td>
                                                         <td class="p-2 border">{{ $coordinator->coordinator_name }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->email }}</td>
                                                         <td class="p-2 border">{{ $coordinator->phone }}</td>
-
-                                                        {{-- Photo --}}
+                                                        <td class="p-2 border">{{ $coordinator->email }}</td>
+                                                        <td class="p-2 border">{{ $coordinator->address }}</td>
                                                         <td class="p-2 border">
                                                             @if ($coordinator->photo)
                                                                 <a href="{{ asset('storage/' . $coordinator->photo) }}"
@@ -138,14 +205,14 @@
                                                         </td>
 
                                                         {{-- Experience --}}
-                                                        <td class="p-2 border">
+                                                        {{-- <td class="p-2 border">
                                                             @if ($coordinator->experience_certificate)
-                                                                <a href="{{ asset('storage/' . $coordinator->experience_certificate) }}"
-                                                                    target="_blank" class="text-blue-600">View</a>
+                                                            <a href="{{ asset('storage/' . $coordinator->experience_certificate) }}"
+                                                                target="_blank" class="text-blue-600">View</a>
                                                             @else
-                                                                -
+                                                            -
                                                             @endif
-                                                        </td>
+                                                        </td> --}}
 
 
                                                         {{-- Education Certificates --}}
@@ -182,26 +249,38 @@
                                                             @endif
                                                         </td>
                                                         {{-- Actions --}}
-                                                        <td class="p-2 border text-center">
-                                                            <button type="button" class="text-green-500 mx-1 editBtn"
-                                                                data-id="{{ $coordinator->coordinator_id }}"
-                                                                data-name="{{ $coordinator->coordinator_name }}"
-                                                                data-email="{{ $coordinator->email }}"
-                                                                data-phone="{{ $coordinator->phone }}"
-                                                                data-whatsapp_number="{{ $coordinator->whatsapp_number}}"
-                                                                data-dist_id="{{ $coordinator->dist_id }}"
-                                                                data-district="{{ $coordinator->district }}"
-                                                                data-pincode="{{ $coordinator->pincode}}"
-                                                                data-address="{{ $coordinator->address}}"
-                                                                data-school_id="{{ $coordinator->scm_id }}"
-                                                                data-highest_qualification="{{ $coordinator->highest_qual }}">
-                                                                <i class="fas fa-edit"></i>
-                                                            </button>
-                                                            {{-- <button type="button" class="text-red-500 mx-1 deleteBtn"
-                                                                data-id="{{ $coordinator->coordinator_id }}">
-                                                                <i class="fas fa-trash-alt"></i>
-                                                            </button> --}}
-                                                        </td>
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                            $SahiluserId = Auth::user()->id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $SahiluserId == 1)
+                                                            <td class="p-2 border text-center">
+                                                                <button type="button" class="text-green-500 mx-1 editBtn"
+                                                                    data-id="{{ $coordinator->coordinator_id }}"
+                                                                    data-name="{{ $coordinator->coordinator_name }}"
+                                                                    data-email="{{ $coordinator->email }}"
+                                                                    data-phone="{{ $coordinator->phone }}"
+                                                                    data-whatsapp_number="{{ $coordinator->whatsapp_number}}"
+                                                                    data-dist_id="{{ $coordinator->dist_id }}"
+                                                                    data-district="{{ $coordinator->district }}"
+                                                                    data-pincode="{{ $coordinator->pincode}}"
+                                                                    data-address="{{ $coordinator->address}}" {{--
+                                                                    data-school_id="{{ $coordinator->scm_id }}" --}}
+                                                                    data-school="{{ implode(',', $coordinator->school_ids ?? []) }}"
+                                                                    data-highest_qualification="{{ $coordinator->highest_qual }}">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                @php
+                                                                    $SahiluserId = Auth::user()->id;
+                                                                @endphp
+                                                                @if($SahiluserId == 1)
+                                                                    <button type="button" class="text-red-500 mx-1 deleteBtn"
+                                                                        data-id="{{ $coordinator->coordinator_id }}">
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </td>
+                                                        @endif
                                                     </tr>
                                                 @endforeach
 
@@ -258,15 +337,14 @@
                                                                 class="w-full border rounded p-2 mt-1 focus:ring focus:ring-green-200"
                                                                 required>
                                                         </div>
+
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="schoolSelect"
-                                                                class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select School --</option>
+                                                                class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="schoolSelect" multiple
+                                                                class="w-full border-gray-300 rounded-md shadow-sm">
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}"
-                                                                        data-name="{{ $school->scm_name }}">
+                                                                    <option value="{{ $school->scm_id }}">
                                                                         {{ $school->scm_name }}
                                                                     </option>
                                                                 @endforeach
@@ -333,7 +411,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div>
+                                                    {{-- <div>
                                                         <label
                                                             class="block text-sm font-medium text-gray-700">Experience
                                                             Certificate</label>
@@ -342,6 +420,14 @@
                                                             class="w-full border rounded p-2 mt-1" required>
                                                         <p class="text-xs text-gray-600 mt-1">Allowed: PDF, JPG, PNG |
                                                             Max 2MB</p>
+                                                    </div> --}}
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-700">CV /
+                                                            Resume</label>
+                                                        <input type="file" name="cv" accept=".pdf"
+                                                            class="w-full border rounded p-2 mt-1" required>
+                                                        <p class="text-xs text-gray-600 mt-1">Allowed: PDF | Max 2MB
+                                                        </p>
                                                     </div>
                                                 </div>
 
@@ -370,14 +456,7 @@
                                                     </div>
 
                                                     <div class="space-y-4">
-                                                        <div>
-                                                            <label class="block text-sm font-medium text-gray-700">CV /
-                                                                Resume</label>
-                                                            <input type="file" name="cv" accept=".pdf"
-                                                                class="w-full border rounded p-2 mt-1" required>
-                                                            <p class="text-xs text-gray-600 mt-1">Allowed: PDF | Max 2MB
-                                                            </p>
-                                                        </div>
+
 
                                                         <div>
                                                             <label
@@ -436,16 +515,16 @@
                                                             <input type="email" name="email" id="editCoordinatorEmail"
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
+
                                                         <div>
                                                             <label
-                                                                class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="editCoordinatorSchool"
-                                                                class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select School --</option>
+                                                                class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="editSchoolSelect" multiple
+                                                                class="w-full border-gray-300 rounded-md shadow-sm">
                                                                 @foreach ($schools as $school)
                                                                     <option value="{{ $school->scm_id }}"
-                                                                        data-name="{{ $school->scm_name }}">
-                                                                        {{ $school->scm_name }}
+                                                                        @if(in_array($school->scm_id, $trainer->school_ids ?? [])) selected @endif>
+                                                                        {{ $school->scm_name }}_{{ $school->scm_udise_code }}
                                                                     </option>
                                                                 @endforeach
                                                             </select>
@@ -533,7 +612,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="space-y-4">
-                                                        <div>
+                                                        {{-- <div>
                                                             <label class="block text-sm font-medium">Experience
                                                                 Certificate</label>
                                                             <input type="file" name="experience_certificate"
@@ -541,7 +620,7 @@
                                                                 class="w-full border rounded p-2 mt-1">
                                                             <p class="text-[12px] text-gray-600">*Allowed formats: PDF,
                                                                 JPG, PNG. Max size: 2 MB</p>
-                                                        </div>
+                                                        </div> --}}
                                                         <div>
                                                             <label class="block text-sm font-medium">CV /
                                                                 Resume</label>
@@ -607,6 +686,48 @@
         </div>
     </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('#schoolSelect')) {
+                window.addSchoolSelect = new TomSelect('#schoolSelect', {
+                    plugins: ['remove_button'],
+                    create: false,
+                    maxItems: null,
+                    placeholder: '-- Select one or more schools --',
+                    sortField: { field: "text", direction: "asc" },
+                });
+            }
+
+            // 🏫 TomSelect for Edit Modal (School)
+            if (document.querySelector('#editSchoolSelect')) {
+                window.editSchoolSelect = new TomSelect('#editSchoolSelect', {
+                    plugins: ['remove_button'],
+                    create: false,
+                    maxItems: null,
+                    placeholder: '-- Select one or more schools --',
+                    sortField: { field: "text", direction: "asc" },
+                });
+            }
+            $(document).on("click", ".editBtn", function () {
+                // let trainerId = $(this).data("id");
+                let schoolIds = $(this).data("school").toString().split(",");
+
+                // ✅ Update TomSelect (School)
+                window.editSchoolSelect.clear();
+                schoolIds.forEach(id => {
+                    window.editSchoolSelect.addItem(id.trim());
+                });
+
+                $("#editCoordinatorModal").removeClass("hidden");
+            });
+
+        });
+
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Add modal
@@ -774,7 +895,7 @@
                 $("#editCoordinatorId").val(id);
                 $("#editCoordinatorName").val($(this).data("name"));
                 $("#editCoordinatorEmail").val($(this).data("email"));
-                $("#editCoordinatorSchool").val($(this).data("school_id"));
+                // $("#editCoordinatorSchool").val($(this).data("school_id"));
                 $("#editCoordinatorPhone").val($(this).data("phone"));
                 $("#editCoordinatorWhatsapp").val($(this).data("whatsapp_number"));
                 $("#editCoordinatorPincode").val($(this).data("pincode"));
@@ -803,11 +924,17 @@
                 $("#editDistrictSelect").val(distId); // select correct option
                 $("#editDistrictName").val(distName); // hidden input
 
+                // ✅ Set schools (multi-select)
+                let schoolIds = $(this).data("school").toString().split(",");
+                $("#editSchoolSelect option").prop("selected", false);
+                schoolIds.forEach(id => {
+                    $("#editSchoolSelect option[value='" + id.trim() + "']").prop("selected", true);
+                });
+
                 // Set form action dynamically
                 $("#editCoordinatorForm").attr("action", "/coordinators/" + id);
 
                 $("#editCoordinatorModal").removeClass("hidden");
-
 
             });
 
@@ -827,5 +954,70 @@
             });
         });
     </script>
+    <script>
+        document.getElementById("exportBtn").addEventListener("click", function () {
+
+            let table = document.getElementById("coordinatorTable");
+
+            // Columns to skip (0-based index)
+            // sno=0, name=1, email=2, phone=3, address=4, district=5, school=6
+            // unwanted: Photo=7, CV=8, Edu Cert=9, Aadhar=10, Actions=11
+            let skipCols = [7, 8, 9, 10, 11];
+
+            let exportedData = [];
+            let rows = table.querySelectorAll("tr");
+
+            rows.forEach((row, rowIndex) => {
+                let rowData = [];
+                let cols = row.querySelectorAll("th, td");
+
+                cols.forEach((cell, colIndex) => {
+                    if (!skipCols.includes(colIndex)) {
+                        rowData.push(cell.innerText.trim());
+                    }
+                });
+
+                exportedData.push(rowData);
+            });
+
+            // Create Excel sheet
+            let wb = XLSX.utils.book_new();
+            let ws = XLSX.utils.aoa_to_sheet(exportedData);
+
+            XLSX.utils.book_append_sheet(wb, ws, "Coordinators");
+
+            // Download it
+            XLSX.writeFile(wb, "Coordinators.xlsx");
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <script>
+        //dist filter
+        document.addEventListener("DOMContentLoaded", function () {
+            const districtFilter = document.getElementById("districtFilter");
+            const table = document.getElementById("coordinatorTable");
+            const rows = table.getElementsByTagName("tr");
+
+            districtFilter.addEventListener("change", function () {
+                const selectedDistrict = this.value;
+
+                for (let i = 1; i < rows.length; i++) {
+                    const distCell = rows[i].getElementsByTagName("td")[1]; // District column
+                    if (!distCell) continue;
+
+                    const districtCode = distCell.getAttribute("data-district-code");
+
+                    if (selectedDistrict === "" || districtCode === selectedDistrict) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            });
+        });
+    </script>
+
 </body>
 @include('components.footer')

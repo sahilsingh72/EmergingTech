@@ -49,17 +49,36 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class="bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6"></i>Trainer list</h2>
-                                    <div class="mb-4 flex justify-end">
-                                        <button id="addTrainerBtn"
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-user-plus"></i> Add Trainer
-                                        </button>
-                                    </div>
+                                     @php
+                                        $roleId = Auth::user()->role_id;
+                                        $SahiluserId = Auth::user()->id;
+                                    @endphp
+                                    @if($roleId == 3 || $SahiluserId == 1)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="addTrainerBtn"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-user-plus"></i> Add Trainer
+                                            </button>
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                    @endphp
+                                    @if($roleId == 2)
+                                        <div class="mb-4 flex justify-end">
+                                            <button id="exportBtn"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-file-excel"></i> Export Report
+                                            </button>
+                                        </div>
+                                    @endif
+
                                     @if (session('success'))
                                         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
                                             {{ session('success') }}
@@ -80,42 +99,84 @@
                                                 <option value="10" selected>10</option>
                                                 <option value="25">25</option>
                                                 <option value="50">50</option>
+                                                <option value="100">100</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- District Filter -->
+                                        <div>
+                                            <label for="districtFilter" class="mr-2">District:</label>
+                                            <select id="districtFilter" class="border rounded pl-2 pr-5">
+                                                <option value="">All</option>
+                                                @foreach($districts as $d)
+                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
 
                                         <!-- Search -->
-                                        <div class="w-full sm:w-auto">
+                                        <div class="w-full sm:w-auto ">
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                                class="border rounded p-2 h-7 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
+                                        
                                     </div>
 
                                     <!-- Trainer Table -->
-                                    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+                                    <div class="bg-white shadow rounded-lg p-3 overflow-x-auto">
                                         <table id="trainerTable" class="w-full border-collapse">
                                             <thead>
                                                 <tr class="bg-gray-100 text-left">
                                                     <th class="p-2 border">SNO</th>
-                                                    <th class="p-2 border">Name</th>
-                                                    <th class="p-2 border">Email</th>
-                                                    <th class="p-2 border">Phone</th>
+                                                    <th class="p-2 border">District</th>
+                                                    <th class="p-2 border">School</th>
                                                     <th class="p-2 border">Specialization</th>
+                                                    <th class="p-2 border">Name</th>
+                                                    <th class="p-2 border">Phone</th>
+                                                    <th class="p-2 border">Email</th>
                                                     <th class="p-2 border">Address</th>
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
                                                     <th class="p-2 border">Experience</th>
                                                     <th class="p-2 border">Education Certificates</th>
                                                     <th class="p-2 border">Aadhaar Card</th>
-                                                    <th class="p-2 border text-center">Actions</th>
+                                                    @php
+                                                        $roleId = Auth::user()->role_id;
+                                                        $SahiluserId = Auth::user()->id;
+                                                    @endphp
+                                                    @if($roleId == 3 || $SahiluserId == 1 )
+                                                        <th class="p-2 border text-center">Actions</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($trainers as $index => $trainer)
                                                     <tr>
                                                         <td class="p-2 border">{{ $index + 1 }}</td>
-                                                        <td class="p-2 border">{{ $trainer->trainer_name }}</td>
-                                                        <td class="p-2 border">{{ $trainer->email }}</td>
-                                                        <td class="p-2 border">{{ $trainer->phone }}</td>
+                                                        @php
+                                                            $dist_id = $trainer->dist_id;
+                                                            $dist_nm = 'N/A';
+                                                            foreach ($districts as $d) {
+                                                                if ($d->DSM_DSCD == $dist_id) {
+                                                                    $dist_nm = $d->DSM_DSNM;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        <td class="p-2 border" data-district-code="{{ $dist_id }}">
+                                                            {{ $dist_nm }}
+                                                        </td>
+                                                        <td class="p-2 border">
+                                                            @if($trainer->schools->isNotEmpty())
+                                                                @foreach($trainer->schools as $school)
+                                                                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs mr-1">
+                                                                        {{ $school->scm_name }},
+                                                                    </span></br>
+                                                                @endforeach
+                                                            @else
+                                                                <span class="text-gray-500">No School Assigned</span>
+                                                            @endif
+                                                        </td>
                                                         <td class="p-2 border">
                                                             @if (is_array($trainer->specialization))
                                                                 {{ implode(', ', $trainer->specialization) }}
@@ -123,8 +184,10 @@
                                                                 {{ $trainer->specialization }}
                                                             @endif
                                                         </td>
+                                                        <td class="p-2 border">{{ $trainer->trainer_name }}</td>
+                                                        <td class="p-2 border">{{ $trainer->phone }}</td>
+                                                        <td class="p-2 border">{{ $trainer->email }}</td>
                                                         <td class="p-2 border">{{ $trainer->address }}</td>
-
                                                         {{-- Photo --}}
                                                         <td class="p-2 border">
                                                             @if ($trainer->photo)
@@ -193,6 +256,11 @@
                                                             @endif
                                                         </td>
                                                         {{-- Actions --}}
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                            $SahiluserId = Auth::user()->id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $SahiluserId == 1)
                                                         <td class="p-2 border text-center">
                                                             <button type="button" class="text-green-500 mx-1 editBtn"
                                                                 data-id="{{ $trainer->trainer_id }}"
@@ -205,15 +273,22 @@
                                                                 data-pincode="{{ $trainer->pincode}}"
                                                                 data-specialization="{{ is_array($trainer->specialization) ? implode(',', $trainer->specialization) : $trainer->specialization }}"
                                                                 data-address="{{ $trainer->address }}"
-                                                                data-school_id="{{ $trainer->scm_id }}"
+                                                                {{-- data-school_id="{{ $trainer->scm_id }}" --}}
+                                                                data-school="{{ implode(',', $trainer->school_ids ?? []) }}"
                                                                 data-highest_qualification="{{ $trainer->highest_qual }}">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
-                                                            {{-- <button type="button" class="text-red-500 mx-1 deleteBtn"
-                                                                data-id="{{ $trainer->trainer_id }}">
-                                                                <i class="fas fa-trash-alt"></i>
-                                                            </button> --}}
+                                                            @php
+                                                                $SahiluserId = Auth::user()->id;
+                                                            @endphp
+                                                            @if($SahiluserId == 1)
+                                                                <button type="button" class="text-red-500 mx-1 deleteBtn"
+                                                                    data-id="{{ $trainer->trainer_id }}">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            @endif
                                                         </td>
+                                                        @endif
                                                     </tr>
                                                 @endforeach
 
@@ -267,18 +342,13 @@
                                                         </div>
 
                                                         <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="schoolSelect" class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select School --</option>
+                                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="schoolSelect" multiple class="w-full border-gray-300 rounded-md shadow-sm">
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
-                                                                        {{ $school->scm_name }}
-                                                                    </option>
+                                                                <option value="{{ $school->scm_id }}">{{ $school->scm_name }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
-
                                                         <!-- hidden input to store district name -->
                                                         <input type="hidden" name="district" id="districtName">
                                                     </div>
@@ -452,14 +522,13 @@
                                                                 class="w-full border rounded p-2 mt-1">
                                                         </div>
                                                         <div>
-                                                            <label
-                                                                class="block text-sm font-medium text-gray-700">School</label>
-                                                            <select name="school" id="editTrainerSchool" class="w-full border rounded p-2 mt-1" required>
-                                                                <option value="">-- Select School --</option>
+                                                            <label class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                            <select name="school[]" id="editSchoolSelect" multiple class="w-full border-gray-300 rounded-md shadow-sm">
                                                                 @foreach ($schools as $school)
-                                                                    <option value="{{ $school->scm_id }}" data-name="{{ $school->scm_name }}">
-                                                                        {{ $school->scm_name }}
-                                                                    </option>
+                                                                <option value="{{ $school->scm_id }}"
+                                                                    @if(in_array($school->scm_id, $trainer->school_ids ?? [])) selected @endif>
+                                                                    {{ $school->scm_name }}_{{ $school->scm_udise_code }}
+                                                                </option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -620,6 +689,56 @@
         </div>
     </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.querySelector('#schoolSelect')) {
+        window.addSchoolSelect = new TomSelect('#schoolSelect', {
+            plugins: ['remove_button'],
+            create: false,
+            maxItems: null,
+            placeholder: '-- Select one or more schools --',
+            sortField: { field: "text", direction: "asc" },
+        });
+    }
+
+    // 🏫 TomSelect for Edit Modal (School)
+    if (document.querySelector('#editSchoolSelect')) {
+        window.editSchoolSelect = new TomSelect('#editSchoolSelect', {
+            plugins: ['remove_button'],
+            create: false,
+            maxItems: null,
+            placeholder: '-- Select one or more schools --',
+            sortField: { field: "text", direction: "asc" },
+        });
+    }
+    $(document).on("click", ".editBtn", function() {
+        let trainerId = $(this).data("id");
+        let schoolIds = $(this).data("school").toString().split(",");
+        let specs = $(this).data("specialization").toString().split(",");
+
+        // ✅ Update TomSelect (School)
+        window.editSchoolSelect.clear();
+        schoolIds.forEach(id => {
+            window.editSchoolSelect.addItem(id.trim());
+        });
+
+        // ✅ Update Choices.js (Specialization)
+        window.editSpecializationChoices.removeActiveItems();
+        specs.forEach(s => {
+            window.editSpecializationChoices.setChoiceByValue(s.trim());
+        });
+
+        $("#editTrainerModal").removeClass("hidden");
+    });
+
+});
+         
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
      <script>
 document.addEventListener("DOMContentLoaded", function() {
     // Add modal
@@ -673,14 +792,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
             var multipleCancelButton = new Choices('#specialization', {
                 removeItemButton: true,
-                maxItemCount: 3,
+                maxItemCount: 1,
                 searchResultLimit: 3,
                 renderChoiceLimit: 3
             });
 
             var multipleCancelButton1 = new Choices('#editSpecialization', {
                 removeItemButton: true,
-                maxItemCount: 3,
+                maxItemCount: 1,
                 searchResultLimit: 3,
                 renderChoiceLimit: 3
             });
@@ -818,7 +937,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 $("#editTrainerId").val(id);
                 $("#editTrainerName").val($(this).data("name"));
                 $("#editTrainerEmail").val($(this).data("email"));
-                $("#editTrainerSchool").val($(this).data("school_id"));
+                // $("#editTrainerSchool").val($(this).data("school_id"));
                 $("#editTrainerPhone").val($(this).data("phone"));
                 $("#editTrainerWhatsapp").val($(this).data("whatsapp_number"));
                 $("#editTrainerPincode").val($(this).data("pincode"));
@@ -855,6 +974,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     true);
                 });
 
+                // ✅ Set schools (multi-select)
+                let schoolIds = $(this).data("school").toString().split(",");
+                $("#editSchoolSelect option").prop("selected", false);
+                schoolIds.forEach(id => {
+                    $("#editSchoolSelect option[value='" + id.trim() + "']").prop("selected", true);
+                });
+
                 // Set form action dynamically
                 $("#editTrainerForm").attr("action", "/trainers/" + id);
 
@@ -877,5 +1003,69 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     </script>
+    <script>
+document.getElementById("exportBtn").addEventListener("click", function () {
+
+    let table = document.getElementById("trainerTable");
+
+    // Columns to skip (0-based index)
+    // sno=0, name=1, email=2, phone=3,Specialization=4, address=5, district=6, school=7
+    // unwanted: Photo=8, CV=8, Edu Cert=9, Aadhar=10, Actions=11
+    let skipCols = [8,9,10,11,12];
+
+    let exportedData = [];
+    let rows = table.querySelectorAll("tr");
+
+    rows.forEach((row, rowIndex) => {
+        let rowData = [];
+        let cols = row.querySelectorAll("th, td");
+
+        cols.forEach((cell, colIndex) => {
+            if (!skipCols.includes(colIndex)) {
+                rowData.push(cell.innerText.trim());
+            }
+        });
+
+        exportedData.push(rowData);
+    });
+
+    // Create Excel sheet
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.aoa_to_sheet(exportedData);
+
+    XLSX.utils.book_append_sheet(wb, ws, "Trainers");
+
+    // Download it
+    XLSX.writeFile(wb, "Trainers.xlsx");
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+    //dist filter
+document.addEventListener("DOMContentLoaded", function () {
+    const districtFilter = document.getElementById("districtFilter");
+    const table = document.getElementById("trainerTable");
+    const rows = table.getElementsByTagName("tr");
+
+    districtFilter.addEventListener("change", function () {
+        const selectedDistrict = this.value;
+
+        for (let i = 1; i < rows.length; i++) {
+            const distCell = rows[i].getElementsByTagName("td")[1]; // District column
+            if (!distCell) continue;
+
+            const districtCode = distCell.getAttribute("data-district-code");
+
+            if (selectedDistrict === "" || districtCode === selectedDistrict) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    });
+});
+</script>
+    
 </body>
 @include('components.footer')
