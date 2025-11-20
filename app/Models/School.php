@@ -24,6 +24,7 @@ class School extends Model
         'scm_subdivision_name',
         'scm_address',
         'scm_pin_code',
+        'training_date',
         'training_completed',
    ];
 
@@ -32,8 +33,22 @@ class School extends Model
             return $this->belongsTo(District::class, 'scm_dist_id', 'DSM_DSCD');
         }
 
-   
+    public function trainers()
+    {
+        return $this->belongsToMany(Trainer::class, 'trainer_scm_allocation', 'scm_id', 'trainer_id');
+    }
 
-    
-    
+    public function coordinators()
+    {
+        return $this->belongsToMany(Coordinator::class, 'coordinator_scm_allocation', 'scm_id', 'coordinator_id');
+    }
+    public function staffs()
+    {
+        return $this->belongsToMany(SuppStaff::class, 'staff_scm_allocation', 'scm_id', 'staff_id');
+    }
+    public function students()
+    {
+        return $this->hasMany(StudentMst::class, 'stu_scm_id', 'scm_id');
+    }
+
 }

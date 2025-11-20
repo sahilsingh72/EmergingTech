@@ -8,10 +8,8 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 class CoordinatorController extends Controller
@@ -24,16 +22,26 @@ class CoordinatorController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
 
-
         if (in_array($roleId, [1, 2])) {
             // ✅ Role 1 or 2 can see ALL coordinators
-            $coordinators = Coordinator::latest()->get();
+            $coordinators = Coordinator::with('schools', 'district')
+                ->orderBy(District::select('DSM_DSNM')
+                    ->whereColumn('dst_mst01.DSM_DSCD', 'coordinator_mst.dist_id'))
+                ->get();
+        } elseif ($roleId == 6) {
+            // Coordinator: find their DLC (assignUnder_id), then show all coordinators under same DLC
+            $dlcId = Auth::user()->assignUnder_id;
+
+            $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+                $query->where('assignUnder_id', $dlcId);
+            })->latest()->get();
         } else {
             // ✅ Others see only coordinators created by them (via assignUnder_id)
-            $coordinators = Coordinator::whereHas('user', function ($query) use ($userId) {
+            $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->latest()->get();
         }
+
         // $coordinators = Coordinator::latest()->get();
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         if ($roleId == 1 || $roleId == 2) {
@@ -51,25 +59,14 @@ class CoordinatorController extends Controller
         $userId   = Auth::id();
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
 
-        // // Ensure storage/app/public exists
-        // $storagePublicPath = storage_path('app/public');
-        // if (!File::exists($storagePublicPath)) {
-        //     File::makeDirectory($storagePublicPath, 0775, true);
-        // }
-
-        // // Ensure public/storage symlink exists
-        // $publicStorage = public_path('storage');
-        // if (!file_exists($publicStorage)) {
-        //     Artisan::call('storage:link');
-        // }
-
+        //  VALIDATION ONLY - DO NOT CREATE USER YET
         $validated = $request->validate([
             'coordinator_name' => 'required|string|max:255',
             'email' => [
                 'required',
                 'email',
                 function ($attribute, $value, $fail) use ($coordinator) {
-                    // Check trainers table excluding current trainer
+                    // Check coord table excluding current coord
                     $existsInTrainers = DB::table('coordinator_mst')
                         ->where('email', $value)
                         ->where('coordinator_id', '<>', $coordinator->coordinator_id)
@@ -88,7 +85,8 @@ class CoordinatorController extends Controller
             'phone' => 'required|string|max:20',
             'whatsapp_number' => 'required|string|max:20',
             'address' => 'required|string|max:500',
-            'school' => 'required',
+            'school' => 'required|array',
+            'school.*' => 'exists:school_mst,scm_id',
             // 'dist_id' => 'nullable|string|max:50',
             // 'district' => 'nullable|string|max:500',
             'pincode' => 'required|digits:6',
@@ -107,67 +105,209 @@ class CoordinatorController extends Controller
             'aadhar_card.max' => 'The aadhaar card must not be larger than 2 MB.',
         ]);
 
-        $data = $validated;
+        //  RUN EVERYTHING INSIDE A TRANSACTION
+        DB::beginTransaction();
+        try {
+            $data = $validated;
 
-        $data['scm_id'] = $request->school;
-        $data['dist_id'] = $districtID[0]->district_id;
+            // $data['scm_id'] = $request->school;
+            $data['dist_id'] = $districtID[0]->district_id;
 
-        if ($request->highest_qualification === 'Other') {
-            $data['highest_qual'] = $request->other_qualification; // save custom input
-        } else {
-            $data['highest_qual'] = $request->highest_qualification;
-        }
-
-        $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->coordinator_name);
-        // File uploads
-        if ($request->hasFile('cv')) {
-            $file = $request->file('cv');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['cv'] = $file->storeAs("coordinators/{$coordinatorName}/cv", $filename, 'public');
-        }
-        if ($request->hasFile('experience_certificate')) {
-            $file = $request->file('experience_certificate');
-            $filename = $file->getClientOriginalName();
-            $data['experience_certificate'] = $file->storeAs("coordinators/{$coordinatorName}/experience", $filename, 'public');
-        }
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = $file->getClientOriginalName();
-            $data['photo'] = $file->storeAs("coordinators/{$coordinatorName}/photos", $filename, 'public');
-        }
-        if ($request->hasFile('education_certificates')) {
-            $paths = [];
-            foreach ($request->file('education_certificates') as $file) {
-                $filename = $file->getClientOriginalName();
-                $paths[] = $file->storeAs("coordinators/{$coordinatorName}/education", $filename, 'public');
+            if ($request->highest_qualification === 'Other') {
+                $data['highest_qual'] = $request->other_qualification; // save custom input
+            } else {
+                $data['highest_qual'] = $request->highest_qualification;
             }
-            $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
+
+            $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->coordinator_name);
+            // File uploads
+            if ($request->hasFile('cv')) {
+                $file = $request->file('cv');
+                $filename = $file->getClientOriginalName(); // to avoid overwriting
+                $data['cv'] = $file->storeAs("coordinators/{$coordinatorName}/cv", $filename, 'public');
+            }
+            if ($request->hasFile('experience_certificate')) {
+                $file = $request->file('experience_certificate');
+                $filename = $file->getClientOriginalName();
+                $data['experience_certificate'] = $file->storeAs("coordinators/{$coordinatorName}/experience", $filename, 'public');
+            }
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $filename = $file->getClientOriginalName();
+                $data['photo'] = $file->storeAs("coordinators/{$coordinatorName}/photos", $filename, 'public');
+            }
+            if ($request->hasFile('education_certificates')) {
+                $paths = [];
+                foreach ($request->file('education_certificates') as $file) {
+                    $filename = $file->getClientOriginalName();
+                    $paths[] = $file->storeAs("coordinators/{$coordinatorName}/education", $filename, 'public');
+                }
+                $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
+            }
+            if ($request->hasFile('aadhar_card')) {
+                $file = $request->file('aadhar_card');
+                $filename = $file->getClientOriginalName(); // to avoid overwriting
+                $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
+            }
+
+            // CREATE USER ONLY AFTER SUCCESSFUL VALIDATION + FILE HANDLING
+            $user_data = ([
+                'name' => $data['coordinator_name'],
+                'email' => $data['email'],
+                'district_id' => $data['dist_id'],
+                // 'institute_id' => $data['scm_id'],
+                'password' => Hash::make('Coordinator@ET'),
+                'role_id' => 6,
+                'assignUnder_id' => $userId,
+                'created_at' => now()
+
+            ]);
+            $User_dtls = User::create($user_data);
+            $data['user_id'] = $User_dtls->id;
+
+            $coordinator = Coordinator::create($data);
+
+            foreach ($request->school as $scm_id) {
+                DB::table('coordinator_scm_allocation')->insert([
+                    'coordinator_id' => $coordinator->coordinator_id,
+                    'scm_id' => $scm_id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('coordinators.index')->with('success', 'Coordinator added successfully!');
+        } catch (\Exception $e) {
+
+            DB::rollBack(); // ⭐ ROLLBACK USER + COORDINATOR
+
+            return back()
+                ->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()])
+                ->withInput();
         }
-        if ($request->hasFile('aadhar_card')) {
-            $file = $request->file('aadhar_card');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
-        }
-
-
-        $user_data = ([
-            'name' => $data['coordinator_name'],
-            'email' => $data['email'],
-            'district_id' => $data['dist_id'],
-            'institute_id' => $data['scm_id'],
-            'password' => Hash::make('Coordinator@ET'),
-            'role_id' => 6,
-            'assignUnder_id' => $userId,
-            'created_at' => now()
-
-        ]);
-        $User_dtls = User::create($user_data);
-        $data['user_id'] = $User_dtls->id;
-        Coordinator::create($data);
-
-        return redirect()->route('coordinators.index')->with('success', 'Coordinator added successfully!');
     }
 
+    // public function store(Request $request, Coordinator $coordinator)
+    // {
+    //     $userId   = Auth::id();
+    //     $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
+    //     $validated = $request->validate([
+    //         'coordinator_name' => 'required|string|max:255',
+    //         'email' => [
+    //             'required',
+    //             'email',
+    //             function ($attribute, $value, $fail) use ($coordinator) {
+    //                 // Check coord table excluding current coord
+    //                 $existsInTrainers = DB::table('coordinator_mst')
+    //                     ->where('email', $value)
+    //                     ->where('coordinator_id', '<>', $coordinator->coordinator_id)
+    //                     ->exists();
+
+    //                 // Check user table
+    //                 $existsInUsers = DB::table('users')
+    //                     ->where('email', $value)
+    //                     ->exists();
+
+    //                 if ($existsInTrainers || $existsInUsers) {
+    //                     $fail('The email has already been taken.');
+    //                 }
+    //             },
+    //         ],
+    //         'phone' => 'required|string|max:20',
+    //         'whatsapp_number' => 'required|string|max:20',
+    //         'address' => 'required|string|max:500',
+    //         'school' => 'required|array',
+    //         'school.*' => 'exists:school_mst,scm_id',
+    //         // 'dist_id' => 'nullable|string|max:50',
+    //         // 'district' => 'nullable|string|max:500',
+    //         'pincode' => 'required|digits:6',
+    //         'highest_qualification' => 'required|string|max:255',
+    //         'other_qualification' => 'nullable|string|max:255',
+    //         'cv' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
+    //         'experience_certificate' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+    //         'photo' => 'image|mimes:jpg,jpeg,png|max:2048',
+    //         'education_certificates.*' => 'file|mimes:pdf,jpg,jpeg,png|max:2048',
+    //         'aadhar_card' => 'file|mimes:pdf,application/pdf,doc,docx|max:2048',
+    //     ], [
+    //         'cv.max' => 'The CV must not be larger than 2 MB.',
+    //         'experience_certificate.max' => 'The experience certificate must not be larger than 2 MB.',
+    //         'photo.max' => 'The photo must not be larger than 2 MB.',
+    //         'education_certificates.*.max' => 'Each education certificate must not be larger than 2 MB.',
+    //         'aadhar_card.max' => 'The aadhaar card must not be larger than 2 MB.',
+    //     ]);
+
+    //     $data = $validated;
+
+    //     // $data['scm_id'] = $request->school;
+    //     $data['dist_id'] = $districtID[0]->district_id;
+
+    //     if ($request->highest_qualification === 'Other') {
+    //         $data['highest_qual'] = $request->other_qualification; // save custom input
+    //     } else {
+    //         $data['highest_qual'] = $request->highest_qualification;
+    //     }
+
+    //     $coordinatorName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->coordinator_name);
+    //     // File uploads
+    //     if ($request->hasFile('cv')) {
+    //         $file = $request->file('cv');
+    //         $filename = $file->getClientOriginalName(); // to avoid overwriting
+    //         $data['cv'] = $file->storeAs("coordinators/{$coordinatorName}/cv", $filename, 'public');
+    //     }
+    //     if ($request->hasFile('experience_certificate')) {
+    //         $file = $request->file('experience_certificate');
+    //         $filename = $file->getClientOriginalName();
+    //         $data['experience_certificate'] = $file->storeAs("coordinators/{$coordinatorName}/experience", $filename, 'public');
+    //     }
+    //     if ($request->hasFile('photo')) {
+    //         $file = $request->file('photo');
+    //         $filename = $file->getClientOriginalName();
+    //         $data['photo'] = $file->storeAs("coordinators/{$coordinatorName}/photos", $filename, 'public');
+    //     }
+    //     if ($request->hasFile('education_certificates')) {
+    //         $paths = [];
+    //         foreach ($request->file('education_certificates') as $file) {
+    //             $filename = $file->getClientOriginalName();
+    //             $paths[] = $file->storeAs("coordinators/{$coordinatorName}/education", $filename, 'public');
+    //         }
+    //         $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
+    //     }
+    //     if ($request->hasFile('aadhar_card')) {
+    //         $file = $request->file('aadhar_card');
+    //         $filename = $file->getClientOriginalName(); // to avoid overwriting
+    //         $data['aadhar_card'] = $file->storeAs("coordinators/{$coordinatorName}/aadhar_card", $filename, 'public');
+    //     }
+
+
+    //     $user_data = ([
+    //         'name' => $data['coordinator_name'],
+    //         'email' => $data['email'],
+    //         'district_id' => $data['dist_id'],
+    //         // 'institute_id' => $data['scm_id'],
+    //         'password' => Hash::make('Coordinator@ET'),
+    //         'role_id' => 6,
+    //         'assignUnder_id' => $userId,
+    //         'created_at' => now()
+
+    //     ]);
+    //     $User_dtls = User::create($user_data);
+    //     $data['user_id'] = $User_dtls->id;
+    //     $coordinator = Coordinator::create($data);
+
+    //     foreach ($request->school as $scm_id) {
+    //         DB::table('coordinator_scm_allocation')->insert([
+    //             'coordinator_id' => $coordinator->coordinator_id,
+    //             'scm_id' => $scm_id,
+    //             'created_at' => now(),
+    //             'updated_at' => now(),
+    //         ]);
+    //     }
+
+    //     return redirect()->route('coordinators.index')->with('success', 'Coordinator added successfully!');
+    // }
 
     public function edit(Coordinator $coordinator)
     {
@@ -178,17 +318,7 @@ class CoordinatorController extends Controller
 
     public function update(Request $request, Coordinator $coordinator)
     {
-        // // Ensure storage/app/public exists
-        // $storagePublicPath = storage_path('app/public');
-        // if (!File::exists($storagePublicPath)) {
-        //     File::makeDirectory($storagePublicPath, 0775, true);
-        // }
 
-        // // Ensure public/storage symlink exists
-        // $publicStorage = public_path('storage');
-        // if (!file_exists($publicStorage)) {
-        //     Artisan::call('storage:link');
-        // }
 
         $validated = $request->validate([
             'coordinator_name' => 'required|string|max:255',
@@ -196,7 +326,8 @@ class CoordinatorController extends Controller
             'phone' => 'nullable|string|max:20',
             'whatsapp_number' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'school' => 'required',
+            'school' => 'required|array',
+            'school.*' => 'exists:school_mst,scm_id',
             // 'district' => 'nullable|string|max:500',
             // 'dist_id' => 'nullable|string|max:50',
             'pincode' => 'nullable|digits:6',
@@ -285,7 +416,7 @@ class CoordinatorController extends Controller
             }
             $data['education_certificates'] = json_encode($paths);
         }
-        $data['scm_id'] = $data['school'];
+        // $data['scm_id'] = $data['school'];
         $coordinator->update($data);
         $user_id = Coordinator::select('user_id')->where('coordinator_id', $coordinator->coordinator_id)->first()->user_id;
         $user = User::where('id', $user_id)->first();
@@ -293,7 +424,19 @@ class CoordinatorController extends Controller
             $user->update([
                 'name' => $data['coordinator_name'],
                 'email' => $data['email'],
-                'institute_id' => $data['scm_id'],
+                // 'institute_id' => $data['scm_id'],
+            ]);
+        }
+        DB::table('coordinator_scm_allocation')
+            ->where('coordinator_id', $coordinator->coordinator_id)
+            ->delete();
+
+        foreach ($request->school as $scm_id) {
+            DB::table('coordinator_scm_allocation')->insert([
+                'coordinator_id' => $coordinator->coordinator_id,
+                'scm_id' => $scm_id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 

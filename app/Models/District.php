@@ -21,4 +21,9 @@ class District extends Model
     {
         return $this->hasMany(School::class, 'scm_dist_id', 'DSM_DSCD');
     }
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'stu_distid', 'DSM_DSCD');
+    }
+
 }

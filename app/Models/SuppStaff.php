@@ -33,9 +33,20 @@ class SuppStaff extends Model
         'education_certificates' => 'array',
     ];
 
-
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'dist_id', 'DSM_DSCD'); // dist_id in trainers, DSM_DSCD in districts
+    }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+    public function schools()
+    {
+        return $this->belongsToMany(School::class, 'staff_scm_allocation', 'staff_id', 'scm_id');
+    }
+    public function getSchoolIdsAttribute()
+    {
+        return $this->schools->pluck('scm_id')->toArray();
     }
 }

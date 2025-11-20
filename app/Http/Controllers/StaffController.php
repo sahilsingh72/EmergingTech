@@ -20,33 +20,43 @@ class StaffController extends Controller
         $userId = $user->id;
         $roleId = $user->role_id;
 
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
 
         if (in_array($roleId, [1, 2])) {
             // ✅ Role 1 or 2 can see ALL staff
-            $suppstaffs = SuppStaff::latest()->get();
+            $suppstaffs = SuppStaff::with('schools', 'district')
+                ->orderBy(District::select('DSM_DSNM')
+                    ->whereColumn('dst_mst01.DSM_DSCD', 'support_staff_mst.dist_id'))
+                ->get();
+        } elseif ($roleId == 6) {
+            // Coordinator: find their DLC (assignUnder_id), then show all coordinators under same DLC
+            $dlcId = Auth::user()->assignUnder_id;
+
+            $suppstaffs = SuppStaff::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+                $query->where('assignUnder_id', $dlcId);
+            })->latest()->get();
         } else {
             // ✅ Others see only staff created by them (via assignUnder_id)
-            $suppstaffs = SuppStaff::whereHas('user', function ($query) use ($userId) {
+            $suppstaffs = SuppStaff::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->latest()->get();
         }
-        
+
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
-        if ($roleId == 1 || $roleId == 2){
+        if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
-        }else{
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('supportingstafflist', compact('schools', 'districts', 'suppstaffs'));
     }
 
-     public function store(Request $request, SuppStaff $suppstaff)
+    public function store(Request $request, SuppStaff $suppstaff)
     {
 
         $userId   = Auth::id();
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
 
         $validated = $request->validate([
             'ss_name' => 'required|string|max:255',
@@ -59,12 +69,12 @@ class StaffController extends Controller
                         ->where('email', $value)
                         ->where('ss_id', '<>', $suppstaff->ss_id)
                         ->exists();
-        
+
                     // Check user table
                     $existsInUsers = DB::table('users')
                         ->where('email', $value)
                         ->exists();
-        
+
                     if ($existsInTrainers || $existsInUsers) {
                         $fail('The email has already been taken.');
                     }
@@ -73,7 +83,8 @@ class StaffController extends Controller
             'phone' => 'required|string|max:20',
             'whatsapp_number' => 'required|string|max:20',
             'address' => 'required|string|max:500',
-            'school' => 'required',
+            'school' => 'required|array',
+            'school.*' => 'exists:school_mst,scm_id',
             // 'dist_id' => 'nullable|string|max:50',
             // 'district' => 'nullable|string|max:500',
             'pincode' => 'required|digits:6',
@@ -90,78 +101,101 @@ class StaffController extends Controller
             'aadhar_card.max' => 'The aadhaar card must not be larger than 2 MB.',
         ]);
 
-        $data = $validated;
+        DB::beginTransaction();
+        try {
+            $data = $validated;
 
-        $data['scm_id'] = $request->school;
-        $data['dist_id'] = $districtID[0]->district_id;
-        
-        if ($request->highest_qualification === 'Other') {
-            $data['highest_qual'] = $request->other_qualification; // save custom input
-        }else {
-            $data['highest_qual'] = $request->highest_qualification;
-        }
+            // $data['scm_id'] = $request->school;
+            $data['dist_id'] = $districtID[0]->district_id;
 
-        $staffName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->ss_name);
-        // File uploads
-        if ($request->hasFile('cv')) {
-            $file = $request->file('cv');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['cv'] = $file->storeAs("supportingstaff/{$staffName}/cv", $filename, 'public');
-        }
-        if ($request->hasFile('aadhar_card')) {
-            $file = $request->file('aadhar_card');
-            $filename = $file->getClientOriginalName(); // to avoid overwriting
-            $data['aadhar_card'] = $file->storeAs("supportingstaff/{$staffName}/aadhar_card", $filename, 'public');
-        }
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = $file->getClientOriginalName();
-            $data['photo'] = $file->storeAs("supportingstaff/{$staffName}/photos", $filename, 'public');
-        }
-        if ($request->hasFile('education_certificates')) {
-            $paths = [];
-            foreach ($request->file('education_certificates') as $file) {
-                $filename = $file->getClientOriginalName();
-                $paths[] = $file->storeAs("supportingstaff/{$staffName}/education", $filename, 'public');
+            if ($request->highest_qualification === 'Other') {
+                $data['highest_qual'] = $request->other_qualification; // save custom input
+            } else {
+                $data['highest_qual'] = $request->highest_qualification;
             }
-            $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
-        }
 
-        
-        $user_data=([
-            'name' => $data['ss_name'],
-            'email' => $data['email'],
-            'district_id' => $data['dist_id'],
-            'institute_id' => $data['scm_id'],
-            'password' => Hash::make('Staff@ET'),
-            'role_id'=>7,
-            'assignUnder_id'=>$userId,
-            'created_at'=>now()
-            
-        ]);
-        $User_dtls=User::create($user_data);
-        $data['user_id'] = $User_dtls->id;
-        SuppStaff::create($data);
-        
-        return redirect()->route('supstaff.index')->with('success', 'Supporting Staff added successfully.');
+            $staffName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->ss_name);
+            // File uploads
+            if ($request->hasFile('cv')) {
+                $file = $request->file('cv');
+                $filename = $file->getClientOriginalName(); // to avoid overwriting
+                $data['cv'] = $file->storeAs("supportingstaff/{$staffName}/cv", $filename, 'public');
+            }
+            if ($request->hasFile('aadhar_card')) {
+                $file = $request->file('aadhar_card');
+                $filename = $file->getClientOriginalName(); // to avoid overwriting
+                $data['aadhar_card'] = $file->storeAs("supportingstaff/{$staffName}/aadhar_card", $filename, 'public');
+            }
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $filename = $file->getClientOriginalName();
+                $data['photo'] = $file->storeAs("supportingstaff/{$staffName}/photos", $filename, 'public');
+            }
+            if ($request->hasFile('education_certificates')) {
+                $paths = [];
+                foreach ($request->file('education_certificates') as $file) {
+                    $filename = $file->getClientOriginalName();
+                    $paths[] = $file->storeAs("supportingstaff/{$staffName}/education", $filename, 'public');
+                }
+                $data['education_certificates'] = $paths; // no json_encode, Eloquent will cast
+            }
+
+
+            $user_data = ([
+                'name' => $data['ss_name'],
+                'email' => $data['email'],
+                'district_id' => $data['dist_id'],
+                // 'institute_id' => $data['scm_id'],
+                'password' => Hash::make('Staff@ET'),
+                'role_id' => 7,
+                'assignUnder_id' => $userId,
+                'created_at' => now()
+
+            ]);
+            $User_dtls = User::create($user_data);
+            $data['user_id'] = $User_dtls->id;
+
+            $suppstaff = SuppStaff::create($data);
+
+            foreach ($request->school as $scm_id) {
+                DB::table('staff_scm_allocation')->insert([
+                    'staff_id' => $suppstaff->ss_id,
+                    'scm_id' => $scm_id,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('supstaff.index')->with('success', 'Supporting Staff added successfully.');
+        } catch (\Exception $e) {
+
+            DB::rollBack(); // ⭐ ROLLBACK USER + COORDINATOR
+
+            return back()
+                ->withErrors(['error' => 'Something went wrong: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function edit(SuppStaff $supstaff)
     {
         return response()->json($supstaff); // for modal edit via AJAX
     }
-        
-    public function update(Request $request, SuppStaff $supstaff )
+
+    public function update(Request $request, SuppStaff $supstaff)
     {
-        
-        
+
+
         $validated = $request->validate([
             'ss_name' => 'required|string|max:255',
             'email' => 'required|email|unique:support_staff_mst,email,' . $supstaff->ss_id . ',ss_id',
             'phone' => 'nullable|string|max:20',
             'whatsapp_number' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'school' => 'required',
+            'school' => 'required|array',
+            'school.*' => 'exists:school_mst,scm_id',
             // 'district' => 'nullable|string|max:500',
             // 'dist_id' => 'nullable|string|max:50',
             'pincode' => 'nullable|digits:6',
@@ -196,7 +230,7 @@ class StaffController extends Controller
             $filename = $file->getClientOriginalName(); // to avoid overwriting
             $data['cv'] = $file->storeAs("supportingstaff/{$supportingstaffName}/cv", $filename, 'public');
         }
-        
+
         if ($request->hasFile('aadhar_card')) {
             if ($supstaff->aadhar_card && Storage::disk('public')->exists($supstaff->aadhar_card)) {
                 Storage::disk('public')->delete($supstaff->aadhar_card);
@@ -205,7 +239,7 @@ class StaffController extends Controller
             $filename = $file->getClientOriginalName(); // to avoid overwriting
             $data['aadhar_card'] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar_card", $filename, 'public');
         }
-        
+
         if ($request->hasFile('photo')) {
             if ($supstaff->photo && Storage::disk('public')->exists($supstaff->photo)) {
                 Storage::disk('public')->delete($supstaff->photo);
@@ -240,44 +274,29 @@ class StaffController extends Controller
             }
             $data['education_certificates'] = json_encode($paths);
         }
-        // if ($request->hasFile('aadhar_card')) {
-        //     // Delete old files if any
-        //     $oldFiles = [];
-        //     if ($request->hasFile('aadhar_card')) {
-        //         if ($supstaff->aadhar_card && Storage::disk('public')->exists($supstaff->aadhar_card)) {
-        //             Storage::disk('public')->delete($supstaff->aadhar_card);
-        //         }
-        //         $file = $request->file('aadhar_card');
-        //         $filename = $file->getClientOriginalName(); // to avoid overwriting
-        //         $data['aadhar_card'] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar_card", $filename, 'public');
-        //     }
 
-        //     foreach ($oldFiles as $path) {
-        //         if (Storage::disk('public')->exists($path)) {
-        //             Storage::disk('public')->delete($path);
-        //         }
-        //     }
-
-        //     // Store new files
-        //     $paths = [];
-        //     foreach ($request->file('aadhar_card') as $file) {
-        //         $filename = $file->getClientOriginalName();
-        //         $paths[] = $file->storeAs("supportingstaff/{$supportingstaffName}/aadhar-card", $file->getClientOriginalName(), 'public');
-        //     }
-        //     $data['education_certificates'] = json_encode($paths);
-        // }
-        $data['scm_id']=$data['school'];
+        // $data['scm_id']=$data['school'];
         $supstaff->update($data);
-        
         $user_id = SuppStaff::select('user_id')->where('ss_id', $supstaff->ss_id)->first()->user_id;
-
         $user = User::where('id', $user_id)->first();
-        
+
         if ($user) {
             $user->update([
                 'name' => $data['ss_name'],
                 'email' => $data['email'],
-                'institute_id' => $data['scm_id'],
+                // 'institute_id' => $data['scm_id'],
+            ]);
+        }
+        DB::table('staff_scm_allocation')
+            ->where('staff_id', $supstaff->ss_id)
+            ->delete();
+
+        foreach ($request->school as $scm_id) {
+            DB::table('staff_scm_allocation')->insert([
+                'staff_id' => $supstaff->ss_id,
+                'scm_id' => $scm_id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 

@@ -55,4 +55,9 @@ class TrainingUpload extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
+    // TrainingUpload.php
+    public function user() {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
 }

@@ -28,6 +28,10 @@ class StudentMst extends Model
         'stu_distid',
         'stu_dist',
         'stu_address',
+        'feedback_file_name',
+        'feedback_file_path',
+        'feedback_file_url',
+        'feedback_uploaded_at',
     ];
 
     public function user()
