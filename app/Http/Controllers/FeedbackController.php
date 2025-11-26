@@ -49,7 +49,6 @@ class FeedbackController extends Controller
 
         $fileTypeMap = config('filetypes');
 
-
         $file = $request->file('written_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
         $folder   = "School_{$schoolId}/User_{$userId}/written_feedback";
@@ -253,10 +252,5 @@ class FeedbackController extends Controller
 
         return response($response->body(), 200)
             ->header('Content-Type', 'video/mp4'); // use video/mp4
-    }
-    public function onlinefeedback()
-    {
-        $schools = School::all();
-        return view('onlinefeedback', compact('schools'));
     }
 }

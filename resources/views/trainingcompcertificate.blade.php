@@ -78,8 +78,7 @@
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white p-8 rounded-lg w-full">
                                     <!-- Title -->
-                                    <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Completion
-                                        Certificate</h2>
+                                    <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Completion Certificate</h2>
 
                                     <!-- Download Button -->
                                     <div class="flex justify-end mb-6">
@@ -102,9 +101,9 @@
                                             <select name="school_id" id="school_id" class="form-control">
                                                 <option value="">-- Select School --</option>
                                                 @foreach($schools as $school)
-                                                    <option value="{{ $school->scm_id }}">
-                                                        {{ $school->scm_name }} - {{ $school->scm_udise_code }},
-                                                        {{ $school->scm_dist }}
+                                                    <option value="{{ $school->scm_id }}"
+                                                        {{ $selectedSchoolId == $school->scm_id ? 'selected' : '' }}>
+                                                        {{ $school->scm_name }} - {{ $school->scm_udise_code }}, {{ $school->scm_dist }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -190,15 +189,30 @@
 
 
                                         <!-- Upload Button -->
-                                        <button
+                                        <button id="uploadBtn"
                                             class="w-full bg-green-500 text-white py-2 rounded-md text-lg font-medium hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                             {{ $canUploadCertificate ? '' : 'disabled' }}>
                                             Upload
                                         </button>
+                                        @if($selectedSchoolId)
+                                            @php
+                                                $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+                                                $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                    ->whereNotNull('feedback_file_url')
+                                                    ->count();
+                                            @endphp
+                                            @if($studentsWithFeedback < $totalStudents)
+                                                <div class="text-red-600 mt-2">
+                                                    ⚠️ All student feedback must be uploaded before uploading the Training Completion Certificate.
+                                                    ({{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded)
+                                                </div>
+                                            @endif
+                                        @endif
+
                                         @if(!$canUploadCertificate)
                                             <p class="text-red-600 mt-2">
                                                 ⚠️ You must upload all previous training evidence files (pages 1-5) before
-                                                uploading the completion certificate.
+                                                uploading the Training Completion Certificate.
                                             </p>
                                         @endif
                                     </form>
@@ -211,40 +225,57 @@
 
                                         <div class="flex flex-wrap justify-center gap-6">
                                             @foreach($requiredFiles as $key => $label)
-                                                                                    @php
-                                                                                        $isUploaded = in_array($key, $uploadedFiles);
-                                                                                        $routeName = match ($key) {
-                                                                                            'attendance_sheet' => 'attendance',
-                                                                                            'training_photo' => 'trainingphotos',
-                                                                                            'training_video' => 'trainingvideos',
-                                                                                            'written_feedback' => 'writtenfeedback',
-                                                                                            'video_feedback' => 'uploadfeedback',
-                                                                                            default => null,
-                                                                                        };
-                                                                                    @endphp
+                                                @php
+                                                    $isUploaded = in_array($key, $uploadedFiles);
+                                                    $routeName = match ($key) {
+                                                        'attendance_sheet' => 'attendance',
+                                                        'training_photo' => 'trainingphotos',
+                                                        'training_video' => 'trainingvideos',
+                                                        // 'written_feedback' => 'writtenfeedback',
+                                                        // "written_feedback" now refers to all student uploads
+                                                        'written_feedback' => null,
+                                                        'video_feedback' => 'uploadfeedback',
+                                                        default => null,
+                                                    };
+                                                    // ✅ For written_feedback, check if all student feedbacks uploaded
+                                                    if ($key === 'written_feedback' && isset($selectedSchoolId)) {
+                                                        $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+                                                        $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                            ->whereNotNull('feedback_file_url')
+                                                            ->count();
+                                                        $isUploaded = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);
+                                                    }
+                                                @endphp
 
-                                                                                    <a href="{{ $routeName ? route($routeName) : '#' }}"
-                                                                                        class="flex flex-col items-center group hover:scale-110 transition-transform duration-200"
-                                                                                        title="{{ $label }}">
-                                                                                        <div class="flex flex-col items-center">
-                                                                                            <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 transition-all duration-300
-                                                                                                    {{ $isUploaded
-                                                ? 'border-green-500 bg-green-100 text-green-600'
-                                                : 'border-gray-300 bg-gray-100 text-gray-400'
-                                                                                                    }}">
-                                                                                                @if($isUploaded)
-                                                                                                    <i class="fas fa-check text-xl"></i>
-                                                                                                @else
-                                                                                                    <i class="fas fa-times text-xl"></i>
-                                                                                                @endif
-                                                                                            </div>
+                                                <a href="{{ $routeName ? route($routeName) : '#' }}"
+                                                    class="flex flex-col items-center group hover:scale-110 transition-transform duration-200"
+                                                    title="{{ $label }}">
+                                                    <div class="flex flex-col items-center">
+                                                        <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 transition-all duration-300
+                                                                {{ $isUploaded
+                                                                ? 'border-green-500 bg-green-100 text-green-600'
+                                                                : 'border-gray-300 bg-gray-100 text-gray-400'
+                                                                }}">
+                                                            @if($isUploaded)
+                                                                <i class="fas fa-check text-xl"></i>
+                                                            @else
+                                                                <i class="fas fa-times text-xl"></i>
+                                                            @endif
+                                                        </div>
 
-                                                                                            <span
-                                                                                                class="mt-2 text-sm font-medium {{ $isUploaded ? 'text-green-600' : 'text-gray-500' }}">
-                                                                                                {{ $label }}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </a>
+                                                        <span
+                                                            class="mt-2 text-sm font-medium {{ $isUploaded ? 'text-green-600' : 'text-gray-500' }}">
+                                                            {{ $key === 'written_feedback' ? 'Student Feedbacks' : $label }}
+                                                        </span>
+
+                                                        {{--  progress count --}}
+                                                        {{-- @if($key === 'written_feedback' && isset($selectedSchoolId))
+                                                            <span class="text-xs text-gray-500 mt-1">
+                                                                {{ $studentsWithFeedback ?? 0 }}/{{ $totalStudents ?? 0 }} uploaded
+                                                            </span>
+                                                        @endif --}}
+                                                  </div>
+                                              </a>
                                             @endforeach
 
                                             {{-- ✅ Always show the 6th step: Completion Certificate --}}
@@ -253,10 +284,10 @@
                                             @endphp
                                             <div class="flex flex-col items-center">
                                                 <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 transition-all duration-300
-                {{ $certificateUploaded
-    ? 'border-green-500 bg-green-100 text-green-600'
-    : 'border-gray-300 bg-gray-100 text-gray-400'
-                }}">
+                                                {{ $certificateUploaded
+                                    ? 'border-green-500 bg-green-100 text-green-600'
+                                    : 'border-gray-300 bg-gray-100 text-gray-400'
+                                                }}">
                                                     <i class="fas fa-award text-xl"></i>
                                                 </div>
                                                 <span
@@ -277,6 +308,32 @@
         </div>
     </div>
     </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadBtn = document.getElementById('uploadBtn');
+    const checkbox1 = document.getElementById('declarationCheckbox');
+    const checkbox2 = document.getElementById('trainingCompletedCheckbox');
+    const canUploadCertificate = {{ $canUploadCertificate ? 'true' : 'false' }};
+
+    function toggleUploadButton() {
+        if (canUploadCertificate && checkbox1.checked && checkbox2.checked) {
+            uploadBtn.disabled = false;
+            uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            uploadBtn.disabled = true;
+            uploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    // Run once on load
+    toggleUploadButton();
+
+    // Re-run whenever checkbox changes
+    checkbox1.addEventListener('change', toggleUploadButton);
+    checkbox2.addEventListener('change', toggleUploadButton);
+});
+</script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('certificateUploadForm');
@@ -537,34 +594,6 @@
         });
 
     </script>
-    {{--
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const declaration1 = document.getElementById('declarationCheckbox');
-            const declaration2 = document.getElementById('trainingCompletedCheckbox');
-            const uploadBtn = document.getElementById('uploadBtn');
-
-            // Disable initially if not both checked
-            function updateButtonState() {
-                if (declaration1.checked && declaration2.checked) {
-                    uploadBtn.disabled = false;
-                    uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    uploadBtn.disabled = true;
-                    uploadBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-            }
-
-            declaration1.addEventListener('change', updateButtonState);
-            declaration2.addEventListener('change', updateButtonState);
-
-            // Run once on load
-            updateButtonState();
-        });
-    </script> --}}
-
-
-
 
     @if (session('success'))
         <script>
@@ -578,6 +607,13 @@
     @endif
 
 
-
+<script>
+document.getElementById('school_id').addEventListener('change', function() {
+    const schoolId = this.value;
+    if (schoolId) {
+        window.location.href = `?school_id=${schoolId}`;
+    }
+});
+</script>
 </body>
 @include('components.footer')

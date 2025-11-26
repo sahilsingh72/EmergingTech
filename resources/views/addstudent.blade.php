@@ -57,6 +57,11 @@
                                         </ul>
                                     </div>
                                 @endif
+                                @if(session('error'))
+                                    <div class="bg-yellow-100 text-yellow-800 p-3 rounded mb-4">
+                                        {{ session('error') }}
+                                    </div>
+                                @endif
 
                                 
                                 <!-- Upload Form -->

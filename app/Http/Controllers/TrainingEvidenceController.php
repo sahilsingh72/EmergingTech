@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coordinator;
+use App\Models\District;
 use App\Models\School;
+use App\Models\StudentMst;
 use App\Models\Trainer;
 use App\Models\TrainingUpload;
 use App\Models\User;
@@ -23,24 +25,23 @@ class TrainingEvidenceController extends Controller
         $this->oneDrive = $oneDrive;
     }
 
-    
     public function trainingphotos()
     {
-        
+
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
 
         //  Check if this user already uploaded training photos
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $existingUpload = TrainingUpload::where('uploaded_by', $userId)
             ->where('file_type', 'training_photo')
             ->first();
 
-        if ($roleId == 1 || $roleId == 2){
+        if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
-        }else{
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('trainingphotos', compact('schools'));
     }
@@ -48,7 +49,6 @@ class TrainingEvidenceController extends Controller
     public function upload(Request $request)
 
     {
-
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
@@ -59,8 +59,6 @@ class TrainingEvidenceController extends Controller
 
         $schoolId = $request->school_id;
         $userId   = Auth::id();
-
-        
 
         $fileTypeMap = config('filetypes');
 
@@ -98,26 +96,26 @@ class TrainingEvidenceController extends Controller
         return  redirect()->route('trainingphotos.list')->with('success', 'training photo uploaded successfully!');
     }
 
-    public function trainingphotoslist(){
+    public function trainingphotoslist()
+    {
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
-        
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
-        }else{
+        } else {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
                 // DLC: see uploads by themselves + coordinators + trainers under them
                 $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
                 $visibleUserIds = $visibleUserIds->merge($subUsers);
-                
-            }elseif ($roleId == 6 || $roleId == 5) {
-            
+            } elseif ($roleId == 6 || $roleId == 5) {
+
                 // Coordinator: see own uploads + DLC + trainers under same DLC
                 $dlcId = $user->assignUnder_id; // DLC user_id
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
@@ -125,7 +123,7 @@ class TrainingEvidenceController extends Controller
             }
             $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
         }
-        
+
         return view('trainingphotoslist', compact('uploads', 'schools'));
     }
 
@@ -203,23 +201,19 @@ class TrainingEvidenceController extends Controller
             $response = Http::get($downloadUrl);
             echo $response->body();
         }, 200, ['Content-Type' => 'image/jpeg']);
-
-
     }
-
-
 
     public function trainingvideos()
     {
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
-        
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        if ($roleId == 1 || $roleId == 2){
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
-        }else{
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('trainingvideos', compact('schools'));
     }
@@ -294,26 +288,26 @@ class TrainingEvidenceController extends Controller
         return response($response->body(), 200)
             ->header('Content-Type', 'video/mp4'); // use video/mp4
     }
-    public function trainingvideoslist(){
+    public function trainingvideoslist()
+    {
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
-        
-        $districtID= User::select('district_id')->where('id', $userId )->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
-        }else{
+        } else {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
                 // DLC: see uploads by themselves + coordinators + trainers under them
                 $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
                 $visibleUserIds = $visibleUserIds->merge($subUsers);
-                
-            }elseif ($roleId == 6 || $roleId == 5) {
-            
+            } elseif ($roleId == 6 || $roleId == 5) {
+
                 // Coordinator: see own uploads + DLC + trainers under same DLC
                 $dlcId = $user->assignUnder_id; // DLC user_id
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
@@ -383,35 +377,68 @@ class TrainingEvidenceController extends Controller
 
     public function trainingcompcertificate()
     {
-        $userId = Auth::id();
-        $schools = School::all();
+
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
 
         // Check if user has uploaded all required files
         $requiredFiles = [
             'attendance_sheet'  => 'Attendance Sheet',
             'training_photo'    => 'Training Photo',
             'training_video'    => 'Training Video',
-            'written_feedback'  => 'Written Feedback',
+            'written_feedback'  => 'Student Feedbacks',
             'video_feedback'    => 'Video Feedback',
         ];
 
-        $uploadedFiles = TrainingUpload::where('uploaded_by', $userId)
-            ->pluck('file_type')
-            ->toArray();
+        // If the page shows per school (e.g., selected via dropdown)
+        $selectedSchoolId = request()->get('school_id');
 
-        
-        // ✅ Check which of the required ones exist
+        $uploadedFiles = [];
+        if ($selectedSchoolId) {
+            $uploadedFiles = TrainingUpload::where('uploaded_by', $userId)
+                ->where('school_id', $selectedSchoolId)
+                ->pluck('file_type')
+                ->toArray();
+        }
+
+        // 🔹 Calculate which of the required ones are completed
         $completedFiles = array_intersect(array_keys($requiredFiles), $uploadedFiles);
 
-        // Determine if all files are uploaded
-        $canUploadCertificate = count($completedFiles) === count($requiredFiles);
+        // 🔹 Check if all students in that school uploaded feedback
+        $allStudentFeedbackComplete = false;
+        if ($selectedSchoolId) {
+            $totalStudents = StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+            $studentsWithFeedback = StudentMst::where('stu_scm_id', $selectedSchoolId)
+                ->whereNotNull('feedback_file_url')
+                ->count();
 
-        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'canUploadCertificate'));
+            if ($totalStudents > 0 && $studentsWithFeedback == $totalStudents) {
+                $allStudentFeedbackComplete = true;
+                // Treat written_feedback as completed
+                $completedFiles[] = 'written_feedback';
+            }
+        }
+
+        $progress = count($completedFiles) / count($requiredFiles) * 100;
+        // Determine if all files are uploaded
+        $canUploadCertificate = $selectedSchoolId
+            && count(array_unique($completedFiles)) === count($requiredFiles)
+            && $allStudentFeedbackComplete;
+
+        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'progress', 'canUploadCertificate', 'selectedSchoolId'));
     }
+
     public function uploadcertificate(Request $request)
 
     {
-        // dd($request->all());
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
@@ -425,14 +452,12 @@ class TrainingEvidenceController extends Controller
 
         $fileTypeMap = config('filetypes');
 
-
         $file = $request->file('training_completion_certificate');
         $filename = time() . '_' . $file->getClientOriginalName();
         $folder   = "School_{$schoolId}/User_{$userId}/training_completion_certificate";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
-
 
         TrainingUpload::create([
             'school_id'      => $schoolId,
@@ -447,12 +472,12 @@ class TrainingEvidenceController extends Controller
             'description'    => $request->description,
         ]);
 
-         // ✅ Mark school as completed only if ALL required files are uploaded
+        // ✅ Mark school as completed only if ALL required files are uploaded
         $requiredFiles = [
             'attendance_sheet',
             'training_photo',
             'training_video',
-            'written_feedback',
+            // 'written_feedback',
             'video_feedback',
             'training_completion_certificate'
         ];
@@ -463,10 +488,58 @@ class TrainingEvidenceController extends Controller
             ->pluck('file_type')
             ->toArray();
 
-        if (empty(array_diff($requiredFiles, $uploadedFiles))) {
+        // 🔹 Check all students feedback
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)->count();
+        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+            ->whereNotNull('feedback_file_url')
+            ->count();
+
+        $allStudentFeedbackComplete = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);
+
+        if (empty(array_diff($requiredFiles, $uploadedFiles)) && $allStudentFeedbackComplete) {
             School::where('scm_id', $schoolId)->update(['training_completed' => 1]);
         }
 
         return back()->with('success', 'training completion certificate uploaded successfully!');
+    }
+
+    public function viewUploadedCertificates(Request $request)
+    {
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM')->get();
+
+        $districtId = $request->district_id;
+        $schoolId   = $request->school_id;
+
+        // Load schools for selected district
+        if ($districtId) {
+            $schools = School::where('scm_dist_id', $districtId)
+                ->select('scm_id', 'scm_name', 'scm_dist_id')
+                ->orderBy('scm_name')
+                ->get();
+        } else {
+            $schools = collect();
+        }
+
+        // Fetch uploaded certificates if school is selected
+        $certificates = collect();
+        if ($districtId) {
+            $query = TrainingUpload::query()
+                ->where('file_type', 'training_completion_certificate')
+                ->with(['user', 'school', 'school.district']);
+
+            if ($schoolId) {
+                // ✅ specific school
+                $query->where('school_id', $schoolId);
+            } else {
+                // ✅ all schools in that district
+                $schoolIds = $schools->pluck('scm_id');
+                $query->whereIn('school_id', $schoolIds);
+            }
+
+            $certificates = $query->get();
+        }
+
+
+        return view('viewcertificates', compact('districts', 'districtId', 'schools', 'schoolId', 'certificates'));
     }
 }

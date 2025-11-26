@@ -104,7 +104,7 @@
                                                 <input type="text" name="stu_roll_number"
                                                     value="{{ old('stu_roll_number') }}"
                                                     class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    required>
+                                                    >
                                             </div>
 
                                             <!-- Class -->
@@ -126,7 +126,7 @@
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700">Section</label>
                                                 <select name="stu_sectionid" id="stu_sectionid"
-                                                    class="w-full border rounded px-3 py-2" required>
+                                                    class="w-full border rounded px-3 py-2">
                                                     <option value="">-- Select Section --</option>
                                                     <option value="1" data-name="A">A</option>
                                                     <option value="2" data-name="B">B</option>
@@ -157,7 +157,7 @@
                                                     Birth</label>
                                                 <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
                                                     class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    required>
+                                                    >
                                             </div>
 
                                             <!-- Father's Name -->
@@ -170,14 +170,12 @@
                                                     required>
                                             </div>
 
-
-
                                             <!-- Address -->
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700">Address</label>
                                                 <textarea name="stu_address"
                                                     class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    rows="2" required></textarea>
+                                                    rows="2"></textarea>
                                             </div>
 
 

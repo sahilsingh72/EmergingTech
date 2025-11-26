@@ -95,8 +95,8 @@
 
         <div class="container-fluid">
           <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-              <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            <div class="max-w-8xl mx-auto space-y-6">
+              <div class="sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="bg-white  rounded-lg w-full">
                   <!-- Title -->
                   <h2 class="text-2xl font-semibold text-center mb-6">Feedback Entry — {{ $student->stu_name }}</h2>
@@ -292,7 +292,13 @@
 
                       <div class="text-end">
                         <a href="{{ route('student.feedback') }}" class="btn btn-secondary">Back</a>
-                        <button type="submit" class="btn btn-success">Submit Feedback</button>
+                        @php
+                          use Illuminate\Support\Facades\Auth;
+                          $user = Auth::user();
+                        @endphp
+                        @if($user->role_id == 3 || $user->role_id == 6)
+                          <button type="submit" class="btn btn-success">Submit Feedback</button>
+                        @endif
                       </div>
                     </form>
                   </div>

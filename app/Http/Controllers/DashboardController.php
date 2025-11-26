@@ -3,18 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coordinator;
+use App\Models\PhotoGallery;
 use App\Models\School;
 use App\Models\StudentMst;
 use App\Models\Trainer;
 use App\Models\TrainingUpload;
+use App\Models\User;
+use App\Services\OneDriveService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\StudentT;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
+    protected $oneDrive;
+
+    public function __construct(OneDriveService $oneDrive)
+    {
+        $this->oneDrive = $oneDrive;
+    }
+
+    public function fetchGallery()
+    {
+        try {
+            $images = PhotoGallery::orderBy('created_at', 'desc')
+                ->take(30)
+                ->get(['onedrive_path', 'file_name']);
+            // ->pluck('onedrive_url');
+
+            return response()->json([
+                'success' => true,
+                'images' => $images
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+
+    public function photogallery(Request $request)
+    {
+
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png|max:10240',
+            'school_id' => 'required|integer',
+        ]);
+
+        $file = $request->file('file');
+        $userId = Auth::id();
+        $schoolId = $request->school_id;
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $folder = "Photogallery/School_{$schoolId}/User_{$userId}";
+
+        try {
+            $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
+
+            PhotoGallery::create([
+                'uploaded_by' => $userId,
+                'school_id' => $schoolId,
+                'file_name' => $file->getClientOriginalName(),
+                'onedrive_url' => $result['url'],
+                'onedrive_path' => $result['path'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File uploaded successfully to photogallery!',
+                'url' => $result['url'] ?? null,
+                'path' => $result['path'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function previewImage(Request $request)
+    {
+        $path = $request->query('path');
+        if (!$path) {
+            return response('Missing path', 400);
+        }
+
+        try {
+            $fileInfo = $this->oneDrive->getFileInfo($path);
+            if (!isset($fileInfo['@microsoft.graph.downloadUrl'])) {
+                return response('Download URL not found', 404);
+            }
+
+            $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
+
+            return response()->stream(function () use ($downloadUrl) {
+                $response = Http::get($downloadUrl);
+                echo $response->body();
+            }, 200, ['Content-Type' => 'image/jpeg']);
+        } catch (\Exception $e) {
+            return response('Error fetching image: ' . $e->getMessage(), 500);
+        }
+    }
+
     public function dashboard()
     {
         $user = Auth::user(); // full user object
@@ -23,7 +117,7 @@ class DashboardController extends Controller
         $districtId = $user->district_id;
         $students = 0;
 
-        if ($roleName === 'OCAC' || $roleName === 'OKCL') {
+        if ($roleName === 'OCAC' || $roleName === 'OKCL' || $roleName === 'Accounts') {
             // ✅ OCAC or OKCL: see all students
             $students = StudentMst::count();
         } else {
@@ -65,10 +159,16 @@ class DashboardController extends Controller
             ->get();
 
 
+        $roleId = $user->role_id;
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
 
         $totalSchools = School::count();
         $completedSchools = School::where('training_completed', 1)->count();
-        $schools = School::all();
 
 
         return view('dashboard', compact(
@@ -81,6 +181,46 @@ class DashboardController extends Controller
             'students',
             'schools',
         ));
+    }
+
+    public function getDistrictProgress()
+    {
+        $nameCorrections = [
+            'Keonjhar' => 'Kendujhar',
+            'Sundergarh' => 'Sundargarh',
+            'Sonepur' => 'Subarnapur',
+            'Bolangir' => 'Balangir',
+            'Nabarangpur' => 'Nabarangapur',
+            // add more if needed later
+        ];
+        $districts = School::select('scm_dist')
+            ->groupBy('scm_dist')
+            ->get()
+            ->pluck('scm_dist');
+
+        // $progressData = [];
+        $totalSchoolData = [];
+        $completedData = [];
+
+        foreach ($districts as $district) {
+            $geoDistrict = $nameCorrections[$district] ?? $district;
+            $totalSchools = School::where('scm_dist', $district)->count();
+            $completed = School::where('scm_dist', $district)
+                ->where('training_completed', 1)
+                ->count();
+
+            // $progress = $totalSchools > 0 ? round(($completed / $totalSchools) * 100, 2) : 0;
+            
+            // $progressData[$geoDistrict] = $progress;
+            $totalSchoolData[$geoDistrict] = $totalSchools;
+            $completedData[$geoDistrict] = $completed;
+        }
+
+        return response()->json([
+            // 'progress' => $progressData,
+            'total_schools' => $totalSchoolData,
+            'completed' => $completedData
+        ]);
     }
 
 

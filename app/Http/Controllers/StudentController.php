@@ -109,7 +109,8 @@ class StudentController extends Controller
         $schoolId = $request->input('school_id');
 
         $studentsQuery = StudentMst::orderBy('stu_class')
-            ->orderBy('stu_section');
+            ->orderBy('stu_section')
+            ->orderBy('stu_name', 'asc');
 
         if ($schoolId) {
             $studentsQuery->where('stu_scm_id', $schoolId);
@@ -256,7 +257,8 @@ class StudentController extends Controller
         $schoolId = $request->input('school_id');
 
         $studentsQuery = StudentMst::orderBy('stu_class')
-            ->orderBy('stu_section');
+            ->orderBy('stu_section')
+            ->orderBy('stu_name', 'asc');
 
         if ($schoolId) {
             $studentsQuery->where('stu_scm_id', $schoolId);

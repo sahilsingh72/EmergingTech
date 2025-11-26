@@ -50,9 +50,9 @@
             <section class="content relative">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class=" sm:p-8 bg-white shadow sm:rounded-lg">
+                                <div class="bg-white rounded-lg w-full">
 
                                     <h2 class="text-2xl font-semibold text-center mb-6">Student Feedback</h2>
                                     
@@ -133,7 +133,7 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                         <th class="border px-4 py-2 text-center">Feedback Entry</th>
-                                                    @if($roleId == 3)
+                                                    @if($roleId == 3 || $roleId == 6)
                                                         <th class="border px-4 py-2 text-center">Actions</th>
                                                     @endif
                                                 </tr>
@@ -166,7 +166,7 @@
                                                                 @php
                                                                     $roleId = Auth::user()->role_id;
                                                                 @endphp
-                                                                @if($roleId == 3)
+                                                                @if($roleId == 3 || $roleId == 6)
                                                                     <button class="text-green-600 hover:text-green-800 mx-1 btn-upload"
                                                                         data-id="{{ $student->stu_id }}" data-name="{{ $student->stu_name }}">
                                                                         <i class="fas fa-upload"></i>
@@ -181,7 +181,7 @@
                                                             @php
                                                                 $roleId = Auth::user()->role_id;
                                                             @endphp
-                                                            @if($roleId == 3)
+                                                            @if($roleId == 2 || $roleId == 3 || $roleId == 6)
                                                                 <a href="{{ route('student.feedback.entryPage', $student->stu_id) }}"
                                                                     class="btn btn-sm btn-primary">
                                                                     <i class="fas fa-pen"></i> Feedback Entry
@@ -200,7 +200,7 @@
                                                         @php
                                                             $roleId = Auth::user()->role_id;
                                                         @endphp
-                                                        @if($roleId == 3)
+                                                        @if($roleId == 3 || $roleId == 6)
                                                             <td class="border px-4 py-2 text-center">
                                                                 <button class="btn btn-sm btn-warning edit-feedback-btn"
                                                                         data-stu-id="{{ $student->stu_id }}"
