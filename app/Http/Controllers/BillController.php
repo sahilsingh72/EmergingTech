@@ -226,34 +226,55 @@ class BillController extends Controller
 
         return back()->with('success', 'Trainer travel bill submitted successfully!');
     }
-    public function trainerTravelList()
+    public function trainerTravelList(Request $request)
     {
         $user = Auth::user();
         $role = $user->role->name;
 
+        // Load districts for filter (Only for Accounts)
+        $districts = District::orderBy('DSM_DSNM')->get();
+
+        if (in_array($role, ['Accounts','OKCL'])) {
+
+            $districtId = $request->district_id;   // can be null → all districts
+            $status = $request->status;
+
+            $records = TrainerTravelBill::with(['trainer', 'district'])
+                ->when($districtId, function($q) use ($districtId) {
+                    return $q->where('district_id', $districtId);
+                })
+                ->when($status, function($q) use ($status) {
+                    return $q->where('status', $status);
+                })
+                ->latest()
+                ->get();
+
+            return view('travels.trainertravellist', [
+                'records' => $records,
+                'districts' => $districts,
+                'selectedDistrict' => $districtId,
+            ]);
+        }
+
         // Get logged-in trainer record if exists
         $trainer = Trainer::where('user_id', $user->id)->first();
 
-        if (in_array($role, ['OCAC', 'OKCL'])) {
-            // SUPER ADMIN — VIEW ALL
-            $records = TrainerTravelBill::with(['trainer', 'district'])
-                ->latest()
-                ->get();
-        } elseif ($role === 'Accounts') {
-            // ACCOUNTS CAN SEE ALL BILLS BUT FOR APPROVAL
-            $records = TrainerTravelBill::with(['trainer', 'district'])
-                ->latest()
-                ->get();
-        } elseif ($role === 'Trainer' && $trainer) {
+        if ($role === 'Trainer' && $trainer) {
             // TRAINER — SEE ONLY OWN RECORDS
             $records = TrainerTravelBill::with(['trainer', 'district'])
                 ->where('trainer_id', $trainer->trainer_id)
                 ->latest()
                 ->get();
         } elseif ($role === 'DLC') {
+
+            $districtId = $request->district_id;
+            $status = $request->status;
             // DLC — SEE RECORDS OF THEIR DISTRICT
             $records = TrainerTravelBill::with(['trainer', 'district'])
                 ->where('district_id', $user->district_id)
+                ->when($status, function($query) use ($status) {
+                    return $query->where('status', $status);
+                })
                 ->latest()
                 ->get();
         } else {
@@ -261,7 +282,10 @@ class BillController extends Controller
             return back()->with('error', "You don't have permission to view this page.");
         }
 
-        return view('travels.trainertravellist', compact('records'));
+        return view('travels.trainertravellist', [
+                'records' => $records,
+                'selectedDistrict' => $districtId
+            ]);
     }
     public function trainerTravelUpdate(Request $request, $id)
     {
