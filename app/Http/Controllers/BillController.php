@@ -240,13 +240,17 @@ class BillController extends Controller
             $status = $request->status;
 
             $records = TrainerTravelBill::with(['trainer', 'district'])
+                ->join('dst_mst01', 'dst_mst01.DSM_DSCD', '=', 'trainer_travel_expenses.district_id')
+                ->join('trainers', 'trainers.trainer_id', '=', 'trainer_travel_expenses.trainer_id')
                 ->when($districtId, function($q) use ($districtId) {
                     return $q->where('district_id', $districtId);
                 })
                 ->when($status, function($q) use ($status) {
                     return $q->where('status', $status);
                 })
-                ->latest()
+                ->orderBy('dst_mst01.DSM_DSNM', 'ASC')
+                ->orderBy('trainers.trainer_name', 'ASC')
+                ->select('trainer_travel_expenses.*')
                 ->get();
 
             return view('travels.trainertravellist', [
