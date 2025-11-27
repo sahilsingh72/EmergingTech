@@ -90,7 +90,7 @@
                                         <!-- Search -->
                                         <div>
                                             <input type="text" id="searchInput"
-                                                placeholder="Search(School/Udise Code/District)"
+                                                placeholder="Search..."
                                                 class="border rounded p-2 w-full w-40 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
                                     </div>
