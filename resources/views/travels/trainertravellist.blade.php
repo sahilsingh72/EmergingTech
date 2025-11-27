@@ -30,7 +30,7 @@
                 <div class="container-fluid">
                     <div class="py-12">
                         <div class="max-w-8xl mx-auto space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                            <div class="p-3 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Trainer Travel & Allowance
@@ -76,160 +76,166 @@
                                     @endif
 
 
-                                    <table class="table table-bordered">
-                                        <thead class="table-secondary">
-                                            <tr>
-                                                <th>Sno</th>
-                                                <th>District</th>
-                                                <th>Trainer</th>
-                                                <th>Specialization</th>
-                                                <th>Main Travel</th>
-                                                <th>Return Travel</th>
-                                                <th>Total Amount</th>
-                                                <th>Bill File</th>
-                                                <th>Applied On</th>
-                                                <th>Training Date</th>
-                                                <th>Status</th>
-                                                @if(in_array(Auth::user()->role_id, [3, 8]))
-                                                    <th>Action</th>
-                                                @endif
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            @forelse($records as $index => $row)
+                                    <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
+                                        <table class="table table-bordered">
+                                            <thead class="table-secondary">
                                                 <tr>
-                                                    <td>{{ $index + 1 }}</td>
-                                                    <td>{{ $row->district->DSM_DSNM ?? '-' }}</td>
-                                                    <td>{{ $row->trainer->trainer_name ?? '-' }}</td>
-                                                    <td>{{ $row->specialization }}</td>
+                                                    <th>Sno</th>
+                                                    <th>District</th>
+                                                    <th>Trainer</th>
+                                                    <th>Specialization</th>
+                                                    <th>Main Travel</th>
+                                                    <th>Return Travel</th>
+                                                    <th>Total Amount</th>
+                                                    <th>Bill File</th>
+                                                    <th>Applied On</th>
+                                                    <th>Training Date</th>
+                                                    <th>Status</th>
+                                                    @if(in_array(Auth::user()->role_id, [3, 8]))
+                                                        <th>Action</th>
+                                                    @endif
+                                                </tr>
+                                            </thead>
 
-                                                    <td>
-                                                        <strong>{{ $row->main_from }} → {{ $row->main_to }}</strong><br>
-                                                        Mode: {{ $row->main_mode }}<br>
-                                                        Amount: ₹{{ $row->main_amount }}
-                                                    </td>
+                                            <tbody>
+                                                @forelse($records as $index => $row)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>{{ $row->district->DSM_DSNM ?? '-' }}</td>
+                                                        <td>{{ $row->trainer->trainer_name ?? '-' }}</td>
+                                                        <td>{{ $row->specialization }}</td>
 
-                                                    <td>
-                                                        @if($row->has_return)
-                                                            <strong>{{ $row->return_from }} → {{ $row->return_to }}</strong><br>
-                                                            Mode: {{ $row->return_mode }}<br>
-                                                            Amount: ₹{{ $row->return_amount }}
-                                                        @else
-                                                            <span class="text-muted">No return</span>
-                                                        @endif
-                                                    </td>
+                                                        <td>
+                                                            <strong>{{ $row->main_from }} → {{ $row->main_to }}</strong><br>
+                                                            Mode: {{ $row->main_mode }}<br>
+                                                            Amount: ₹{{ $row->main_amount }}
+                                                        </td>
 
-                                                    <td>
-                                                        ₹{{ $row->main_amount + ($row->return_amount ?? 0) }}
-                                                    </td>
+                                                        <td>
+                                                            @if($row->has_return)
+                                                                <strong>{{ $row->return_from }} →
+                                                                    {{ $row->return_to }}</strong><br>
+                                                                Mode: {{ $row->return_mode }}<br>
+                                                                Amount: ₹{{ $row->return_amount }}
+                                                            @else
+                                                                <span class="text-muted">No return</span>
+                                                            @endif
+                                                        </td>
 
-                                                    <td>
-                                                        {{-- Main Bill --}}
-                                                        @if($row->main_bill_url)
-                                                            <a href="{{ route('trainer.travel.preview', ['path' => $row->main_bill]) }}"
-                                                                target="_blank" class="btn btn-sm btn-primary mb-1 w-full">
-                                                                View Main Bill
-                                                            </a>
-                                                        @else
-                                                            <span class="badge bg-secondary d-block mb-1">Main: Not
-                                                                uploaded</span>
-                                                        @endif
+                                                        <td>
+                                                            ₹{{ $row->main_amount + ($row->return_amount ?? 0) }}
+                                                        </td>
 
-
-                                                        {{-- Show Return Section **only when return is applied** --}}
-                                                        @if($row->has_return)
-
-                                                            @if($row->return_bill_url)
-                                                                <a href="{{ route('preview.file', ['path' => $row->return_bill_file]) }}"
-                                                                    target="_blank" class="btn btn-sm btn-success w-full">
-                                                                    View Return Bill
+                                                        <td>
+                                                            {{-- Main Bill --}}
+                                                            @if($row->main_bill_url)
+                                                                <a href="{{ route('trainer.travel.preview', ['path' => $row->main_bill]) }}"
+                                                                    target="_blank" class="btn btn-sm btn-primary mb-1 w-full">
+                                                                    View Main Bill
                                                                 </a>
                                                             @else
-                                                                <span class="badge bg-secondary d-block">Return: Not uploaded</span>
+                                                                <span class="badge bg-secondary d-block mb-1">Main: Not
+                                                                    uploaded</span>
                                                             @endif
 
-                                                        @endif
 
-                                                    </td>
-                                                    <td>{{ $row->created_at->format('d M, Y') }}</td>
-                                                    <td>
-                                                        {{ $row->training_date ? date('d-m-Y', strtotime($row->training_date)) : 'Not Set' }}
+                                                            {{-- Show Return Section **only when return is applied** --}}
+                                                            @if($row->has_return)
 
-                                                        @if(auth()->user()->role_id == 8)
-                                                            <!-- Accounts Can Edit Training Date -->
-                                                            <form
-                                                                action="{{ route('trainerTravel.updateTrainingDate', $row->id) }}"
-                                                                method="POST" class="mt-2">
-                                                                @csrf
-                                                                <input type="date" name="training_date"
-                                                                    class="form-control form-control-sm"
-                                                                    value="{{ $row->training_date }}">
+                                                                @if($row->return_bill_url)
+                                                                    <a href="{{ route('preview.file', ['path' => $row->return_bill_file]) }}"
+                                                                        target="_blank" class="btn btn-sm btn-success w-full">
+                                                                        View Return Bill
+                                                                    </a>
+                                                                @else
+                                                                    <span class="badge bg-secondary d-block">Return: Not
+                                                                        uploaded</span>
+                                                                @endif
 
-                                                                <button class="btn btn-sm btn-warning mt-1">
-                                                                    Update Date
-                                                                </button>
-                                                            </form>
-                                                        @endif
-                                                    </td>
+                                                            @endif
 
-                                                    <td>
-                                                        {{-- <span class="badge bg-warning">Pending</span> --}}
-                                                        @if($row->status == 'Pending')
-                                                            <span class="badge bg-warning">Pending</span>
-                                                        @elseif($row->status == 'Approved')
-                                                            <span class="badge bg-success">Approved</span>
-                                                        @else
-                                                            <span class="badge bg-danger">Rejected</span>
-                                                        @endif
+                                                        </td>
+                                                        <td>{{ $row->created_at->format('d M, Y') }}</td>
+                                                        <td>
+                                                            {{ $row->training_date ? date('d-m-Y', strtotime($row->training_date)) : 'Not Set' }}
 
-                                                        @if($row->status_updated_by)
-                                                            <br>
-                                                            <small class="text-muted">
-                                                                Updated by: {{ optional($row->statusUpdatedByUser)->name }} <br>
-                                                                Remarks: {{ $row->remarks }} <br>
-                                                            </small>
-                                                        @endif
-                                                    </td>
+                                                            @if(auth()->user()->role_id == 8)
+                                                                <!-- Accounts Can Edit Training Date -->
+                                                                <form
+                                                                    action="{{ route('trainerTravel.updateTrainingDate', $row->id) }}"
+                                                                    method="POST" class="mt-2">
+                                                                    @csrf
+                                                                    <input type="date" name="training_date"
+                                                                        class="form-control form-control-sm"
+                                                                        value="{{ $row->training_date }}">
 
-                                                    <td>
+                                                                    <button class="btn btn-sm btn-warning mt-1">
+                                                                        Update Date
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        </td>
+
+                                                        <td>
+                                                            {{-- <span class="badge bg-warning">Pending</span> --}}
+                                                            @if($row->status == 'Pending')
+                                                                <span class="badge bg-warning">Pending</span>
+                                                            @elseif($row->status == 'Approved')
+                                                                <span class="badge bg-success">Approved</span>
+                                                            @else
+                                                                <span class="badge bg-danger">Rejected</span>
+                                                            @endif
+
+                                                            @if($row->status_updated_by)
+                                                                <br>
+                                                                <small class="text-muted">
+                                                                    Updated by: {{ optional($row->statusUpdatedByUser)->name }}
+                                                                    <br>
+                                                                    Remarks: {{ $row->remarks }} <br>
+                                                                </small>
+                                                            @endif
+                                                        </td>
+
                                                         {{-- Edit Button --}}
                                                         @php
                                                             $roleId = Auth::user()->role_id;
                                                         @endphp
                                                         @if($roleId == 3)
-                                                            <button class="btn btn-sm btn-warning mt-1 w-full"
-                                                                onclick="openEditModal({{ $row->id }})">
-                                                                Edit
-                                                            </button>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-warning mt-1 w-full"
+                                                                    onclick="openEditModal({{ $row->id }})">
+                                                                    Edit
+                                                                </button>
+                                                            </td>
                                                         @endif
                                                         @if(in_array(Auth::user()->role_id, [8]))
-                                                            @if($row->status == 'Pending')
+                                                            <td>
+                                                                @if($row->status == 'Pending')
 
-                                                                <form action="{{ route('trainerTravel.approve', $row->id) }}"
-                                                                    method="POST" class="d-inline">
-                                                                    @csrf
-                                                                    <button
-                                                                        class="btn btn-success btn-sm mt-1 w-full">Approve</button>
-                                                                </form>
+                                                                    <form action="{{ route('trainerTravel.approve', $row->id) }}"
+                                                                        method="POST" class="d-inline">
+                                                                        @csrf
+                                                                        <button
+                                                                            class="btn btn-success btn-sm mt-1 w-full">Approve</button>
+                                                                    </form>
 
-                                                                <button class="btn btn-danger btn-sm mt-1 w-full"
-                                                                    data-toggle="modal" data-target="#rejectModal{{ $row->id }}">
-                                                                    Reject
-                                                                </button>
-
-                                                            @else
-
-                                                                {{-- -------- SHOW REVERT BUTTON WHEN APPROVED OR REJECTED --------
-                                                                --}}
-                                                                <form action="{{ route('trainerTravel.revert', $row->id) }}"
-                                                                    method="POST">
-                                                                    @csrf
-                                                                    <button class="btn btn-warning btn-sm mt-1 w-full">
-                                                                        Revert
+                                                                    <button class="btn btn-danger btn-sm mt-1 w-full"
+                                                                        data-toggle="modal"
+                                                                        data-target="#rejectModal{{ $row->id }}">
+                                                                        Reject
                                                                     </button>
-                                                                </form>
-                                                            @endif
+
+                                                                @else
+                                                                    {{---- SHOW REVERT BUTTON WHEN APPROVED OR REJECTED----}}
+                                                                    <form action="{{ route('trainerTravel.revert', $row->id) }}"
+                                                                        method="POST">
+                                                                        @csrf
+                                                                        <button class="btn btn-warning btn-sm mt-1 w-full">
+                                                                            Revert
+                                                                        </button>
+                                                                    </form>
+                                                                @endif
+                                                            </td>
                                                             <!-- Reject Modal -->
                                                             <div class="modal fade" id="rejectModal{{ $row->id }}">
                                                                 <div class="modal-dialog">
@@ -258,16 +264,16 @@
                                                                 </div>
                                                             </div>
                                                         @endif
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="10" class="text-center text-muted">No Travel Claims
-                                                        Submitted</td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="10" class="text-center text-muted">No Travel Claims
+                                                            Submitted</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
