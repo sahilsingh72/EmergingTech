@@ -49,19 +49,24 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class="sm:p-8 bg-white shadow sm:rounded-lg">
+                                <div class="bg-white p-4 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Student List</h2>
-                                    <div class="mb-4 flex justify-end">
-                                        <a href="{{route('single.addstudent')}}">
-                                            <button id=""
-                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                                <i class="fas fa-user-plus"></i>Add Student
-                                            </button>
-                                        </a>
-                                    </div>
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                    @endphp
+                                    @if($roleId == 3 || $roleId == 6)
+                                        <div class="mb-4 flex justify-end">
+                                            <a href="{{route('single.addstudent')}}">
+                                                <button id=""
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                    <i class="fas fa-user-plus"></i>Add Student
+                                                </button>
+                                            </a>
+                                        </div>
+                                    @endif
                                     <!-- Flash Messages -->
                                     @if (session('success'))
                                         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
@@ -88,27 +93,28 @@
                                                 <option value="10" selected>10</option>
                                                 <option value="25">25</option>
                                                 <option value="50">50</option>
+                                                <option value="100">100</option>
                                             </select>
                                         </div>
 
                                         <!-- Search -->
                                         <div>
                                             <input type="text" id="searchInput" placeholder="Search..."
-                                                class="border rounded p-2 w-64">
+                                                class="border rounded p-2 w-40">
                                         </div>
                                     </div>
-<div class="mb-4 flex justify-end items-center gap-3">
-    <label for="filterSchool" class="font-semibold text-gray-700">Select School:</label>
-    <select id="filterSchool" class="border rounded px-3 py-2">
-        <option value="">-- Select School --</option>
-        @foreach ($schools as $school)
-            <option value="{{ $school->scm_id }}" 
-                {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
-                {{ $school->scm_name }} ({{ $school->scm_udise_code }})
-            </option>
-        @endforeach
-    </select>
-</div>
+                                    <div class="mb-4 flex justify-end items-center mb-4 gap-2">
+                                        <label for="filterSchool" class="font-semibold text-gray-700">Select School:</label>
+                                        <select id="filterSchool" class="border rounded p-2 w-40">
+                                            <option value="">-- Select School --</option>
+                                            @foreach ($schools as $school)
+                                                <option value="{{ $school->scm_id }}" 
+                                                    {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                                                    {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
                                         <table id="studentTable" class="w-full border-collapse">
                                             <thead class="bg-gray-100">
@@ -117,23 +123,28 @@
                                                         data-column="0">S.No</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="1">Student Name</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="2">Roll Number</th>
+                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="2">Roll Number</th> --}}
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="3">Class</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="5">Gender</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="6">DOB</th>
+                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="6">DOB</th> --}}
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="7">Father's Name</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="9">School Name</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="8">UDISE Code</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="10">Address</th>
-                                                    <th class="border px-4 py-2 text-center">Actions</th>
+                                                        data-column="9">School Name</th>
+                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="10">Address</th> --}}
+                                                    @php
+                                                        $roleId = Auth::user()->role_id;
+                                                    @endphp
+                                                    @if($roleId == 3 || $roleId == 6)
+                                                        <th class="border px-4 py-2 text-center">Actions</th>
+                                                    @endif
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -142,19 +153,22 @@
                                                         <td class="border px-4 py-2 text-center">{{ $index + 1 }}
                                                         </td>
                                                         <td class="border px-4 py-2">{{ $student->stu_name }}</td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_roll_number }}
+                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_roll_number }} --}}
                                                         </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_class }}({{ strtoupper($student->stu_section) }})</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_class }}</td>
                                                         
                                                         <td class="border px-4 py-2">{{ $student->stu_gender }}</td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_dob }}</td>
+                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_dob }}</td> --}}
                                                         <td class="border px-4 py-2">{{ $student->stu_fathername }}
                                                         </td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_schoolname }}
                                                         </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_address}}</td>
-
+                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_address}}</td> --}}
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $roleId == 6)
                                                         <td class="border px-4 py-2 text-center">
                                                             <!-- View -->
                                                             <a href="#"
@@ -181,11 +195,11 @@
                                                                 </button>
                                                             </form>
                                                         </td>
-
+                                                        @endif
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="13" class="text-center py-4">No students found(Select School)
+                                                        <td colspan="13" class="text-center py-4">Please select school for students
                                                         </td>
                                                     </tr>
                                                 @endforelse
@@ -324,8 +338,6 @@
         });
     });
 </script>
-
-
     <script>
         $(document).ready(function() {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
@@ -508,12 +520,7 @@
         });
     </script>
 
-    <script>
-        // Auto fetch School Name (example: from session/auth)
-        const loggedInSchool =
-            "BINIKEYEE NODAL HIGH SCHOOL (21150216101), Athamallik, Angul-759125"; // Replace with Blade variable in Laravel
-        document.getElementById("schoolName").value = loggedInSchool;
-    </script>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 

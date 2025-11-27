@@ -24,9 +24,9 @@
 
             <section class="content">
                 <div class="container-fluid py-12">
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                            <div class="bg-white p-8 rounded-lg w-full">
+                    <div class="max-w-8xl mx-auto space-y-6">
+                        <div class="sm:p-8 bg-white shadow sm:rounded-lg">
+                            <div class="bg-white rounded-lg w-full">
                                 <h2 class="text-2xl font-semibold text-center mb-6">Training Videos</h2>
 
                                 @if(session('info'))
@@ -45,7 +45,7 @@
                                     </div>
 
                                     <!-- Search -->
-                                    <div class="w-full sm:w-auto">
+                                    <div>
                                         <input type="text" id="searchInput"
                                             placeholder="Search(School/Udise Code/District)"
                                             class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -58,7 +58,12 @@
                                             <th>S.No</th>
                                             <th>School</th>
                                             <th>File</th>
-                                            <th>Edit</th>
+                                            @php
+                                                $roleId = Auth::user()->role_id;
+                                            @endphp
+                                            @if($roleId == 3 || $roleId == 6)
+                                                <th>Edit</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -85,12 +90,17 @@
                                                     @endif
 
                                                 </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary"
-                                                            onclick="openVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
-                                                        Edit
-                                                    </button>
-                                                </td>
+                                                @php
+                                                    $roleId = Auth::user()->role_id;
+                                                @endphp
+                                                @if($roleId == 3 ||$roleId == 6)
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary"
+                                                                onclick="openVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
+                                                            Edit
+                                                        </button>
+                                                    </td>
+                                                @endif
                                             </tr>
                                             @endif
                                         @empty

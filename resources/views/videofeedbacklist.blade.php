@@ -24,9 +24,9 @@
 
             <section class="content">
                 <div class="container-fluid py-12">
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                        <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                            <div class="bg-white p-8 rounded-lg w-full">
+                    <div class="max-w-8xl mx-auto space-y-6">
+                        <div class="sm:p-8 bg-white shadow sm:rounded-lg">
+                            <div class="bg-white  rounded-lg w-full">
                                 <h2 class="text-2xl font-semibold text-center mb-6">Feedback Videos</h2>
 
                                 @if(session('info'))
@@ -45,10 +45,10 @@
                                     </div>
 
                                     <!-- Search -->
-                                    <div class="w-full sm:w-auto">
+                                    <div>
                                         <input type="text" id="searchInput"
                                             placeholder="Search(School/Udise Code/District)"
-                                            class="border rounded p-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            class="border rounded p-2 w-full w-40 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                     </div>
                                 </div>
                                 <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
@@ -59,7 +59,12 @@
                                                 <th>School</th>
                                                 <th>Designation</th>
                                                 <th>File</th>
-                                                <th>Edit</th>
+                                                @php
+                                                    $roleId = Auth::user()->role_id;
+                                                @endphp
+                                                @if($roleId == 3 || $roleId == 6)
+                                                    <th>Edit</th>
+                                                @endif
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -91,12 +96,17 @@
                                                             @endif
 
                                                         </td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-primary"
-                                                                onclick="openFeedbackVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
-                                                                Edit
-                                                            </button>
-                                                        </td>
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $roleId == 6)
+                                                            <td>
+                                                                <button class="btn btn-sm btn-primary"
+                                                                    onclick="openFeedbackVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
+                                                                    Edit
+                                                                </button>
+                                                            </td>
+                                                        @endif
                                                     </tr>
                                                 @endif
                                             @empty
@@ -121,29 +131,35 @@
                                     </div>
                                 </div>
                                 <!-- Edit Modal -->
-<div id="editFeedbackVideoModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-    <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
-        <h2 class="text-xl font-semibold mb-4">Edit Feedback Video</h2>
+                                <div id="editFeedbackVideoModal"
+                                    class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                                    <div
+                                        class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
+                                        <h2 class="text-xl font-semibold mb-4">Edit Feedback Video</h2>
 
-        <form id="editFeedbackVideoForm" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
+                                        <form id="editFeedbackVideoForm" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
 
-            <div id="currentFeedbackVideoInfo" class="mb-4 space-y-2">
-                </div>
+                                            <div id="currentFeedbackVideoInfo" class="mb-4 space-y-2">
+                                            </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Upload New Video (Optional - will replace current one)</label>
-                <input type="file" name="new_feedback_video" accept="video/*" class="mt-2 border p-2 w-full rounded">
-            </div>
+                                            <div class="mb-4">
+                                                <label class="block text-sm font-medium mb-1">Upload New Video (Optional
+                                                    - will replace current one)</label>
+                                                <input type="file" name="new_feedback_video" accept="video/*"
+                                                    class="mt-2 border p-2 w-full rounded">
+                                            </div>
 
-            <div class="flex justify-end space-x-2">
-                <button type="button" onclick="closeFeedbackVideoModal()" class="px-4 py-2 bg-gray-400 rounded">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
-            </div>
-        </form>
-    </div>
-</div>
+                                            <div class="flex justify-end space-x-2">
+                                                <button type="button" onclick="closeFeedbackVideoModal()"
+                                                    class="px-4 py-2 bg-gray-400 rounded">Cancel</button>
+                                                <button type="submit"
+                                                    class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
 
 
                             </div>
@@ -176,12 +192,12 @@
     </script>
 
     <script>
-function openFeedbackVideoEditModal(id) {
-    fetch(`/uploadfeedback-list/${id}/edit`)
-        .then(res => res.json())
-        .then(data => {
-            // Data now contains single strings for file_name and onedrive_path
-            let html = `
+        function openFeedbackVideoEditModal(id) {
+            fetch(`/uploadfeedback-list/${id}/edit`)
+                .then(res => res.json())
+                .then(data => {
+                    // Data now contains single strings for file_name and onedrive_path
+                    let html = `
                 <label class="block text-sm font-medium">Current Video</label>
                 <div class="flex items-center space-x-3 border p-2 rounded">
                     <video src="/preview-video?path=${encodeURIComponent(data.onedrive_path)}" class="w-32 h-20 rounded" controls></video>
@@ -189,16 +205,16 @@ function openFeedbackVideoEditModal(id) {
                 </div>
             `;
 
-            document.querySelector('#currentFeedbackVideoInfo').innerHTML = html;
-            document.querySelector('#editFeedbackVideoForm').action = `/uploadfeedback-list/${id}`;
-            document.querySelector('#editFeedbackVideoModal').classList.remove('hidden');
-        });
-}
+                    document.querySelector('#currentFeedbackVideoInfo').innerHTML = html;
+                    document.querySelector('#editFeedbackVideoForm').action = `/uploadfeedback-list/${id}`;
+                    document.querySelector('#editFeedbackVideoModal').classList.remove('hidden');
+                });
+        }
 
-function closeFeedbackVideoModal() {
-    document.querySelector('#editFeedbackVideoModal').classList.add('hidden');
-}
-</script>
+        function closeFeedbackVideoModal() {
+            document.querySelector('#editFeedbackVideoModal').classList.add('hidden');
+        }
+    </script>
 
     <script>
         $(document).ready(function () {
