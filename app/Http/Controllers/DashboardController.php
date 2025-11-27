@@ -191,16 +191,15 @@ class DashboardController extends Controller
             'Sonepur' => 'Subarnapur',
             'Bolangir' => 'Balangir',
             'Nabarangpur' => 'Nabarangapur',
-            // add more if needed later
         ];
         $districts = School::select('scm_dist')
             ->groupBy('scm_dist')
             ->get()
             ->pluck('scm_dist');
 
-        // $progressData = [];
         $totalSchoolData = [];
         $completedData = [];
+        $studentData = [];
 
         foreach ($districts as $district) {
             $geoDistrict = $nameCorrections[$district] ?? $district;
@@ -209,17 +208,22 @@ class DashboardController extends Controller
                 ->where('training_completed', 1)
                 ->count();
 
-            // $progress = $totalSchools > 0 ? round(($completed / $totalSchools) * 100, 2) : 0;
+            $totalStudents = StudentMst::where('stu_distid', function ($q) use ($district) {
+                $q->select('scm_dist_id')
+                    ->from('school_mst')
+                    ->where('scm_dist', $district)
+                    ->limit(1);
+            })->count();
             
-            // $progressData[$geoDistrict] = $progress;
             $totalSchoolData[$geoDistrict] = $totalSchools;
             $completedData[$geoDistrict] = $completed;
+            $studentData[$geoDistrict] = $totalStudents;
         }
 
         return response()->json([
-            // 'progress' => $progressData,
             'total_schools' => $totalSchoolData,
-            'completed' => $completedData
+            'completed' => $completedData,
+            'students' => $studentData,
         ]);
     }
 

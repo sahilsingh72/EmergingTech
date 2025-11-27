@@ -199,7 +199,19 @@ class OneDriveService
             return $response->json();
         }
 
-        throw new \Exception('Failed to get file info from OneDrive');
+        if ($response->status() == 404) {
+            return [
+                'status' => false,
+                'message' => "The requested file does not exist on OneDrive.",
+            ];
+        }
+
+        // Any other OneDrive/Graph API error
+        return [
+            'status' => false,
+            'message' => "Unable to fetch file info from OneDrive. Please try again later.",
+            'error' => $response->json(),
+        ];
     }
     public function deleteFile($path)
     {
