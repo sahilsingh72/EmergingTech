@@ -75,9 +75,28 @@
                                         @endif
                                     @endif
 
+                                    <div class="flex justify-between items-center mb-4">
+                                        <!-- Rows per page -->
+                                        <div>
+                                            <label for="rowsPerPage" class="mr-2">Shows:</label>
+                                            <select id="rowsPerPage" class="border rounded  pl-2 pr-5">
+                                                <option value="5">5</option>
+                                                <option value="10" selected>10</option>
+                                                <option value="25">25</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Search -->
+                                        <div>
+                                            <input type="text" id="searchInput"
+                                                placeholder="Search(School/Udise Code/District)"
+                                                class="border rounded p-2 w-full w-40 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        </div>
+                                    </div>
 
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                                        <table class="table table-bordered">
+                                        <table id="filterTable" class="table table-bordered">
                                             <thead class="table-secondary">
                                                 <tr>
                                                     <th>Sno</th>
@@ -274,6 +293,7 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                 </div>
                             </div>
                         </div>
@@ -445,7 +465,94 @@
             });
         });
     </script>
+     <script>
+        $(document).ready(function () {
+            let rowsPerPage = parseInt($("#rowsPerPage").val());
+            let currentPage = 1;
+            let sortDirection = {}; // keep track of each column's sorting state
 
+            function renderTable() {
+                let searchText = $("#searchInput").val().toLowerCase();
+                let rows = $("#filterTable tbody tr");
+
+                // Filter rows
+                rows.each(function () {
+                    let rowText = $(this).text().toLowerCase();
+                    $(this).toggle(rowText.indexOf(searchText) > -1);
+                });
+
+                // Pagination
+                let visibleRows = rows.filter(":visible");
+                let totalRows = visibleRows.length;
+                let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+                visibleRows.hide();
+                let start = (currentPage - 1) * rowsPerPage;
+                let end = start + rowsPerPage;
+                visibleRows.slice(start, end).show();
+
+                // Render pagination buttons
+                let pagination = $("#pagination");
+                pagination.empty();
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.append(
+                        `<button class="px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-white'} page-btn">${i}</button>`
+                    );
+                }
+            }
+
+            // Change rows per page
+            $("#rowsPerPage").on("change", function () {
+                rowsPerPage = parseInt($(this).val());
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Search filter
+            $("#searchInput").on("keyup", function () {
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Pagination click
+            $(document).on("click", ".page-btn", function () {
+                currentPage = parseInt($(this).text());
+                renderTable();
+            });
+
+            // 🔽 Sorting click
+            $(document).on("click", ".sort", function () {
+                let columnIndex = $(this).data("column");
+                sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
+                let asc = sortDirection[columnIndex];
+
+                let rows = $("#filterTable tbody tr").get();
+
+                rows.sort(function (a, b) {
+                    let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
+                    let B = $(b).children("td").eq(columnIndex).text().toLowerCase();
+
+                    // numeric check
+                    if ($.isNumeric(A) && $.isNumeric(B)) {
+                        return asc ? A - B : B - A;
+                    } else {
+                        return asc ? A.localeCompare(B) : B.localeCompare(A);
+                    }
+                });
+
+                $.each(rows, function (index, row) {
+                    $("#filterTable tbody").append(row);
+                });
+
+                currentPage = 1; // reset pagination after sort
+                renderTable();
+            });
+
+            // Initial render
+            renderTable();
+        });
+    </script>
 
 </body>
 @include('components.footer')
