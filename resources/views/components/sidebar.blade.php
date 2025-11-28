@@ -26,141 +26,9 @@
             </p>
           </a>
         </li>
-        {{-- <li class="nav-item has-treeview {{ request()->is('') ? 'menu-open' : '' }}">
-          <a href="#" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
-            <i class="nav-icon fas fa-university "></i>
-            <p>
-              Institute & Camps
-              <i class="right fas fa-angle-left"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-list nav-icon"></i>
-                <p>Institute List</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-graduation-cap nav-icon"></i>
-                <p>Completion Certificate</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-film  nav-icon"></i>
-                <p>Media</p>
-              </a>
-            </li>
-          </ul>
-        </li> --}}
 
-        @if($user->role_id == 1 || $user->role_id == 2 )
-        
-          {{-- Training Evidences --}}
-
-          <li
-            class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos') ? 'menu-open' : '' }}">
-            <a href="#"
-              class="nav-link {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-folder"></i>
-              <p>
-                Training Evidences
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{ route('attendance') }}"
-                  class="nav-link {{ request()->routeIs('attendance') ? 'active' : '' }}">
-                  <i class="fas fa-user-check  nav-icon"></i>
-                  <p>Student Attendance</p>
-                </a>
-              </li>
-            </ul>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{route('trainingphotos')}}"
-                  class="nav-link {{ request()->routeIs('trainingphotos') ? 'active' : '' }}">
-                  <i class="fas fa-photo-video  nav-icon"></i>
-                  <p>Training Photos</p>
-                </a>
-              </li>
-            </ul>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="trainingvideos" class="nav-link {{ request()->routeIs('trainingvideos') ? 'active' : '' }}">
-                  <i class="fas fa-video  nav-icon"></i>
-                  <p>Training Videos</p>
-                </a>
-              </li>
-            </ul>
-
-          </li>
-
-        @endif
-
-        @if($user->role_id == 1 || $user->role_id == 2 )
-          {{-- Feedback --}}
-
-          <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadfeedback', 'writtenfeedback', 'onlinefeedback') ? 'menu-open' : '' }}">
-            <a href="#"
-              class="nav-link {{ request()->routeIs('uploadfeedback', 'writtenfeedback', 'onlinefeedback') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-edit "></i>
-              <p>
-                Feedback
-                <i class="fas fa-angle-left right"></i>
-                {{-- <span class="badge badge-info right">6</span> --}}
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{route('writtenfeedback')}}"
-                  class="nav-link {{ request()->routeIs('writtenfeedback') ? 'active' : '' }}">
-                  <i class="fas fa-pen  nav-icon"></i>
-                  <p>Written Feedback</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{route('uploadfeedback')}}"
-                  class="nav-link {{ request()->routeIs('uploadfeedback') ? 'active' : '' }}">
-                  <i class="fas fa-file-video   nav-icon"></i>
-                  <p>Video Feedback</p>
-                </a>
-              </li>
-            </ul>
-          </li>
-        @endif
-
-        @if($user->role_id == 1 || $user->role_id == 2 )
-          {{-- completion certificate --}}
-
-          <li class="nav-item has-treeview {{ request()->routeIs('trainingcompcertificate') ? 'menu-open' : '' }}">
-            <a href="#" class="nav-link {{ request()->routeIs('trainingcompcertificate') ? 'active' : '' }}">
-              <i class="nav-icon fas fa-graduation-cap"></i>
-              <p>
-                Training Completion
-                <i class="fas fa-angle-left right"></i>
-                {{-- <span class="badge badge-info right">6</span> --}}
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="{{route('trainingcompcertificate')}}"
-                  class="nav-link {{ request()->routeIs('trainingcompcertificate') ? 'active' : '' }}">
-                  <i class="fas fa-award  nav-icon"></i>
-                  <p>Completion Certificate</p>
-                </a>
-              </li>
-            </ul>
-          </li>
-        @endif
-
-
-        @if($user->role_id == 3 || $user->role_id == 1 || $user->role_id == 2)
         {{-- coordinator & Trainer --}}
+        @if($user->role_id == 3 || $user->role_id == 1 || $user->role_id == 2 || $user->role_id == 6)
           <li
             class="nav-item has-treeview {{ request()->routeIs('', 'coordinators.index', 'trainers.index', 'supstaff.index') ? 'menu-open' : '' }}">
             <a href="#"
@@ -202,12 +70,41 @@
           </li>
         @endif
 
-        @if($user->role_id == 1 || $user->role_id == 2 )
-          {{-- Students --}}
+        {{-- Schools --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8)
           <li
-            class="nav-item has-treeview {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-university"></i>
+              <p>
+                School
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a 
+                  @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8) 
+                    href="{{route('select.district')}}" 
+                  @elseif($user->role_id == 3 || $user->role_id == 6)
+                    href="{{ route('my.schools') }}" 
+                  @endif
+                    class="nav-link {{ request()->routeIs('select.district', 'my.schools', 'dlc.school.details', 'select.school') ? 'active' : '' }}">
+                    <i class="fas fa-list nav-icon"></i>
+                    <p>School List</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+        @endif
+
+        {{-- Students --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent', 'student.school', 'school.students', 'district.school.list') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent', 'student.school', 'school.students', 'district.school.list') ? 'active' : '' }}">
               <i class="nav-icon fas fa-user-graduate"></i>
               <p>
                 Student
@@ -215,15 +112,22 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              @if($user->role_id == 3 || $user->role_id == 6)
+                <li class="nav-item">
+                  <a href="{{route('addstudent')}}" class="nav-link {{ request()->routeIs('addstudent') ? 'active' : '' }}">
+                    <i class="fas fa-user-plus nav-icon"></i>
+                    <p>Add Student</p>
+                  </a>
+                </li>
+              @endif
               <li class="nav-item">
-                <a href="{{route('addstudent')}}" class="nav-link {{ request()->routeIs('addstudent') ? 'active' : '' }}">
-                  <i class="fas fa-user-plus nav-icon"></i>
-                  <p>Add Student</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{route('studentlist')}}"
-                  class="nav-link {{ request()->routeIs('studentlist') ? 'active' : '' }}">
+                <a 
+                @if($user->role_id == 1 || $user->role_id == 2) 
+                  href="{{route('student.school')}}" 
+                @else
+                  href="{{ route('studentlist') }}" 
+                @endif
+                  class="nav-link {{ request()->routeIs('studentlist', 'student.school', 'school.students', 'district.school.list') ? 'active' : '' }}">
                   <i class="fas fa-list nav-icon"></i>
                   <p>Student List</p>
                 </a>
@@ -232,13 +136,194 @@
           </li>
         @endif
 
-        @if($user->role_id == 1 || $user->role_id == 2 )
-          {{-- Finance & Bills --}}
+
+        
+        {{-- Training Evidences --}}
+        @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-folder"></i>
+              <p>
+                Training Evidences
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            @if($user->role_id == 3 || $user->role_id == 6)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ route('attendance') }}"
+                    class="nav-link {{ request()->routeIs('attendance') ? 'active' : '' }}">
+                    <i class="fas fa-user-check  nav-icon"></i>
+                    <p>Student Attendance</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 1 || $user->role_id == 2)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ route('attendance.list') }}"
+                    class="nav-link {{ request()->routeIs('attendance.list') ? 'active' : '' }}">
+                    <i class="fas fa-list  nav-icon"></i>
+                    <p>Attendance Record</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 3 || $user->role_id == 6)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{route('trainingphotos')}}"
+                    class="nav-link {{ request()->routeIs('trainingphotos') ? 'active' : '' }}">
+                    <i class="fas fa-photo-video  nav-icon"></i>
+                    <p>Training Photos</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 1 || $user->role_id == 2)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ route('trainingphotos.list') }}"
+                    class="nav-link {{ request()->routeIs('trainingphotos.list') ? 'active' : '' }}">
+                    <i class="fas fa-photo-video  nav-icon"></i>
+                    <p>Training Photos List</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 3 || $user->role_id == 6)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="trainingvideos" class="nav-link {{ request()->routeIs('trainingvideos') ? 'active' : '' }}">
+                    <i class="fas fa-video  nav-icon"></i>
+                    <p>Training Videos</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 1 || $user->role_id == 2)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ route('trainingvideos.list') }}"
+                    class="nav-link {{ request()->routeIs('trainingvideos.list') ? 'active' : '' }}">
+                    <i class="fas fa-video  nav-icon"></i>
+                    <p>Training Videos List</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+
+          </li>
+
+        @endif
+
+        {{-- Feedback --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('uploadfeedback', 'feedback.report', 'student.feedback', 'videofeedback.list') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('uploadfeedback', 'feedback.report', 'student.feedback', 'videofeedback.list') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-edit "></i>
+              <p>
+                Feedback
+                <i class="fas fa-angle-left right"></i>
+                {{-- <span class="badge badge-info right">6</span> --}}
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+                <li class="nav-item">
+                  <a href="{{route('student.feedback')}}"
+                    class="nav-link {{ request()->routeIs('student.feedback') ? 'active' : '' }}">
+                    <i class="fas fa-pen  nav-icon"></i>
+                    <p>Student Feedback</p>
+                  </a>
+                </li>
+              @endif
+              @if($user->role_id == 3 || $user->role_id == 6)
+                <li class="nav-item">
+                  <a href="{{route('uploadfeedback')}}"
+                    class="nav-link {{ request()->routeIs('uploadfeedback') ? 'active' : '' }}">
+                    <i class="fas fa-file-video   nav-icon"></i>
+                    <p>Video Feedback</p>
+                  </a>
+                </li>
+              @endif
+              @if($user->role_id == 2)
+                <li class="nav-item">
+                  <a href="{{route('videofeedback.list')}}"
+                    class="nav-link {{ request()->routeIs('videofeedback.list') ? 'active' : '' }}">
+                    <i class="fas fa-file-video   nav-icon"></i>
+                    <p>Video Feedback List</p>
+                  </a>
+                </li>
+              @endif
+              @if($user->role_id == 1 || $user->role_id == 2)
+                <li class="nav-item">
+                  <a href="{{route('feedback.report')}}"
+                    class="nav-link {{ request()->routeIs('feedback.report') ? 'active' : '' }}">
+                    <i class="fas fa-copy  nav-icon"></i>
+                    <p>Feedback Report</p>
+                  </a>
+                </li>
+              @endif
+            </ul>
+          </li>
+        @endif
+
+        {{-- completion certificate --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('trainingcompcertificate', 'uploaded.certificates') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('trainingcompcertificate', 'uploaded.certificates') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-graduation-cap"></i>
+              <p>
+                Training Completion
+                <i class="fas fa-angle-left right"></i>
+                {{-- <span class="badge badge-info right">6</span> --}}
+              </p>
+            </a>
+            @if($user->role_id == 3 || $user->role_id == 6)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{route('trainingcompcertificate')}}"
+                    class="nav-link {{ request()->routeIs('trainingcompcertificate') ? 'active' : '' }}">
+                    <i class="fas fa-award  nav-icon"></i>
+                    <p>Completion Certificate</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+            @if($user->role_id == 1 || $user->role_id == 2)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{route('uploaded.certificates')}}"
+                    class="nav-link {{ request()->routeIs('uploaded.certificates') ? 'active' : '' }}">
+                    <i class="fas fa-award  nav-icon"></i>
+                    <p>Completion Certificate</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
+          </li>
+        @endif
+
+
+
+        {{-- Finance & Bills --}}
+        @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
+
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'trainer.travels', 'trainer.travel.list') ? 'menu-open' : '' }}">
             <a href="{{route('uploadbills')}}"
-              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'trainer.travels', 'trainer.travel.list') ? 'active' : '' }}">
               <i class="nav-icon fas fa-file-invoice-dollar"></i>
               <p>
                 Finance & Bills
@@ -246,71 +331,46 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <li class="nav-item">
+              @if($user->role_id == 3)
+                <li class="nav-item">
+                  <a href="{{route('trainer.travels')}}"
+                    class="nav-link {{ request()->routeIs('trainer.travels') ? 'active' : '' }}">
+                    <i class="fas fa-car nav-icon"></i>
+                    <p>Trainer Travels</p>
+                  </a>
+                </li>
+              @endif
+
+              @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
+                <li class="nav-item">
+                  <a href="{{route('trainer.travel.list')}}"
+                    class="nav-link {{ request()->routeIs('trainer.travel.list') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice-dollar nav-icon"></i>
+                    <p>Allowance Requests</p>
+                  </a>
+                </li>
+              @endif
+
+              {{-- <li class="nav-item">
                 <a href="{{route('uploadbills')}}"
                   class="nav-link {{ request()->routeIs('uploadbills') ? 'active' : '' }}">
                   <i class="fas fa-utensils nav-icon"></i>
-                  <p>School Food Bills</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{route('uploadtravelbills')}}"
-                  class="nav-link {{ request()->routeIs('uploadtravelbills') ? 'active' : '' }}">
-                  <i class="fas fa-suitcase-rolling nav-icon"></i>
-                  <p>Travel Bills</p>
+                  <p>Staff Expenses</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{{route('uploadexpensebills')}}"
                   class="nav-link {{ request()->routeIs('uploadexpensebills') ? 'active' : '' }}">
                   <i class="fas fa-dollar-sign nav-icon"></i>
-                  <p>Expenses Bills</p>
+                  <p>Camp Expenses</p>
                 </a>
-              </li>
+              </li> --}}
             </ul>
           </li>
         @endif
-        {{-- <li class="nav-item has-treeview {{ request()->is('') ? 'menu-open' : '' }}">
-          <a href="#" class="nav-link {{ request()->routeIs('') ? 'active' : '' }}">
-            <i class="nav-icon fas fa-box"></i>
-            <p>
-              Logistic & Inventory
-              <i class="fas fa-angle-left right"></i>
-            </p>
-          </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-boxes nav-icon"></i>
-                <p>Inventory List</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-tasks nav-icon"></i>
-                <p>Assign/Dispatch</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="fas fa-map-marker nav-icon"></i>
-                <p>Return Tracking</p>
-              </a>
-            </li>
-          </ul>
-        </li> --}}
 
-        {{-- <li class="nav-item has-treeview {{ request()->routeIs('uploadreport') ? 'menu-open' : '' }}">
-          <a href="{{route('uploadreport')}}" class="nav-link {{ request()->routeIs('uploadreport') ? 'active' : '' }}">
-            <i class="nav-icon fas fa-chart-bar"></i>
-            <p>
-              Reports
-            </p>
-          </a>
-        </li> --}}
-
-        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 4 || $user->role_id == 5 || $user->role_id == 6)
-          {{-- User Management --}}
+        {{-- User Management --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 4 || $user->role_id == 5 || $user->role_id == 6 || $user->role_id == 8)
           <li class="nav-item has-treeview {{ request()->routeIs('register', 'profile.edit') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('register', 'profile.edit') ? 'active' : '' }}">
               <i class="nav-icon fas fa-cog"></i>
@@ -320,7 +380,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview ">
-              @if(auth()->user()->role_id == 1 || auth()->user()->role_id == 2)
+              @if(Auth::user()->id == 1)
                 <li class="nav-item">
                   <a href="{{ route('register') }}" class="nav-link {{ request()->routeIs('register') ? 'active' : '' }}">
                     <i class="fas fa-user-plus nav-icon"></i>
@@ -338,16 +398,17 @@
               <li class="nav-item">
                 <form method="POST" action="{{ route('logout') }}">
                   @csrf
-                  <a href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="nav-link ">
+                  <a href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();"
+                    class="nav-link ">
                     <i class="fas fa-sign-out-alt nav-icon"></i>
                     <p>Logout</p>
                   </a>
-                </form> 
+                </form>
               </li>
             </ul>
           </li>
         @endif
-        
+
       </ul>
     </nav>
     <!-- /.sidebar menu -->

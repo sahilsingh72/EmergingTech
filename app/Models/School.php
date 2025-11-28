@@ -24,6 +24,24 @@ class School extends Model
         'scm_subdivision_name',
         'scm_address',
         'scm_pin_code',
+
+        'scm_hm_name',
+        'scm_hm_phone',
+        'scm_hm_wp',
+        'scm_hm_email',
+
+        'scm_spoc_name',
+        'scm_spoc_phone',
+        'scm_spoc_wp',
+        'scm_spoc_email',
+
+        'scm_avail_3_class',
+        'scm_smartclass',
+        'scm_powerbackup',
+        'scm_powerbackup_type',
+        'scm_internet',
+        'scm_internet_type',
+
         'training_date',
         'training_completed',
    ];

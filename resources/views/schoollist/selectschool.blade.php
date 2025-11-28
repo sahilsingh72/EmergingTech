@@ -45,9 +45,10 @@
     .school-body {
         background: #e3effa;
     }
+
     a.btn {
-           
-            background: #153058;
+
+        background: #153058;
     }
 </style>
 
@@ -80,9 +81,9 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-1">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-0 space-y-6">
+                        <div class="max-w-8xl mx-auto  space-y-6">
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                                <div class="bg-white rounded-lg w-full">
                                     <!-- Title -->
                                     {{-- <h2 class="text-2xl font-semibold text-center mb-6"></i>Coordinator List</h2>
                                     --}}
@@ -98,16 +99,11 @@
 
                                                     <!-- Top Header (Blue Section) -->
                                                     <div class="school-header text-center text-white py-3">
-                                                        <h4 class="fw-bold mb-1">{{ $school->scm_name }}</h4>
+                                                        <h4 class="fw-bold mb-1">{{ $school->scm_name }} ({{ $school->scm_udise_code }})</h4>
                                                     </div>
 
                                                     <!-- Bottom White Section -->
                                                     <div class="school-body p-3">
-
-                                                        <div class="d-flex justify-content-between py-2">
-                                                            <span>UDISE Code</span>
-                                                            <span class="fw-bold text-primary">{{ $school->scm_udise_code }}</span>
-                                                        </div>
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom">
                                                             <span>Training Status</span>
@@ -119,22 +115,33 @@
                                                         </div>
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
+                                                            onclick="showSchoolDetails({{ $school->scm_id }})">
+                                                            <span>School Details</span>
+                                                            <span
+                                                                class="fw-bold text-primary">click here</span>
+                                                        </div>
+
+                                                        <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
                                                             onclick="showCoordinators({{ $school->scm_id }})">
                                                             <span>Coordinators</span>
-                                                            <span class="fw-bold text-primary">{{ $school->coordinators_count }}</span>
+                                                            <span
+                                                                class="fw-bold text-primary">{{ $school->coordinators_count }}</span>
                                                         </div>
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
                                                             onclick="showTrainers({{ $school->scm_id }})">
                                                             <span>Trainers</span>
-                                                            <span class="fw-bold text-primary">{{ $school->trainers_count }}</span>
+                                                            <span
+                                                                class="fw-bold text-primary">{{ $school->trainers_count }}</span>
                                                         </div>
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
                                                             onclick="showStaffs({{ $school->scm_id }})">
                                                             <span>Supporting Staff</span>
-                                                            <span class="fw-bold text-primary">{{ $school->staffs_count }}</span>
+                                                            <span
+                                                                class="fw-bold text-primary">{{ $school->staffs_count }}</span>
                                                         </div>
                                                         <a href="/school-{{ $school->scm_id }}-students">
-                                                            <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105">
+                                                            <div
+                                                                class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105">
                                                                 <span>Total Students</span>
                                                                 <span
                                                                     class="fw-bold text-primary">{{ $school->students_count }}</span>
@@ -159,64 +166,101 @@
                                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
 
 
-                                        <!-- coordinator Modal -->
-<div class="modal fade" id="coordinatorModal" tabindex="-1" aria-labelledby="schoolModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title w-100 text-center" id="schoolModalLabel">COORDINATOR OF {{ $school->scm_name }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalContentCo" class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-            <div class="text-center">Loading...</div>
-        </div>
-      </div>
-      <div class="modal-footer d-flex justify-content-end">
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-                                        <!-- trainer Modal -->
-<div class="modal fade" id="trainerModal" tabindex="-1" aria-labelledby="schoolModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title w-100 text-center" id="schoolModalLabel">TRAINER OF {{ $school->scm_name }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalContentTr" class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-            <div class="text-center">Loading...</div>
-        </div>
-      </div>
-      <div class="modal-footer d-flex justify-content-end">
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-                                        <!-- staff Modal -->
-<div class="modal fade" id="staffModal" tabindex="-1" aria-labelledby="schoolModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title w-100 text-center" id="schoolModalLabel">SUPPORTING STAFF OF {{ $school->scm_name }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalContentSt" class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-            <div class="text-center">Loading...</div>
-        </div>
-      </div>
-      <div class="modal-footer d-flex justify-content-end">
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-                                        
+                                    <!-- School Details Modal -->
+                                    <div class="modal fade" id="schoolDetailsModal" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title w-100 text-center" id="schoolDetailsTitle">School Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <div id="modalContentSchool" class="p-3">
+                                                        <div class="text-center">Loading...</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer d-flex justify-content-end">
+                                                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- coordinator Modal -->
+                                    <div class="modal fade" id="coordinatorModal" tabindex="-1"
+                                        aria-labelledby="schoolModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
+                                                        COORDINATOR OF {{ $school->scm_name }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="modalContentCo" class="table-responsive"
+                                                        style="max-height: 400px; overflow-y: auto;">
+                                                        <div class="text-center">Loading...</div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer d-flex justify-content-end">
+                                                    <button type="button" class="btn btn-secondary px-4"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- trainer Modal -->
+                                    <div class="modal fade" id="trainerModal" tabindex="-1"
+                                        aria-labelledby="schoolModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
+                                                        TRAINER OF {{ $school->scm_name }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="modalContentTr" class="table-responsive"
+                                                        style="max-height: 400px; overflow-y: auto;">
+                                                        <div class="text-center">Loading...</div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer d-flex justify-content-end">
+                                                    <button type="button" class="btn btn-secondary px-4"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- staff Modal -->
+                                    <div class="modal fade" id="staffModal" tabindex="-1"
+                                        aria-labelledby="schoolModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
+                                                        SUPPORTING STAFF OF {{ $school->scm_name }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="modalContentSt" class="table-responsive"
+                                                        style="max-height: 400px; overflow-y: auto;">
+                                                        <div class="text-center">Loading...</div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer d-flex justify-content-end">
+                                                    <button type="button" class="btn btn-secondary px-4"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
 
                                 </div>
                             </div>
@@ -227,7 +271,7 @@
         </div>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function loadSchools(distId) {
             $.ajax({
@@ -259,74 +303,37 @@
         }
     </script>
 
-{{-- <script>
-function showCoordinators(schoolId) {
-    // Show modal
-    var myModal = new bootstrap.Modal(document.getElementById('coordinatorModal'));
-    myModal.show();
+    <script>
+        function loadModalData(url, modalId, contentId) {
+            var modal = new bootstrap.Modal(document.getElementById(modalId));
+            modal.show();
 
-    // Set loading text
-    document.getElementById('modalContent').innerHTML = '<div class="text-center">Loading...</div>';
+            document.getElementById(contentId).innerHTML = '<div class="text-center py-4">Loading...</div>';
 
-    // Fetch coordinators via AJAX
-    fetch(`/school/${schoolId}/coordinators-json`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.length === 0) {
-                document.getElementById('modalContent').innerHTML = '<p>No coordinators found.</p>';
-                return;
-            }
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
 
-            let html = `<table class="table table-bordered table-striped overflow-x-auto">
-                            <thead>
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-            data.forEach(c => {
-                html += `<tr>
-                            <td>${c.photo ? `<img src="/storage/${c.photo}" alt="photo" width="50" height="50" class="rounded-circle">` : '-'}</td>
-                            <td>${c.coordinator_name}</td>
-                            <td>${c.phone || '-'}</td>
-                            <td>${c.email || '-'}</td>
-                         </tr>`;
-            });
-            html += '</tbody></table>';
+                    if (data.length === 0) {
+                        document.getElementById(contentId).innerHTML = '<p class="text-center">No records found.</p>';
+                        return;
+                    }
 
-            document.getElementById('modalContent').innerHTML = html;
-        })
-        .catch(err => {
-            document.getElementById('modalContent').innerHTML = '<p class="text-danger">Failed to load data.</p>';
-            console.error(err);
-        });
-}
-</script> --}}
-<script>
-function loadModalData(url, modalId, contentId) {
-    var modal = new bootstrap.Modal(document.getElementById(modalId));
-    modal.show();
+                    let isTrainer = (modalId === "trainerModal");
 
-    document.getElementById(contentId).innerHTML = '<div class="text-center py-4">Loading...</div>';
-
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-
-            if (data.length === 0) {
-                document.getElementById(contentId).innerHTML = '<p class="text-center">No records found.</p>';
-                return;
-            }
-
-            let html = `
+                    let html = `
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Photo</th>
                             <th>Name</th>
+            `;
+
+                    if (isTrainer) {
+                        html += `<th>Specialization</th>`;
+                    }
+
+                    html += `
                             <th>Phone</th>
                             <th>Email</th>
                         </tr>
@@ -334,40 +341,139 @@ function loadModalData(url, modalId, contentId) {
                     <tbody>
             `;
 
-            data.forEach(item => {
-                html += `
+                    data.forEach(item => {
+                        html += `
                     <tr>
                         <td>${item.photo ? `<img src="/storage/${item.photo}" width="50" height="50" class="rounded-circle">` : '-'}</td>
-                        <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.staff_name}</td>
+                        <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.ss_name }</td>
+                `;
+
+                        if (isTrainer) {
+                            html += `<td>${item.specialization || '-'}</td>`;
+                        }
+
+                        html += `
                         <td>${item.phone || '-'}</td>
                         <td>${item.email || '-'}</td>
                     </tr>
                 `;
-            });
+                    });
 
-            html += "</tbody></table>";
+                    html += "</tbody></table>";
 
-            document.getElementById(contentId).innerHTML = html;
-        })
-        .catch(error => {
-            document.getElementById(contentId).innerHTML = '<p class="text-danger text-center">Failed to load data.</p>';
-            console.error(error);
-        });
-}
+                    document.getElementById(contentId).innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById(contentId).innerHTML = '<p class="text-danger text-center">Failed to load data.</p>';
+                    console.error(error);
+                });
+        }
 
-/* Individual Functions */
-function showCoordinators(schoolId) {
-    loadModalData(`/school/${schoolId}/coordinators-json`, "coordinatorModal", "modalContentCo");
-}
+        /* Individual Functions */
+        function showSchoolDetails(schoolId) {
+            var modal = new bootstrap.Modal(document.getElementById("schoolDetailsModal"));
+            modal.show();
 
-function showTrainers(schoolId) {
-    loadModalData(`/school/${schoolId}/trainers-json`, "trainerModal", "modalContentTr");
-}
+            document.getElementById("modalContentSchool").innerHTML =
+                '<div class="text-center p-3">Loading...</div>';
 
-function showStaffs(schoolId) {
-    loadModalData(`/school/${schoolId}/staffs-json`, "staffModal", "modalContentSt");
-}
-</script>
+            fetch(`/school/${schoolId}/details-json`)
+                .then(res => res.json())
+                .then(data => {
+
+                    let html = `
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>School Name</th>
+                                <td>${data.scm_name}</td>
+                            </tr>
+                            <tr>
+                                <th>UDISE Code</th>
+                                <td>${data.scm_udise_code}</td>
+                            </tr>
+                            <tr>
+                                <th>Address</th>
+                                <td>${data.scm_address ?? 'N/A'}, ${data.scm_pin_code}</td>
+                            </tr>
+                            <tr>
+                                <th>District</th>
+                                <td>${data.scm_dist ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>HM Name</th>
+                                <td>${data.scm_hm_name ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>HM Email</th>
+                                <td><a href="mailto:${data.scm_hm_email}">${data.scm_hm_email ?? 'N/A'}</a></td>
+                            </tr>
+                            <tr>
+                                <th>HM Phone</th>
+                                <td><a href="tel:${data.scm_hm_phone}">${data.scm_hm_phone ?? 'N/A'}</a></td>
+                            </tr>
+                            <tr>
+                                <th>HM Whatsapp</th>
+                                <td>${data.scm_hm_wp ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>SPOC Name</th>
+                                <td>${data.scm_spoc_name ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>SPOC Email</th>
+                                <td><a href="mailto:${data.scm_spoc_email}">${data.scm_spoc_email ?? 'N/A'}</a></td>
+                            </tr>
+                            <tr>
+                                <th>SPOC Phone</th>
+                                <td><a href="tel:${data.scm_spoc_phone}">${data.scm_spoc_phone ?? 'N/A'}</a></td>
+                            </tr>
+                            <tr>
+                                <th>SPOC Whatsapp</th>
+                                <td>${data.scm_spoc_wp ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>No of Smart Classrooms</th>
+                                <td>${data.scm_smartclass ?? 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <th>Avalibility of three Classrooms</th>
+                                <td>${data.scm_avail_3_class == 1 ? 'Yes' : 'No'}</td>
+                            </tr>
+                            <tr>
+                                <th>Power Back-up in Classroom</th>
+                                <td>${data.scm_powerbackup == 1 ? 'Yes' : 'No'} (${data.scm_powerbackup_type ?? 'N/A'})</td>
+                            </tr>
+                            <tr>
+                                <th>Internet facility in Classrooms</th>
+                                <td>${data.scm_internet == 1 ? 'Yes' : 'No'} (${data.scm_internet_type ?? 'N/A'})</td>
+                            </tr>
+                            <tr>
+                                <th>Total Students</th>
+                                <td>${data.students_count ?? 'N/A'}</td>
+                            </tr>
+                        </table>
+                    `;
+
+                    document.getElementById("modalContentSchool").innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById("modalContentSchool").innerHTML =
+                        '<p class="text-danger text-center">Failed to load school details.</p>';
+                });
+        }
+
+        function showCoordinators(schoolId) {
+            loadModalData(`/school/${schoolId}/coordinators-json`, "coordinatorModal", "modalContentCo");
+        }
+
+        function showTrainers(schoolId) {
+            loadModalData(`/school/${schoolId}/trainers-json`, "trainerModal", "modalContentTr");
+        }
+
+        function showStaffs(schoolId) {
+            loadModalData(`/school/${schoolId}/staffs-json`, "staffModal", "modalContentSt");
+        }
+    </script>
 
 </body>
 @include('components.footer')

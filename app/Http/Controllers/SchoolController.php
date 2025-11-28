@@ -6,6 +6,7 @@ use App\Models\District;
 use App\Models\School;
 use App\Models\StudentMst;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\StudentT;
@@ -22,9 +23,9 @@ class SchoolController extends Controller
             ->pluck('total', 'scm_dist_id');
 
         $trainingCounts = School::select('scm_dist_id', DB::raw('COUNT(*) as completed_training'))
-        ->where('training_completed', 1)
-        ->groupBy('scm_dist_id')
-        ->pluck('completed_training', 'scm_dist_id');
+            ->where('training_completed', 1)
+            ->groupBy('scm_dist_id')
+            ->pluck('completed_training', 'scm_dist_id');
 
         $currentRoute = Route::currentRouteName();
 
@@ -36,7 +37,6 @@ class SchoolController extends Controller
         if ($currentRoute === 'student.school') {
             return view('school.districtschool', compact('districts', 'totalSchools', 'trainingCounts'));
         }
-
     }
 
     public function getSchools($id)
@@ -76,29 +76,38 @@ class SchoolController extends Controller
     public function districtSchoolList($id)
     {
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
-    
+
         // Get all schools for this district
         $schools = School::where('scm_dist_id', $id)
             ->select('scm_id', 'scm_name', 'scm_udise_code')
             ->withCount('students')
             ->get();
-        
+
         return view('school.schoollist', compact('district', 'schools'));
-        
     }
     public function selectdistrictList($id)
     {
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
-    
+
         // Get all schools for this district
         $schools = School::where('scm_dist_id', $id)
             ->select('scm_id', 'scm_name', 'scm_udise_code', 'training_completed')
             ->withCount(['students', 'coordinators', 'trainers', 'staffs'])
             ->get();
-    
-        return view('schoollist.selectschool', compact('district', 'schools'));
 
+        return view('schoollist.selectschool', compact('district', 'schools'));
     }
+    public function schoolDetailsJson($schoolId)
+    {
+        $school = School::where('scm_id', $schoolId)->first();
+
+        $studentCount = StudentMst::where('stu_scm_id', $schoolId)->count();
+
+        $school->students_count = $studentCount;
+
+        return response()->json($school);
+    }
+
     public function schoolCoordinatorsJson($schoolId)
     {
         $school = School::findOrFail($schoolId);
@@ -109,7 +118,7 @@ class SchoolController extends Controller
     public function schoolTrainersJson($schoolId)
     {
         $school = School::findOrFail($schoolId);
-        $trainers = $school->trainers()->select('trainer_name', 'phone', 'email', 'photo')->get();
+        $trainers = $school->trainers()->select('trainer_name', 'phone', 'email', 'photo', 'specialization')->get();
 
         return response()->json($trainers);
     }
@@ -121,4 +130,75 @@ class SchoolController extends Controller
         return response()->json($staffs);
     }
 
+    // dlc school 
+
+    public function mySchools()
+    {
+        $user = Auth::user();
+
+
+        $districtId = $user->district_id;
+
+        $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($districtId);
+
+        $schools = School::where('scm_dist_id', $districtId)
+            ->get();
+
+        return view('dlc.schoollist', compact('schools', 'district'));
+    }
+    public function schoolDetails($id)
+    {
+        $school = School::findOrFail($id);
+
+        return view('dlc.schooldetails', compact('school'));
+    }
+
+    public function updateSchool(Request $request, $schoolId)
+    {
+        $school = School::findOrFail($schoolId);
+
+        // Validate fields
+        $request->validate([
+            'scm_hm_name' => 'nullable|string|max:255',
+            'scm_hm_phone' => 'nullable|string|max:20',
+            'scm_hm_wp'    => 'nullable|string|max:20',
+            'scm_hm_email' => 'nullable|email|max:255',
+
+            'scm_spoc_name' => 'nullable|string|max:255',
+            'scm_spoc_phone' => 'nullable|string|max:20',
+            'scm_spoc_wp'    => 'nullable|string|max:20',
+            'scm_spoc_email' => 'nullable|email|max:255',
+
+            'scm_avail_3_class' => 'required|string',
+            'scm_smartclass' => 'nullable|integer|min:0',
+            'scm_powerbackup' => 'required|string',
+            'scm_internet' => 'required|string',
+
+            'scm_address' => 'nullable|string|max:500',
+        ]);
+
+        // Update school details
+        $school->update([
+            'scm_hm_name'      => $request->scm_hm_name,
+            'scm_hm_phone'     => $request->scm_hm_phone,
+            'scm_hm_wp'        => $request->scm_hm_wp,
+            'scm_hm_email'     => $request->scm_hm_email,
+
+            'scm_spoc_name'    => $request->scm_spoc_name,
+            'scm_spoc_phone'   => $request->scm_spoc_phone,
+            'scm_spoc_wp'      => $request->scm_spoc_wp,
+            'scm_spoc_email'   => $request->scm_spoc_email,
+
+            'scm_avail_3_class' => $request->scm_avail_3_class === 'Yes' ? 1 : 0,
+            'scm_powerbackup'   => $request->scm_powerbackup === 'Yes' ? 1 : 0,
+            'scm_powerbackup_type'  => $request->scm_powerbackup === 'Yes' ? $request->scm_powerbackup_type : null,
+            'scm_internet'      => $request->scm_internet === 'Yes' ? 1 : 0,
+            'scm_internet_type'     => $request->scm_internet === 'Yes' ? $request->scm_internet_type : null,
+            'scm_smartclass'    => $request->scm_smartclass,
+
+            'scm_address'       => $request->scm_address,
+        ]);
+
+        return back()->with('success', 'School details updated successfully!');
+    }
 }

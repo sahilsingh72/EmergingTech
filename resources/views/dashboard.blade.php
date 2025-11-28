@@ -184,11 +184,18 @@
                   <i class="nav-icon fas fa-university "></i>
                 </div>
 
-                <a @php
-                  $roleId = Auth::user()->role_id;
-                @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8)
-                  href="{{ route('select.district') }}" @else href="#" @endif class="small-box-footer">More info <i
-                    class="fas fa-arrow-circle-right"></i>
+                <a 
+                  @php
+                    $roleId = Auth::user()->role_id;
+                  @endphp 
+                  @if($roleId == 1 || $roleId == 2 || $roleId == 8)
+                    href="{{ route('select.district') }}"
+                  @elseif($roleId == 3 || $roleId == 6)
+                    href="{{ route('my.schools') }}"
+                  @else 
+                    href="#" 
+                  @endif class="small-box-footer">More info <i
+                      class="fas fa-arrow-circle-right"></i>
                 </a>
               </div>
             </div>

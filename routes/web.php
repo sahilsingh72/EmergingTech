@@ -137,9 +137,16 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/district-list', [SchoolController::class, 'index'])->name('select.district');
     Route::get('/district-{id}-list', [SchoolController::class, 'selectdistrictList'])->name('select.school');
     Route::get('/district-{id}-schools', [SchoolController::class, 'getSchools']);
+    Route::get('/school/{id}/details-json', [SchoolController::class, 'schoolDetailsJson']);
     Route::get('/school/{id}/coordinators-json', [SchoolController::class, 'schoolCoordinatorsJson']);
     Route::get('/school/{id}/trainers-json', [SchoolController::class, 'schoolTrainersJson']);
     Route::get('/school/{id}/staffs-json', [SchoolController::class, 'schoolStaffsJson']);
+
+    // Show list of schools for dlc
+    Route::get('/dist-my-schools', [SchoolController::class, 'mySchools'])->name('my.schools');
+    // School details
+    Route::get('/dist-school-{id}', [SchoolController::class, 'schoolDetails'])->name('dlc.school.details');
+    Route::post('/dlc-school-update-{id}', [SchoolController::class, 'updateSchool'])->name('dlc.school.update');
 
 });
 Route::middleware([RoleMiddleware::class . ':OKCL,DLC'])->group(function () {
