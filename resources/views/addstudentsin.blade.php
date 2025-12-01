@@ -103,8 +103,7 @@
                                                     Number</label>
                                                 <input type="text" name="stu_roll_number"
                                                     value="{{ old('stu_roll_number') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    >
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500">
                                             </div>
 
                                             <!-- Class -->
@@ -156,8 +155,7 @@
                                                 <label class="block text-sm font-medium text-gray-700">Date of
                                                     Birth</label>
                                                 <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    >
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500">
                                             </div>
 
                                             <!-- Father's Name -->
@@ -191,7 +189,6 @@
                                         </div>
                                     </form>
 
-
                                 </div>
                             </div>
                         </div>
@@ -199,7 +196,6 @@
                 </div>
             </section>
         </div>
-    </div>
     </div>
     <script>
         document.getElementById("stu_classid").addEventListener("change", function () {
@@ -212,9 +208,5 @@
             document.getElementById("stu_section").value = selected.getAttribute("data-name");
         });
     </script>
-
-
-
-
 </body>
 @include('components.footer')

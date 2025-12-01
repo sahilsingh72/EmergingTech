@@ -108,9 +108,8 @@ class StudentController extends Controller
 
         $schoolId = $request->input('school_id');
 
-        $studentsQuery = StudentMst::orderBy('stu_class')
-            ->orderBy('stu_section')
-            ->orderBy('stu_name', 'asc');
+        $studentsQuery = StudentMst::orderBy('stu_name', 'asc')
+            ->orderBy('stu_class');
 
         if ($schoolId) {
             $studentsQuery->where('stu_scm_id', $schoolId);
@@ -163,8 +162,18 @@ class StudentController extends Controller
         $userId = Auth::id();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        // $Udise= School::select('scm_udise_code')->where('scm_id', $request->stu_schoolname )->get('scm_udise_code');
+        $districtID = User::select('district_id')->where('id', $userId)->value('district_id');
+
         $school = School::select('scm_name', 'scm_udise_code')->where('scm_id', $request->stu_schoolname)->first();
+
+        //CHECK STUDENT LIMIT (130 max)
+        $currentCount = StudentMst::where('stu_scm_id', $request->stu_schoolname)->count();
+
+        if ($currentCount >= 130) {
+            return back()
+                ->withErrors(["limit" => "Maximum 130 students (120 students for camp and 10 students for backup) allowed per school. You already have $currentCount students."])
+                ->withInput();
+        }
 
         $validated = $request->validate([
             'stu_name' => 'required',
@@ -182,8 +191,7 @@ class StudentController extends Controller
 
         $validated['stu_schoolname'] = $school->scm_name;
         $validated['stu_scm_udise'] = $school->scm_udise_code;
-        $validated['stu_distid'] = $districtID[0]->district_id;
-
+        $validated['stu_distid'] = $districtID;
         $validated['stu_scm_id'] = $request->stu_schoolname;
 
         StudentMst::create($validated);
