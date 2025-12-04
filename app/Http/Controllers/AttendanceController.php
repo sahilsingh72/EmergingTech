@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\District;
 use App\Models\Role;
 use App\Models\School;
+use App\Models\StudentMst;
 use Illuminate\Http\Request;
 use App\Models\TrainingUpload;
 use App\Models\User;
@@ -19,6 +21,63 @@ class AttendanceController extends Controller
     public function __construct(OneDriveService $oneDrive)
     {
         $this->oneDrive = $oneDrive;
+    }
+
+    public function studentAttendance(Request $request){
+
+        $userId   = Auth::id();
+        $roleId = Auth::user()->role_id;
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
+        $schoolId = $request->input('school_id');
+
+        $studentsQuery = StudentMst::orderBy('attendance', 'desc')
+            ->orderBy('stu_name', 'asc')
+            ->orderBy('stu_class');
+
+        if ($schoolId) {
+            $studentsQuery->where('stu_scm_id', $schoolId);
+        } else {
+            // Show empty list initially if no school is selected
+            $studentsQuery->whereNull('stu_scm_id');
+        }
+
+        $students = $studentsQuery->get();
+
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+
+        return view ('attendancesheet', compact('students', 'schools', 'schoolId'));
+    }
+
+    public function saveAll(Request $request)
+    {
+        $presentCount = 0;
+
+        foreach ($request->attendance as $item) {
+            if ($item['attendance'] == 1) {
+                $presentCount++;
+            }
+        }
+
+        // 🔥 BLOCK SAVE if present != 120
+        if ($presentCount != 120) {
+            return response()->json([
+                'error' => "Exactly 120 students must be marked Present. You marked $presentCount."
+            ], 422);
+        }
+
+        foreach ($request->attendance as $item) {
+            StudentMst::where('stu_id', $item['student_id'])
+                ->update(['attendance' => $item['attendance']]);
+        }
+
+        return response()->json(['message' => 'Saved']);
     }
 
     public function attendance()

@@ -39,6 +39,9 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
+    Route::get('/student-attendance',[AttendanceController::class,'studentAttendance'])->name('student.attendance.sheet');
+    Route::post('/attendance/save-all', [AttendanceController::class, 'saveAll'])->name('attendance.saveAll');
+    
     Route::get('/attendance',[AttendanceController::class,'attendance'])->name('attendance');
     Route::post('/attendance', [AttendanceController::class, 'upload'])->name('upload.attendance');
     Route::get('/attendance-list',[AttendanceController::class,'attendanceList'])->name('attendance.list');
@@ -175,8 +178,6 @@ Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,DLC,Coordinator'])->group
 
 Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');
 Route::get('/onedrive/callback', [OneDriveController::class, 'handleCallback'])->name('onedrive.callback');
-// Route::get('/onedrive/upload', [OneDriveController::class, 'showUploadForm'])->name('onedrive.upload.form');
-// Route::post('/onedrive/upload', [OneDriveController::class, 'uploadFile'])->name('onedrive.upload');
 
 
 require __DIR__.'/auth.php';

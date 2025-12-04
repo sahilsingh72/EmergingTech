@@ -266,7 +266,8 @@ class StudentController extends Controller
 
         $studentsQuery = StudentMst::orderBy('stu_class')
             ->orderBy('stu_section')
-            ->orderBy('stu_name', 'asc');
+            ->orderBy('stu_name', 'asc')
+            ->where('attendance', '1');
 
         if ($schoolId) {
             $studentsQuery->where('stu_scm_id', $schoolId);

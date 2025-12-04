@@ -195,7 +195,7 @@
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
-                                                        COORDINATOR OF {{ $school->scm_name }}</h5>
+                                                        COORDINATOR</h5>
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
@@ -219,7 +219,7 @@
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
-                                                        TRAINER OF {{ $school->scm_name }}</h5>
+                                                        TRAINER </h5>
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
@@ -243,7 +243,7 @@
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title w-100 text-center" id="schoolModalLabel">
-                                                        SUPPORTING STAFF OF {{ $school->scm_name }}</h5>
+                                                        SUPPORTING STAFF</h5>
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>

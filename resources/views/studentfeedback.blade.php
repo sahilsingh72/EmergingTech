@@ -51,7 +51,7 @@
                 <div class="container-fluid">
                     <div class="py-12">
                         <div class="max-w-8xl mx-auto space-y-6">
-                            <div class=" sm:p-8 bg-white shadow sm:rounded-lg">
+                            <div class="p-3 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white rounded-lg w-full">
 
                                     <h2 class="text-2xl font-semibold text-center mb-6">Student Feedback</h2>
@@ -73,7 +73,7 @@
                                     @endif
 
                                     <!-- Student Table -->
-                                    <div class="flex justify-between items-center mb-4">
+                                    <div class="flex justify-between items-center mb-2">
                                         <!-- Rows per page -->
                                         <div>
                                             <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -92,17 +92,23 @@
                                                 class="border rounded p-2 w-40">
                                         </div>
                                     </div>
-                                    <div class="mb-4 flex justify-end items-center mb-4 gap-2">
-                                        <label for="filterSchool" class="font-semibold text-gray-700">Select School:</label>
-                                        <select id="filterSchool" class="border rounded p-2 w-40">
-                                            <option value="">-- Select School --</option>
-                                            @foreach ($schools as $school)
-                                                <option value="{{ $school->scm_id }}" 
-                                                    {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
-                                                    {{ $school->scm_name }} ({{ $school->scm_udise_code }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
+                                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                            <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
+                                            <select id="filterSchool" class="border rounded p-2 w-full">
+                                                <option value="">-- Select School --</option>
+                                                @foreach ($schools as $school)
+                                                    <option value="{{ $school->scm_id }}" 
+                                                        {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                                                        {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="w-full sm:w-auto">
+                                            <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
+                                            class="btn btn-success w-full sm:w-40 text-center" target="_blank"><i class="fas fa-download"></i> Feedback Form</a>
+                                        </div>
                                     </div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
                                         <table id="studentTable" class="w-full border-collapse">
@@ -283,11 +289,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-6">
-                                        <i class="fas fa-download"></i>
-                                        <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
-                                        class="text-blue-600 hover:underline" target="_blank">Download Training Feedback Form</a>
-                                    </div>
                                 </div>
                             </div>
                         </div>

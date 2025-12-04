@@ -74,9 +74,9 @@
                 </div>
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                        <div class="max-w-8xl mx-auto space-y-6">
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                                <div class="bg-white rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Completion Certificate</h2>
 
@@ -196,8 +196,9 @@
                                         </button>
                                         @if($selectedSchoolId)
                                             @php
-                                                $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+                                                $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
                                                 $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                    ->where('attendance', 1)
                                                     ->whereNotNull('feedback_file_url')
                                                     ->count();
                                             @endphp
@@ -239,8 +240,9 @@
                                                     };
                                                     // ✅ For written_feedback, check if all student feedbacks uploaded
                                                     if ($key === 'written_feedback' && isset($selectedSchoolId)) {
-                                                        $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+                                                        $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
                                                         $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                            ->where('attendance', 1)
                                                             ->whereNotNull('feedback_file_url')
                                                             ->count();
                                                         $isUploaded = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);

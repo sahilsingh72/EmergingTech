@@ -415,7 +415,7 @@ class TrainingEvidenceController extends Controller
         // 🔹 Check if all students in that school uploaded feedback
         $allStudentFeedbackComplete = false;
         if ($selectedSchoolId) {
-            $totalStudents = StudentMst::where('stu_scm_id', $selectedSchoolId)->count();
+            $totalStudents = StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
             $studentsWithFeedback = StudentMst::where('stu_scm_id', $selectedSchoolId)
                 ->whereNotNull('feedback_file_url')
                 ->count();
@@ -489,8 +489,9 @@ class TrainingEvidenceController extends Controller
             ->toArray();
 
         // 🔹 Check all students feedback
-        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)->count();
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)->where('attendance', 1)->count();
         $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
             ->whereNotNull('feedback_file_url')
             ->count();
 

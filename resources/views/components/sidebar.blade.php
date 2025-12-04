@@ -142,22 +142,33 @@
         @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list', 'student.attendance.sheet') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list', 'student.attendance.sheet') ? 'active' : '' }}">
               <i class="nav-icon fas fa-folder"></i>
               <p>
                 Training Evidences
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
+            @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ route('student.attendance.sheet') }}"
+                    class="nav-link {{ request()->routeIs('student.attendance.sheet') ? 'active' : '' }}">
+                    <i class="fas fa-user-check  nav-icon"></i>
+                    <p>Student Attendance</p>
+                  </a>
+                </li>
+              </ul>
+            @endif
             @if($user->role_id == 3 || $user->role_id == 6)
               <ul class="nav nav-treeview">
                 <li class="nav-item">
                   <a href="{{ route('attendance') }}"
                     class="nav-link {{ request()->routeIs('attendance') ? 'active' : '' }}">
                     <i class="fas fa-user-check  nav-icon"></i>
-                    <p>Student Attendance</p>
+                    <p>Attendance Upload</p>
                   </a>
                 </li>
               </ul>
