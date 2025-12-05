@@ -1,6 +1,88 @@
 <head>
+
   <title>EmergingTech | Dashboard</title>
   <style>
+    .fc .fc-col-header-cell-cushion {
+        color: #ffffff !important;
+        text-align: center !important;
+        justify-content: center !important;
+        width: 100%;
+        display: block;
+    }
+    .fc .fc-daygrid-day-number {
+        color: #ffffff !important;
+        text-align: center !important;
+        width: 100%;
+        display: block;
+        font-weight: 600;
+    }
+    .fc .fc-toolbar-title {
+        color: #ffffff !important;
+    }
+    .fc-tooltip {
+        position: absolute;
+        background: #333;
+        color: #fff;
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 9999;
+        pointer-events: none;
+    }
+    .fc-daygrid-day.fc-day-today {
+        background: #09a319 !important;
+        animation: blinkDate 1.2s infinite;
+        color: #fff !important;
+    }
+    @keyframes blinkDate {
+        0% { opacity: 1; }
+        50% { opacity: 0.35; }
+        100% { opacity: 1; }
+    }
+    .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        color: #ffffff !important;
+        font-weight: bolder;
+    }
+    .fc-daygrid-day {
+        border: none !important;
+    }
+    .fc-daygrid-day-frame {
+        border: none !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .fc-daygrid-day,
+    .fc-daygrid-day-frame {
+        border: none !important;
+    }
+
+    .fc-daygrid-day:hover .fc-daygrid-day-frame {
+        border-radius: 6px;
+        transition: border 0.2s ease;
+        background: #0f6318 
+    }
+    .fc-daygrid-day-events {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .fc-daygrid-event {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .event-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        margin: auto;
+    }
     #gallery img {
       width: 100%;
       height: 100%;
@@ -36,13 +118,6 @@
       padding: 0;
       margin: 0;
     }
-
-    /* img {
-      display: block;
-      width: 100%;
-      height: 100%;
-    } */
-
     .slide {
       position: absolute;
       top: 0;
@@ -130,6 +205,7 @@
       opacity: 1;
     }
   </style>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <!-- Navbar -->
@@ -345,8 +421,6 @@
                 </div><!-- /.card-body -->
               </div> --}}
 
-
-
               @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8)
                 <div class="card bg-gradient-primary">
                   <div class="card-header border-0">
@@ -368,6 +442,31 @@
                   </div>
                 </div>
               @endif
+
+              {{-- gallery --}}
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-image mr-1"></i>
+                    Training Gallery
+                  </h3>
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                  <div class="tab-content p-0">
+                    <div class="relative flex items-center justify-center py-2">
+                      <div id="gallery" class="w-full max-w-3xl mx-auto grid grid-cols-3">
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                        <div class="relative aspect-square overflow-hidden"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
 
               {{-- @if($user->role_id == 1 || $user->role_id == 2)
               <!-- solid Upload graph -->
@@ -416,28 +515,39 @@
             <!-- right col (We are only adding the ID to make the widgets sortable)-->
             <section class="col-lg-5 connectedSortable">
 
-              <!-- Calendar -->
+              
+              <!-- calendar -->
               <div class="card bg-gradient-success">
-                <div class="card-header border-0">
+                <div class="card-header border-0 bg-success">
+                  <h3 class="card-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Calendar
+                  </h3>
 
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-success bg-green-500 btn-sm" data-card-widget="collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-success bg-green-500 btn-sm" data-card-widget="remove">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+
+                </div>
+                <div class="card-body pt-0">
+                  <div id="trainingCalendar"></div>
+                </div>
+              </div>
+
+              {{-- <div class="card bg-gradient-success">
+                <div class="card-header border-0">
                   <h3 class="card-title">
                     <i class="far fa-calendar-alt"></i>
                     Calendar
                   </h3>
                   <!-- tools card -->
                   <div class="card-tools">
-                    <!-- button with a dropdown -->
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown"
-                        data-offset="-52">
-                        <i class="fas fa-bars"></i></button>
-                      <div class="dropdown-menu" role="menu">
-                        <a href="#" class="dropdown-item">Add new event</a>
-                        <a href="#" class="dropdown-item">Clear events</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">View calendar</a>
-                      </div>
-                    </div>
+                    
                     <button type="button" class="btn btn-success btn-sm" data-card-widget="collapse">
                       <i class="fas fa-minus"></i>
                     </button>
@@ -453,31 +563,9 @@
                   <div id="calendar" style="width: 100%"></div>
                 </div>
                 <!-- /.card-body -->
-              </div>
+              </div> --}}
 
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">
-                    <i class="fas fa-image mr-1"></i>
-                    Training Gallery
-                  </h3>
-                </div><!-- /.card-header -->
-                <div class="card-body">
-                  <div class="tab-content p-0">
-                    <div class="relative flex items-center justify-center py-2">
-                      <div id="gallery" class="w-full max-w-3xl mx-auto grid grid-cols-3">
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
+              
 
               <!-- Map card -->
               <div class="card bg-gradient-primary" style="display:none">
@@ -540,6 +628,66 @@
     <!-- /.content-wrapper -->
     @include('components.footer')
   </div>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+      var tooltip; 
+      var calendarEl = document.getElementById('trainingCalendar');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          height: 550,
+          events: '/calendar-events',
+          eventContent: function(arg) {
+              let color = arg.event.extendedProps.color;
+              return {
+                  html: `<div style="width:12px;height:12px;background:${color};border-radius:4px;margin:auto;"></div>`
+              };
+          },
+          eventMouseEnter: function(info) {
+              let districtName = info.event.extendedProps.district_name;
+              let schoolName = info.event.title;
+              let date = info.event.start.toDateString();
+              
+              tooltip = document.createElement('div');
+              tooltip.classList.add('fc-tooltip');
+              tooltip.innerHTML = `
+                  <b>${schoolName}</b><br>
+                  District: ${districtName}<br>
+                  Date: ${date}
+              `;
+
+              document.body.appendChild(tooltip);
+
+              // Move tooltip with mouse
+              info.el.addEventListener('mousemove', function(e) {
+                  tooltip.style.top = (e.pageY + 15) + 'px';
+                  tooltip.style.left = (e.pageX + 15) + 'px';
+              });
+          },
+          eventMouseLeave: function(info) {
+              if (tooltip) {
+                  tooltip.remove();
+                  tooltip = null;
+              }
+          },
+          eventDidMount: function(info) {
+              // full cell element
+              let cell = info.el.closest(".fc-daygrid-day");
+
+              if (cell) {
+                  let bgColor = info.event.extendedProps.color; // your district color
+                  cell.style.backgroundColor = bgColor + "33";   // light transparent shade
+                  cell.style.borderRadius = "6px";               // optional
+              }
+          }
+
+      });
+      
+      calendar.render();
+  });
+</script>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

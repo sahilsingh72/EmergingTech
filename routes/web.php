@@ -32,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/uploadgallery', [DashboardController::class, 'photogallery'])->name('uploadgallery');
 
 Route::middleware(['auth', 'session.expired'])->group(function () {
+
+    Route::get('/calendar-events', [DashboardController::class, 'calendarEvents']);
+    Route::post('/update-training-date', [DashboardController::class, 'updateTrainingDate']);
+
     Route::get('/fetchgallery', [DashboardController::class, 'fetchGallery'])->name('fetch.gallery');
     Route::get('/preview-image', [DashboardController::class, 'previewImage'])->name('preview.image');
 
@@ -139,6 +143,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     Route::get('/district-list', [SchoolController::class, 'index'])->name('select.district');
     Route::get('/district-{id}-list', [SchoolController::class, 'selectdistrictList'])->name('select.school');
+    Route::post('/school/{id}/save-training-date', [SchoolController::class, 'saveTrainingDate']);
     Route::get('/district-{id}-schools', [SchoolController::class, 'getSchools']);
     Route::get('/school/{id}/details-json', [SchoolController::class, 'schoolDetailsJson']);
     Route::get('/school/{id}/coordinators-json', [SchoolController::class, 'schoolCoordinatorsJson']);

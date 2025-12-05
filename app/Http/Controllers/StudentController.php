@@ -435,8 +435,8 @@ class StudentController extends Controller
 
             // 🔹 Pre Feedback Required Fields
             'pre_attended_training' => 'required',
-            'pre_if_any' => 'nullable|string',
-            'pre_heard_technologies' => 'required',
+            // 'pre_if_any' => 'nullable|string',
+            'pre_heard_technologies' => 'nullable',
 
             'pre_heard_ai' => 'nullable',
             'pre_heard_iot' => 'nullable',

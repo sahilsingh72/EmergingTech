@@ -182,6 +182,34 @@ class DashboardController extends Controller
             'schools',
         ));
     }
+    public function calendarEvents()
+    {
+        $schools = School::whereNotNull('training_date')->get();
+
+        $districtColors = [];
+        $events = [];
+
+        foreach ($schools as $school) {
+            $districtId = $school->scm_dist_id;
+
+            // Assign a color to the district if not already assigned
+            if (!isset($districtColors[$districtId])) {
+                $districtColors[$districtId] = sprintf('#%06X', mt_rand(0, 0xFFFFFF));
+            }
+            $events[] = [
+                'title' => $school->scm_name,
+                'start' => $school->training_date,
+                'extendedProps' => [
+                    'district_name' => $school->scm_dist,
+                    'school_id' => $school->scm_id,
+                    'district_id'=> $districtId,
+                    'color'      => $districtColors[$districtId],
+                ]
+            ];
+        }
+
+        return response()->json($events);
+    }
 
     public function getDistrictProgress()
     {

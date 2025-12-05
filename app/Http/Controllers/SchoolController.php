@@ -97,6 +97,19 @@ class SchoolController extends Controller
 
         return view('schoollist.selectschool', compact('district', 'schools'));
     }
+    public function saveTrainingDate(Request $request, $id)
+    {
+        $request->validate([
+            'training_date' => 'required|date',
+        ]);
+
+        $school = School::findOrFail($id);
+        $school->training_date = $request->training_date;  // Column name in DB
+        $school->save();
+
+        return response()->json(['success' => true]);
+    }
+
     public function schoolDetailsJson($schoolId)
     {
         $school = School::where('scm_id', $schoolId)->first();

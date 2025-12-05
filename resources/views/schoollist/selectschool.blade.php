@@ -99,7 +99,8 @@
 
                                                     <!-- Top Header (Blue Section) -->
                                                     <div class="school-header text-center text-white py-3">
-                                                        <h4 class="fw-bold mb-1">{{ $school->scm_name }} ({{ $school->scm_udise_code }})</h4>
+                                                        <h4 class="fw-bold mb-1">{{ $school->scm_name }}
+                                                            ({{ $school->scm_udise_code }})</h4>
                                                     </div>
 
                                                     <!-- Bottom White Section -->
@@ -117,8 +118,7 @@
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
                                                             onclick="showSchoolDetails({{ $school->scm_id }})">
                                                             <span>School Details</span>
-                                                            <span
-                                                                class="fw-bold text-primary">click here</span>
+                                                            <span class="fw-bold text-primary">click here</span>
                                                         </div>
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
@@ -171,8 +171,10 @@
                                         <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title w-100 text-center" id="schoolDetailsTitle">School Details</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    <h5 class="modal-title w-100 text-center" id="schoolDetailsTitle">
+                                                        School Details</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
                                                 </div>
 
                                                 <div class="modal-body">
@@ -182,7 +184,8 @@
                                                 </div>
 
                                                 <div class="modal-footer d-flex justify-content-end">
-                                                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" class="btn btn-secondary px-4"
+                                                        data-bs-dismiss="modal">Close</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -345,7 +348,7 @@
                         html += `
                     <tr>
                         <td>${item.photo ? `<img src="/storage/${item.photo}" width="50" height="50" class="rounded-circle">` : '-'}</td>
-                        <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.ss_name }</td>
+                        <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.ss_name}</td>
                 `;
 
                         if (isTrainer) {
@@ -383,6 +386,29 @@
 
                     let html = `
                         <table class="table table-bordered">
+                            @php
+                                $SahiluserId = Auth::user()->id;
+                            @endphp
+                            @if($SahiluserId == 1)
+                                <!-- Event Date Row -->
+                                <tr>
+                                    <th>Date of Training</th>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <input type="date" 
+                                                id="training_date_${schoolId}" 
+                                                class="form-control"
+                                                style="max-width: 200px;"
+                                                value="${data.training_date ?? ''}">
+
+                                            <button class="btn btn-sm btn-primary mt-2"
+                                                    onclick="saveTrainingDate(${schoolId})">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <th>School Name</th>
                                 <td>${data.scm_name}</td>
@@ -390,6 +416,10 @@
                             <tr>
                                 <th>UDISE Code</th>
                                 <td>${data.scm_udise_code}</td>
+                            </tr>
+                            <tr>
+                                <th>Date of Training</th>
+                                <td>${data.training_date ?? 'N/A'}</td>
                             </tr>
                             <tr>
                                 <th>Address</th>
@@ -461,6 +491,38 @@
                         '<p class="text-danger text-center">Failed to load school details.</p>';
                 });
         }
+        //DATE of training
+        function saveTrainingDate(schoolId) {
+            const date = document.getElementById(`training_date_${schoolId}`).value;
+
+            if (!date) {
+                alert("Please select a training date.");
+                return;
+            }
+
+            fetch(`/school/${schoolId}/save-training-date`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ training_date: date })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Training date saved successfully!');
+                    } else {
+                        alert('Saved failed.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error saving training date.');
+                });
+        }
+
+
 
         function showCoordinators(schoolId) {
             loadModalData(`/school/${schoolId}/coordinators-json`, "coordinatorModal", "modalContentCo");
