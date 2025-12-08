@@ -36,11 +36,27 @@
                                     <h2 class="text-2xl font-semibold text-center mb-6">Trainer Travel & Allowance
                                         Requests</h2>
                                     <div
-                                        class="bg-blue-100 text-blue-700 text-center px-4 py-2 rounded mb-4 font-semibold">
+                                        class="bg-blue-100 text-blue-700 text-center px-4 py-2 rounded mb-2 font-semibold">
                                         Note: All trainers who attended the OKCL training session were given
                                         <strong>₹500</strong> as setting charges.
                                     </div>
+                                    @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL')
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
+                                            <div class="w-full sm:w-auto">
+                                                {{-- <button onclick="exportAttendance()"
+                                                    class="btn btn-success w-full sm:w-40 text-center">
 
+                                                </button> --}}
+                                            </div>
+                                            <div class="w-full sm:w-auto">
+                                                <button onclick="exportAttendance()"
+                                                    class="btn btn-success w-full sm:w-40 text-center">
+                                                    Export Attendance
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
                                     @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL' || auth()->user()->role->name == 'DLC')
                                         <form method="GET" action="{{ route('trainer.travel.list') }}"
                                             class="mb-3 d-flex gap-2">
@@ -75,7 +91,7 @@
                                         @endif
                                     @endif
 
-                                    <div class="flex justify-between items-center mb-4">
+                                    <div class="flex justify-between items-center mb-2">
                                         <!-- Rows per page -->
                                         <div>
                                             <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -89,8 +105,7 @@
 
                                         <!-- Search -->
                                         <div>
-                                            <input type="text" id="searchInput"
-                                                placeholder="Search..."
+                                            <input type="text" id="searchInput" placeholder="Search..."
                                                 class="border rounded p-2 w-full w-40 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         </div>
                                     </div>
@@ -293,7 +308,7 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
+                                    <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                 </div>
                             </div>
                         </div>
@@ -406,7 +421,19 @@
             </form>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function exportAttendance() {
+            // Get the HTML table
+            let table = document.getElementById("filterTable");
 
+            // Convert table → worksheet
+            let workbook = XLSX.utils.table_to_book(table, { sheet: "Travel" });
+
+            // Download Excel file
+            XLSX.writeFile(workbook, "TA_list.xlsx");
+        }
+    </script>
     <script>
         function openEditModal(id) {
             const records = @json($records);
@@ -465,7 +492,7 @@
             });
         });
     </script>
-     <script>
+    <script>
         $(document).ready(function () {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
             let currentPage = 1;
