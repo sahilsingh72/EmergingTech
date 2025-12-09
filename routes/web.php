@@ -6,6 +6,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
@@ -35,6 +36,12 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 
     Route::get('/calendar-events', [DashboardController::class, 'calendarEvents']);
     Route::post('/update-training-date', [DashboardController::class, 'updateTrainingDate']);
+
+    Route::get('/gallery', [GalleryController::class, 'gallery'])->name('gallery');
+    Route::get('/get-schools-by-district-{districtId}', [GalleryController::class, 'getSchoolsByDistrict']);
+    Route::get('/preview-file', [GalleryController::class, 'previewFile']);
+    Route::get('/preview-video', [GalleryController::class, 'previewVideo'])->name('preview.video');
+    Route::get('/download-file', [GalleryController::class, 'downloadFile'])->name('download.file');
 
     Route::get('/fetchgallery', [DashboardController::class, 'fetchGallery'])->name('fetch.gallery');
     Route::get('/preview-image', [DashboardController::class, 'previewImage'])->name('preview.image');

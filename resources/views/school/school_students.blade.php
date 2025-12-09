@@ -28,9 +28,9 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-1">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-0 space-y-6">
+                        <div class="max-w-8xl mx-auto  space-y-6">
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                                <div class="bg-white rounded-lg w-full">
                                     <h1 class="text-3xl font-bold text-center mb-3">
                                         Students of {{ $school->scm_name }}
                                     </h1>
@@ -40,7 +40,7 @@
                                                 <h4 class="mb-0">Student List</h4>
                                             </div>
 
-                                            <div class="card-body">
+                                            <div class="card-body shadow rounded-lg p-2 overflow-x-auto">
                                                 @if($students->isEmpty())
                                                     <p class="text-center text-danger">No students found.</p>
                                                 @else

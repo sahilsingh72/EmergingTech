@@ -71,7 +71,7 @@
         @endif
 
         {{-- Schools --}}
-        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8)
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
           <li
             class="nav-item has-treeview {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school') ? 'menu-open' : '' }}">
             <a href="#"
@@ -85,7 +85,7 @@
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a 
-                  @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8) 
+                  @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8 || $user->role_id == 9) 
                     href="{{route('select.district')}}" 
                   @elseif($user->role_id == 3 || $user->role_id == 6)
                     href="{{ route('my.schools') }}" 
@@ -380,8 +380,19 @@
           </li>
         @endif
 
+        {{-- Gallery --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8 || $user->role_id == 9)
+          <li class="nav-item has-treeview {{ request()->routeIs('gallery') ? 'menu-open' : '' }}">
+            <a href="{{ route('gallery') }}" class="nav-link {{ request()->routeIs('gallery') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-image"></i>
+              <p>
+                Gallery
+              </p>
+            </a>
+          </li>
+        @endif
         {{-- User Management --}}
-        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 4 || $user->role_id == 5 || $user->role_id == 6 || $user->role_id == 8)
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 4 || $user->role_id == 5 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
           <li class="nav-item has-treeview {{ request()->routeIs('register', 'profile.edit') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('register', 'profile.edit') ? 'active' : '' }}">
               <i class="nav-icon fas fa-cog"></i>

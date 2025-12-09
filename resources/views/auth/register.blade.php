@@ -232,7 +232,7 @@
                                     $('#name_label').text('HM Name');
                                     $('#name').prop('disabled', false); // enable text input
                                 }
-                                else if (role === 'ocac' || role === 'okcl' || role === 'dlc' || role === 'accounts') {
+                                else if (role === 'ocac' || role === 'okcl' || role === 'dlc' || role === 'accounts' || role === 'social media') {
                                     $('#name_field').removeClass('hidden');
                                     $('#name_label').text('Name');
                                     $('#name').prop('disabled', false); // enable text input

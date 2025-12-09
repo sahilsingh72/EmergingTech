@@ -264,7 +264,7 @@
                   @php
                     $roleId = Auth::user()->role_id;
                   @endphp 
-                  @if($roleId == 1 || $roleId == 2 || $roleId == 8)
+                  @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
                     href="{{ route('select.district') }}"
                   @elseif($roleId == 3 || $roleId == 6)
                     href="{{ route('my.schools') }}"
@@ -290,8 +290,12 @@
 
                 <a @php
                   $roleId = Auth::user()->role_id;
-                @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8)
-                href="{{ route('student.school') }}" @else href="{{ route('studentlist') }}" @endif
+                @endphp 
+                @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
+                  href="{{ route('student.school') }}" 
+                @else 
+                  href="{{ route('studentlist') }}"
+                @endif
                   class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
               </div>
             </div>
@@ -403,25 +407,8 @@
           <div class="row">
             <!-- Left col -->
             <section class="col-lg-7 connectedSortable">
-              <!-- Custom tabs (Charts with tabs)-->
-              {{-- <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">
-                    <i class="fas fa-home mr-1"></i>
-                    Camp Completion Progress
-                  </h3>
-                </div><!-- /.card-header -->
-                <div class="card-body">
-                  <div class="tab-content p-0">
-                    <!-- Morris chart - Sales -->
-                    <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;">
-                      <canvas id="revenue-chart-canvas" height="300" style="height: 300px;"></canvas>
-                    </div>
-                  </div>
-                </div><!-- /.card-body -->
-              </div> --}}
-
-              @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8)
+              <!-- Map card -->
+              @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8 || $user->role_id == 9)
                 <div class="card bg-gradient-primary">
                   <div class="card-header border-0">
                     <h3 class="card-title">
@@ -444,26 +431,34 @@
               @endif
 
               {{-- gallery --}}
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">
+              <div class="card shadow-sm rounded-lg overflow-hidden">
+                <div class="card-header bg-gray-200 border-b">
+                  <h3 class="card-title flex items-center">
                     <i class="fas fa-image mr-1"></i>
                     Training Gallery
                   </h3>
                 </div><!-- /.card-header -->
-                <div class="card-body">
+                <div class="card-body bg-white">
                   <div class="tab-content p-0">
-                    <div class="relative flex items-center justify-center py-2">
-                      <div id="gallery" class="w-full max-w-3xl mx-auto grid grid-cols-3">
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
-                        <div class="relative aspect-square overflow-hidden"></div>
+                    <div class="flex items-center justify-center py-3">
+                      <div id="gallery" class="w-full max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3">
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
                       </div>
                     </div>
-
+                    @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8 || $user->role_id == 9)
+                      <div class="text-right mt-1">
+                          <a href="{{ route('gallery') }}" 
+                            class="inline-flex items-center text-indigo-600 font-medium px-3 py-1 
+                            rounded hover:text-indigo-700 hover:underline transition">View More
+                              <span class="ml-1 text-lg">&#11166;</span>
+                          </a>
+                      </div>
+                    @endif
                   </div>
                 </div>
               </div>

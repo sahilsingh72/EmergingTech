@@ -117,7 +117,7 @@ class DashboardController extends Controller
         $districtId = $user->district_id;
         $students = 0;
 
-        if ($roleName === 'OCAC' || $roleName === 'OKCL' || $roleName === 'Accounts') {
+        if ($roleName === 'OCAC' || $roleName === 'OKCL' || $roleName === 'Accounts' || $roleName === 'Social Media') {
             // ✅ OCAC or OKCL: see all students
             $students = StudentMst::count();
         } else {
