@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\District;
-use App\Models\Role;
 use App\Models\School;
 use App\Models\StudentMst;
 use Illuminate\Http\Request;
@@ -13,6 +12,7 @@ use App\Services\OneDriveService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -23,7 +23,8 @@ class AttendanceController extends Controller
         $this->oneDrive = $oneDrive;
     }
 
-    public function studentAttendance(Request $request){
+    public function studentAttendance(Request $request)
+    {
 
         $userId   = Auth::id();
         $roleId = Auth::user()->role_id;
@@ -52,7 +53,7 @@ class AttendanceController extends Controller
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
-        return view ('attendancesheet', compact('students', 'schools', 'schoolId'));
+        return view('attendancesheet', compact('students', 'schools', 'schoolId'));
     }
 
     public function saveAll(Request $request)
@@ -65,7 +66,7 @@ class AttendanceController extends Controller
             }
         }
 
-        // 🔥 BLOCK SAVE if present != 120
+        //  BLOCK SAVE if present != 120
         if ($presentCount != 120) {
             return response()->json([
                 'error' => "Exactly 120 students must be marked Present. You marked $presentCount."
@@ -101,18 +102,20 @@ class AttendanceController extends Controller
         return view('studentattendance', compact('schools'));
     }
     public function upload(Request $request)
-
     {
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'attendance_files' => 'required|array',
-            'attendance_files.*' => 'file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'trainer_image'    => 'required|image|max:4096'
+            'attendance_files.*' => 'file|mimetypes:image/*,application/pdf|max:10240',
+            'trainer_image'    => 'required|file|mimetypes:image/*|max:10240'
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $attendanceFileNames = [];
         $attendancePaths     = [];
@@ -123,7 +126,7 @@ class AttendanceController extends Controller
             foreach ($request->file('attendance_files') as $file) {
 
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "School_{$schoolId}/User_{$userId}/attendance_sheet";
+                $folder = "EmergingTech/{$districtName}/{$schoolName}/attendance_sheet";
 
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
                 $fileTypeMap = config('filetypes');
@@ -133,7 +136,6 @@ class AttendanceController extends Controller
             }
             TrainingUpload::create([
                 'school_id'      => $schoolId,
-                // 'coordinator_id' => $userId,
                 'file_type'      => 'attendance_sheet',
                 'filetype_id'    => $fileTypeMap['attendance_sheet'],
                 'file_name'      => $attendanceFileNames,
@@ -150,13 +152,13 @@ class AttendanceController extends Controller
         if ($request->hasFile('trainer_image')) {
             $file = $request->file('trainer_image');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "School_{$schoolId}/User_{$userId}/trainer_photo";
+
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/trainer_photo";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
             $fileTypeMap = config('filetypes');
             TrainingUpload::create([
                 'school_id'      => $schoolId,
-                // 'coordinator_id' => $userId,
                 'file_type'      => 'trainer_photo',
                 'filetype_id'    => $fileTypeMap['trainer_photo'],
                 'file_name'      => [$file->getClientOriginalName()],
@@ -170,7 +172,6 @@ class AttendanceController extends Controller
 
 
         return  redirect()->route('attendance.list')->with('success', 'Attendance and trainer image uploaded successfully!');
-        // return  back()->with('success', 'Attendance and trainer image uploaded successfully!');
     }
     public function attendanceList()
     {
@@ -220,18 +221,35 @@ class AttendanceController extends Controller
         $upload = TrainingUpload::findOrFail($id);
 
         $request->validate([
-            'attendance_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'trainer_image'   => 'nullable|image|max:4096',
+            'attendance_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'trainer_image'   => 'nullable|image|max:10240',
         ]);
 
         $userId   = Auth::id();
         $schoolId = $upload->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         // Replace Attendance File
         if ($request->hasFile('attendance_file')) {
+
+            $existingPath = $upload->onedrive_path;
+            if (is_array($existingPath)) {
+                $existingPath = $existingPath[0] ?? null;
+            }
+
+            if (!empty($existingPath)) {
+                try {
+                    $this->oneDrive->deleteFile($existingPath);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to delete old from OneDrive: " . $e->getMessage());
+                }
+            }
+
             $file = $request->file('attendance_file');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "School_{$schoolId}/User_{$userId}/attendance_sheet";
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/attendance_sheet";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -242,9 +260,23 @@ class AttendanceController extends Controller
 
         // Replace Trainer Image
         if ($request->hasFile('trainer_image')) {
+
+            $existingPath = $upload->onedrive_path;
+            if (is_array($existingPath)) {
+                $existingPath = $existingPath[0] ?? null;
+            }
+
+            if (!empty($existingPath)) {
+                try {
+                    $this->oneDrive->deleteFile($existingPath);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to delete old from OneDrive: " . $e->getMessage());
+                }
+            }
+
             $file = $request->file('trainer_image');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "School_{$schoolId}/User_{$userId}/trainer_photo";
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/trainer_photo";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -255,7 +287,7 @@ class AttendanceController extends Controller
 
         $upload->save();
 
-        return redirect()->route('attendance.list')->with('success', '✅ File updated successfully!');
+        return redirect()->route('attendance.list')->with('success', 'File updated successfully!');
     }
     public function previewFile(Request $request)
     {
@@ -277,6 +309,33 @@ class AttendanceController extends Controller
         if (str_contains($contentType, 'pdf')) {
             return response($response->body(), 200)->header('Content-Type', 'application/pdf');
         } elseif (str_contains($contentType, 'image')) {
+            return response($response->body(), 200)->header('Content-Type', $contentType);
+        } else {
+            return response('Unsupported file type', 415);
+        }
+    }
+    public function previewFiles(Request $request)
+    {
+        $path = $request->query('path');
+
+        $downloadUrl = Cache::remember("onedrive_download_" . md5($path), 300, function () use ($path) {
+            $fileInfo = $this->oneDrive->getFileInfo($path);
+            return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
+        });
+
+        if (!$downloadUrl) {
+            return response('Download URL not found', 404);
+        }
+        // Fetch the file content
+        $response = Http::get($downloadUrl);
+        $contentType = $response->header('Content-Type', 'application/octet-stream');
+
+        // Stream based on type
+        if (str_contains($contentType, 'pdf')) {
+            return response($response->body(), 200)->header('Content-Type', 'application/pdf');
+        } elseif (str_contains($contentType, 'image')) {
+            return response($response->body(), 200)->header('Content-Type', $contentType);
+        } elseif (str_contains($contentType, 'video')) {
             return response($response->body(), 200)->header('Content-Type', $contentType);
         } else {
             return response('Unsupported file type', 415);

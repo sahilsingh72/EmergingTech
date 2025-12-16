@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-
 class StudentController extends Controller
 {
     protected $oneDrive;
@@ -29,7 +28,6 @@ class StudentController extends Controller
 
     public function addstudent()
     {
-
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
@@ -40,8 +38,6 @@ class StudentController extends Controller
         } else {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
-        // $schools = School::select('scm_id', 'scm_name')->where('scm_dist_id', Auth::user()->district_id)->orderBy('scm_name', 'asc')->get();
-
         return view('addstudent', compact('schools'));
     }
     public function import(Request $request)
@@ -100,7 +96,6 @@ class StudentController extends Controller
 
     public function studentlist(Request $request)
     {
-
         $userId   = Auth::id();
         $roleId = Auth::user()->role_id;
 
@@ -153,7 +148,6 @@ class StudentController extends Controller
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
-        // $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id',$districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         return view('addstudentsin', compact('schools')); // loads add student form
     }
 
@@ -217,7 +211,6 @@ class StudentController extends Controller
         $userId = Auth::id();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        // $Udise= School::select('scm_udise_code')->where('scm_id', $request->stu_schoolname )->get('scm_udise_code');
         $school = School::select('scm_name', 'scm_udise_code')->where('scm_id', $request->stu_schoolname)->first();
 
         $validated = $request->validate([
@@ -288,17 +281,19 @@ class StudentController extends Controller
     {
         $request->validate([
             'stu_id' => 'required|exists:student_mst,stu_id',
-            'written_feedback' => 'required|mimes:pdf|max:3072',
+            'written_feedback' => 'required|mimes:pdf|max:10240',
         ]);
 
         $stu_id = $request->stu_id;
         $student = StudentMst::findOrFail($stu_id);
+
         $userId = Auth::id();
         $schoolId = $student->stu_scm_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
-        // $schoolName = $student->stu_schoolname;
-        // $userName = Auth::user()->name;
-        // $stuName = $request->stu_name;
+        $stuName = $student->stu_name;
 
         $fileTypeMap = config('filetypes');
 
@@ -306,7 +301,7 @@ class StudentController extends Controller
             $file = $request->file('written_feedback');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "School_{$schoolId}/User_{$userId}/written_feedback/student_{$stu_id}";
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/written_feedback/student_{$stuName}";
 
             $upload = $oneDriveService->uploadDirect($file, $folder, $filename);
 
@@ -337,13 +332,18 @@ class StudentController extends Controller
     {
         $request->validate([
             'stu_id' => 'required|exists:student_mst,stu_id',
-            'written_feedback' => 'required|mimes:pdf|max:3072',
+            'written_feedback' => 'required|mimes:pdf|max:10240',
         ]);
 
         try {
             $student = StudentMst::findOrFail($request->stu_id);
             $userId = Auth::id();
             $schoolId = $student->stu_scm_id;
+            $school = School::find($schoolId);
+            $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
+            $stuName = $student->stu_name;
 
             // ✅ If old file exists, delete it from OneDrive first
             if (!empty($student->feedback_file_path)) {
@@ -358,7 +358,7 @@ class StudentController extends Controller
             // Upload new file
             $file = $request->file('written_feedback');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "School_{$schoolId}/User_{$userId}/written_feedback/student_{$student->stu_id}";
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/written_feedback/student_{$stuName}";
 
             $upload = $oneDriveService->uploadDirect($file, $folder, $filename);
 
@@ -372,7 +372,7 @@ class StudentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Feedback file replaced successfully!',
+                'message' => 'Feedback file updated successfully!',
             ]);
         } catch (\Exception $e) {
             Log::error('Feedback Replace Error: ' . $e->getMessage());
@@ -382,7 +382,6 @@ class StudentController extends Controller
             ], 500);
         }
     }
-
 
     public function previewFile(Request $request)
     {
@@ -433,7 +432,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'stu_id' => 'required|exists:student_mst,stu_id',
 
-            // 🔹 Pre Feedback Required Fields
+            //  Pre Feedback Required Fields
             'pre_attended_training' => 'required',
             // 'pre_if_any' => 'nullable|string',
             'pre_heard_technologies' => 'nullable',
@@ -521,8 +520,6 @@ class StudentController extends Controller
 
         $feedbacks = $feedbackQuery->get();
 
-
-
         // Calculate average ratings for numeric fields
         $numericFields = [
             'pre_know_tech',
@@ -542,7 +539,6 @@ class StudentController extends Controller
             'post_interest_increase',
             'post_motivation_future'
         ];
-
 
         $averages = [];
         $counts = [];
@@ -565,7 +561,7 @@ class StudentController extends Controller
                 ]);
         }
 
-        // ✅ Comparison data for Pre vs Post chart (now after averages are available)
+        //  Comparison data for Pre vs Post chart (now after averages are available)
         $comparison = [
             'Technology Known' => [
                 'pre' => $averages['pre_know_tech'] ?? 0,
@@ -585,9 +581,6 @@ class StudentController extends Controller
             ],
         ];
 
-
-
-        // $schools = School::select('scm_id', 'scm_name')->orderBy('scm_name')->get();
         $totalFeedbacks = $feedbacks->count();
 
         return view('feedback.report', compact('counts', 'districts', 'schools', 'averages', 'totalFeedbacks', 'districtId', 'schoolId', 'comparison', 'totalStudents', 'trendData'));
@@ -599,12 +592,5 @@ class StudentController extends Controller
             ->select('scm_id', 'scm_name')
             ->orderBy('scm_name')
             ->get();
-    }
-
-
-
-    public function uploadmedia()
-    {
-        return view('uploadmedia');
     }
 }

@@ -52,103 +52,100 @@
                                     </div>
                                 </div>
                                 <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                                <table id="filterTable" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>S.No</th>
-                                            <th>School</th>
-                                            <th>File</th>
-                                            @php
-                                                $roleId = Auth::user()->role_id;
-                                            @endphp
-                                            @if($roleId == 3 || $roleId == 6)
-                                                <th>Edit</th>
-                                            @endif
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $sno = 1; @endphp
-                                        @forelse($uploads as $upload)
-                                            @if(in_array($upload->file_type, ['training_video']))
+                                    <table id="filterTable" class="table table-bordered">
+                                        <thead>
                                             <tr>
-                                                <td>{{ $sno++ }}</td>
-                                                <td>{{$upload->school->scm_name}} -
-                                                            {{ $upload->school->scm_udise_code }},
-                                                            {{ $upload->school->scm_dist }}</td>
-                                                
-                                                <td>
-                                                    @if($upload->onedrive_path)
-                                                        @foreach($upload->onedrive_path as $index => $path)
-                                                            <button type="button" class="btn btn-sm btn-success"
-                                                            onclick="openVideoPreview('{{ urlencode($upload->onedrive_path[$loop->index]) }}', '{{ $upload->file_type }}')">Open
-                                                            </button>
-                                                            @if(isset($upload->file_name[$index]))
-                                                                {{ $upload->file_name[$index] }}
-                                                            @endif
-                                                            <br>
-                                                        @endforeach
-                                                    @endif
-
-                                                </td>
+                                                <th>S.No</th>
+                                                <th>School</th>
+                                                <th>File</th>
                                                 @php
                                                     $roleId = Auth::user()->role_id;
                                                 @endphp
-                                                @if($roleId == 3 ||$roleId == 6)
-                                                    <td>
-                                                        <button class="btn btn-sm btn-primary"
-                                                                onclick="openVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
-                                                            Edit
-                                                        </button>
-                                                    </td>
+                                                @if($roleId == 3 || $roleId == 6)
+                                                    <th>Edit</th>
                                                 @endif
                                             </tr>
-                                            @endif
-                                        @empty
-                                            <tr>
-                                                <td colspan="4">No uploads yet.</td>
-                                            </tr>
-                                            
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @php $sno = 1; @endphp
+                                            @forelse($uploads as $upload)
+                                                @if(in_array($upload->file_type, ['training_video']))
+                                                    <tr>
+                                                        <td>{{ $sno++ }}</td>
+                                                        <td>{{$upload->school->scm_name}} -
+                                                            {{ $upload->school->scm_udise_code }},
+                                                            {{ $upload->school->scm_dist }}
+                                                        </td>
+
+                                                        <td>
+                                                            @if($upload->onedrive_path)
+                                                                @foreach($upload->onedrive_path as $index => $path)
+                                                                    <a href="{{ route('preview.video', ['path' => $path]) }}"
+                                                                        target="_blank" class="btn btn-sm btn-success">
+                                                                        Open
+                                                                    </a>
+                                                                    @if(isset($upload->file_name[$index]))
+                                                                        {{ $upload->file_name[$index] }}
+                                                                    @endif
+                                                                    <br>
+                                                                @endforeach
+                                                            @endif
+                                                        </td>
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $roleId == 6)
+                                                            <td>
+                                                                <button class="btn btn-sm btn-primary"
+                                                                    onclick="openVideoEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
+                                                                    Edit
+                                                                </button>
+                                                            </td>
+                                                        @endif
+                                                    </tr>
+                                                @endif
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4">No uploads yet.</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                                 <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
 
-                                <!-- Video Preview Modal -->
-<div id="videoPreviewModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex justify-center items-center z-50">
-    <div class="bg-white rounded-lg p-4 w-full max-w-3xl relative shadow-lg">
-        <button class="absolute top-2 right-3 text-gray-500 hover:text-black text-2xl" onclick="closeVideoPreview()">&times;</button>
-        <video id="previewVideoPlayer" class="w-full rounded-lg" controls autoplay></video>
-    </div>
-</div>
                                 <!-- Edit Modal -->
-<div id="editVideoModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-    <div class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
-        <h2 class="text-xl font-semibold mb-4 ">Edit Training Videos</h2>
-        
-        <form id="editVideoForm" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
-            <label class="block text-sm font-medium">Select Video to Delete</label>
+                                <div id="editVideoModal"
+                                    class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                                    <div
+                                        class="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
+                                        <h2 class="text-xl font-semibold mb-4 ">Edit Training Videos</h2>
 
-            <div id="videoList" class="mb-4 space-y-2">
-                <!-- Existing videos loaded dynamically -->
-            </div>
+                                        <form id="editVideoForm" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
+                                            <label class="block text-sm font-medium">Select Video to Delete</label>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium">Add New Videos</label>
-                <input type="file" name="new_training_video[]" multiple accept="video/*" class="mt-2 border p-2 w-full rounded">
-            </div>
+                                            <div id="videoList" class="mb-4 space-y-2">
+                                                <!-- Existing videos loaded dynamically -->
+                                            </div>
 
-            <div class="flex justify-end space-x-2">
-                <button type="button" onclick="closeVideoModal()" class="px-4 py-2 bg-gray-400 rounded">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
-            </div>
-        </form>
-    </div>
-</div>
+                                            <div class="mb-4">
+                                                <label class="block text-sm font-medium">Add New Videos</label>
+                                                <input type="file" name="new_training_video[]" multiple accept="video/*"
+                                                    class="mt-2 border p-2 w-full rounded">
+                                            </div>
+                                            <div id="videoError" class="text-red-600 text-sm mb-2"></div>
 
-
+                                            <div class="flex justify-end space-x-2">
+                                                <button type="button" onclick="closeVideoModal()"
+                                                    class="px-4 py-2 bg-gray-400 rounded">Cancel</button>
+                                                <button type="submit"
+                                                    class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -157,54 +154,33 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function openVideoPreview(path) {
-    const modal = document.getElementById('videoPreviewModal');
-    const videoPlayer = document.getElementById('previewVideoPlayer');
+    <script>
+        function openVideoEditModal(id) {
+            fetch(`/trainingvideos-list/${id}/edit`)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    data.file_name.forEach((name, index) => {
+                        html += `
+                        <div class="flex items-center space-x-3 border p-2 rounded">
+                            <video src="/preview-video?path=${encodeURIComponent(data.onedrive_path[index])}" class="w-32 h-20 rounded" controls></video>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="remove_files[]" value="${name}">
+                                <span>${name}</span>
+                            </label>
+                        </div>
+                    `;
+                    });
+                    document.querySelector('#videoList').innerHTML = html;
+                    document.querySelector('#editVideoForm').action = `/trainingvideos-list/${id}`;
+                    document.querySelector('#editVideoModal').classList.remove('hidden');
+                });
+        }
 
-    // Set the video source (Laravel route)
-    videoPlayer.src = `/preview-video?path=${path}`;
-
-    modal.classList.remove('hidden');
-}
-
-function closeVideoPreview() {
-    const modal = document.getElementById('videoPreviewModal');
-    const videoPlayer = document.getElementById('previewVideoPlayer');
-
-    videoPlayer.pause();
-    videoPlayer.src = '';
-    modal.classList.add('hidden');
-}
-</script>
-
-<script>
-function openVideoEditModal(id) {
-    fetch(`/trainingvideos-list/${id}/edit`)
-        .then(res => res.json())
-        .then(data => {
-            let html = '';
-            data.file_name.forEach((name, index) => {
-                html += `
-                    <div class="flex items-center space-x-3 border p-2 rounded">
-                        <video src="/preview-video?path=${encodeURIComponent(data.onedrive_path[index])}" class="w-32 h-20 rounded" controls></video>
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" name="remove_files[]" value="${name}">
-                            <span>${name}</span>
-                        </label>
-                    </div>
-                `;
-            });
-            document.querySelector('#videoList').innerHTML = html;
-            document.querySelector('#editVideoForm').action = `/trainingvideos-list/${id}`;
-            document.querySelector('#editVideoModal').classList.remove('hidden');
-        });
-}
-
-function closeVideoModal() {
-    document.querySelector('#editVideoModal').classList.add('hidden');
-}
-</script>
+        function closeVideoModal() {
+            document.querySelector('#editVideoModal').classList.add('hidden');
+        }
+    </script>
 
     <script>
         $(document).ready(function () {
@@ -294,6 +270,30 @@ function closeVideoModal() {
             renderTable();
         });
     </script>
+    <script>
+        document.getElementById('editVideoForm').addEventListener('submit', function (event) {
 
+            let checkboxes = document.querySelectorAll('#videoList input[type="checkbox"]');
+            let total = checkboxes.length;
+            let selected = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) selected++;
+            });
+
+            let newFiles = document.querySelector('input[name="new_training_video[]"]').files.length;
+
+            let errorBox = document.getElementById('videoError');
+            errorBox.innerHTML = ""; // Clear old message
+
+            if (selected === total && newFiles === 0) {
+                event.preventDefault();
+
+                errorBox.innerHTML = "You are deleting all videos. Please upload at least one new video.";
+
+                return false;
+            }
+        });
+    </script>
 </body>
 @include('components.footer')

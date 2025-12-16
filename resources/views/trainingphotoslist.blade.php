@@ -46,83 +46,75 @@
 
                                     <!-- Search -->
                                     <div>
-                                        <input type="text" id="searchInput" placeholder="Search(School/Udise Code/District)"
+                                        <input type="text" id="searchInput"
+                                            placeholder="Search(School/Udise Code/District)"
                                             class="border rounded p-2 w-40 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                     </div>
                                 </div>
                                 <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
-                                <table id="filterTable" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>S.No</th>
-                                            <th>School</th>
-                                            {{-- <th>Uploaded At</th> --}}
-                                            <th>File</th>
-                                            @php
-                                                $roleId = Auth::user()->role_id;
-                                            @endphp
-                                            @if($roleId == 3 || $roleId == 6)
-                                                <th>Edit</th>
-                                            @endif   
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $sno = 1; @endphp
-                                        @forelse($uploads as $upload)
-                                            @if(in_array($upload->file_type, ['training_photo']))
-                                                <tr>
-                                                    <td>{{ $sno++ }}</td>
-                                                    <td>
-                                                        {{$upload->school->scm_name}} - {{ $upload->school->scm_udise_code }}, {{ $upload->school->scm_dist }}
-                                                    </td>
-                                                    {{-- <td>{{ $upload->created_at->format('d M Y H:i') }}</td> --}}
-                                                    <td>
-                                                        @if($upload->onedrive_path)
-                                                            @foreach($upload->onedrive_path as $index => $path)
-                                                                <button type="button" 
-                                                                    class="btn btn-sm btn-success" 
-                                                                    onclick="openImageModal('{{ urlencode($path) }}')">
-                                                                    Open
-                                                                </button>
-                                                                @if(isset($upload->file_name[$index]))
-                                                                    {{ $upload->file_name[$index] }}
-                                                                @endif
-                                                                <br>
-                                                            @endforeach
-                                                        @endif
-                                                    </td>
-                                                    @php
-                                                        $roleId = Auth::user()->role_id;
-                                                    @endphp
-                                                    @if($roleId == 3 || $roleId == 6)
-                                                        <td>
-                                                            <button class="btn btn-sm btn-primary"
-                                                                onclick="openEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
-                                                                Edit
-                                                            </button>
-                                                        </td>
-                                                    @endif
-                                                </tr>
-                                            @endif
-                                        @empty
+                                    <table id="filterTable" class="table table-bordered">
+                                        <thead>
                                             <tr>
-                                                <td colspan="4">No uploads yet.</td>
+                                                <th>S.No</th>
+                                                <th>School</th>
+                                                {{-- <th>Uploaded At</th> --}}
+                                                <th>File</th>
+                                                @php
+                                                    $roleId = Auth::user()->role_id;
+                                                @endphp
+                                                @if($roleId == 3 || $roleId == 6)
+                                                    <th>Edit</th>
+                                                @endif
                                             </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $sno = 1; @endphp
+                                            @forelse($uploads as $upload)
+                                                @if(in_array($upload->file_type, ['training_photo']))
+                                                    <tr>
+                                                        <td>{{ $sno++ }}</td>
+                                                        <td>
+                                                            {{$upload->school->scm_name}} -
+                                                            {{ $upload->school->scm_udise_code }},
+                                                            {{ $upload->school->scm_dist }}
+                                                        </td>
+                                                        <td>
+                                                            @if($upload->onedrive_path)
+                                                                @foreach($upload->onedrive_path as $index => $path)
+                                                                    <a href="{{ route('preview.files', ['path' => $path]) }}"
+                                                                        target="_blank" class="btn btn-sm btn-success">
+                                                                        Open
+                                                                    </a>
+                                                                    @if(isset($upload->file_name[$index]))
+                                                                        {{ $upload->file_name[$index] }}
+                                                                    @endif
+                                                                    <br>
+                                                                @endforeach
+                                                            @endif
+                                                        </td>
+                                                        @php
+                                                            $roleId = Auth::user()->role_id;
+                                                        @endphp
+                                                        @if($roleId == 3 || $roleId == 6)
+                                                            <td>
+                                                                <button class="btn btn-sm btn-primary"
+                                                                    onclick="openEditModal({{ $upload->upload_id }}, '{{ $upload->file_type }}')">
+                                                                    Edit
+                                                                </button>
+                                                            </td>
+                                                        @endif
+                                                    </tr>
+                                                @endif
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4">No uploads yet.</td>
+                                                </tr>
 
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                                 <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
-
-                                <!-- Image Preview Modal -->
-                                <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 overflow-y-auto">
-                                    <div class="relative bg-white rounded-lg shadow-lg p-4  h-auto w-auto">
-                                        <button onclick="closeImageModal()" 
-                                            class="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-3xl">&times;</button>
-                                        <img id="modalImage" src="" alt="Preview" class="mx-auto h-[20rem] rounded-lg object-contain">
-                                    </div>
-                                </div>
 
                                 <!-- Edit Modal -->
                                 <div id="editModal"
@@ -140,11 +132,12 @@
                                                 <!-- Existing images will be loaded here -->
                                             </div>
 
-                                            <div class="mb-4">
+                                            <div class="mb-2">
                                                 <label class="block text-sm font-medium">Add New Photos</label>
                                                 <input type="file" name="new_training_photo[]" multiple accept="image/*"
                                                     class="mt-2 border p-2 w-full rounded">
                                             </div>
+                                            <div id="photoError" class="text-red-600 text-sm mb-2"></div>
 
                                             <div class="flex justify-end space-x-2">
                                                 <button type="submit"
@@ -155,8 +148,6 @@
                                         </form>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -165,8 +156,8 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-       <script>
-        $(document).ready(function() {
+    <script>
+        $(document).ready(function () {
             let rowsPerPage = parseInt($("#rowsPerPage").val());
             let currentPage = 1;
             let sortDirection = {}; // keep track of each column's sorting state
@@ -176,7 +167,7 @@
                 let rows = $("#filterTable tbody tr");
 
                 // Filter rows
-                rows.each(function() {
+                rows.each(function () {
                     let rowText = $(this).text().toLowerCase();
                     $(this).toggle(rowText.indexOf(searchText) > -1);
                 });
@@ -203,33 +194,33 @@
             }
 
             // Change rows per page
-            $("#rowsPerPage").on("change", function() {
+            $("#rowsPerPage").on("change", function () {
                 rowsPerPage = parseInt($(this).val());
                 currentPage = 1;
                 renderTable();
             });
 
             // Search filter
-            $("#searchInput").on("keyup", function() {
+            $("#searchInput").on("keyup", function () {
                 currentPage = 1;
                 renderTable();
             });
 
             // Pagination click
-            $(document).on("click", ".page-btn", function() {
+            $(document).on("click", ".page-btn", function () {
                 currentPage = parseInt($(this).text());
                 renderTable();
             });
 
             // 🔽 Sorting click
-            $(document).on("click", ".sort", function() {
+            $(document).on("click", ".sort", function () {
                 let columnIndex = $(this).data("column");
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc
                 let asc = sortDirection[columnIndex];
 
                 let rows = $("#filterTable tbody tr").get();
 
-                rows.sort(function(a, b) {
+                rows.sort(function (a, b) {
                     let A = $(a).children("td").eq(columnIndex).text().toLowerCase();
                     let B = $(b).children("td").eq(columnIndex).text().toLowerCase();
 
@@ -241,7 +232,7 @@
                     }
                 });
 
-                $.each(rows, function(index, row) {
+                $.each(rows, function (index, row) {
                     $("#filterTable tbody").append(row);
                 });
 
@@ -253,29 +244,6 @@
             renderTable();
         });
     </script>
-    <script>
-        function openImageModal(path) {
-            const modal = document.getElementById('imageModal');
-            const img = document.getElementById('modalImage');
-            img.src = `/preview-image?path=${path}`;
-            modal.classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            const modal = document.getElementById('imageModal');
-            const img = document.getElementById('modalImage');
-            img.src = '';
-            modal.classList.add('hidden');
-        }
-
-        // close modal when clicking outside image
-        document.getElementById('imageModal').addEventListener('click', (e) => {
-            if (e.target.id === 'imageModal') {
-                closeImageModal();
-            }
-        });
-    </script>
-
 
     <script>
         function openEditModal(id) {
@@ -305,5 +273,31 @@
             document.querySelector('#editModal').classList.add('hidden');
         }
     </script>
+    <script>
+        document.getElementById('editForm').addEventListener('submit', function (event) {
+
+            let checkboxes = document.querySelectorAll('#photoList input[type="checkbox"]');
+            let total = checkboxes.length;
+            let selected = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) selected++;
+            });
+
+            let newFiles = document.querySelector('input[name="new_training_photo[]"]').files.length;
+
+            let errorBox = document.getElementById('photoError');
+            errorBox.innerHTML = ""; // Clear old message
+
+            if (selected === total && newFiles === 0) {
+                event.preventDefault();
+
+                errorBox.innerHTML = "You are deleting all photos. Please upload at least one new photo.";
+
+                return false;
+            }
+        });
+    </script>
+
 </body>
 @include('components.footer')

@@ -25,7 +25,7 @@
             <section class="content">
                 <div class="container-fluid py-12">
                     <div class="max-w-8xl mx-auto space-y-6">
-                        <div class="sm:p-8 bg-white shadow sm:rounded-lg">
+                        <div class="p-3 sm:p-8 bg-white shadow sm:rounded-lg">
                             <div class="bg-white  rounded-lg w-full">
                                 <h2 class="text-2xl font-semibold text-center mb-6">Feedback Videos</h2>
 
@@ -81,15 +81,14 @@
                                                         <td>
                                                             @if($upload->onedrive_path)
                                                                 @php
-                                                                    // normalize to array if stored as string
                                                                     $paths = is_array($upload->onedrive_path) ? $upload->onedrive_path : [$upload->onedrive_path];
                                                                     $names = is_array($upload->file_name) ? $upload->file_name : [$upload->file_name];
                                                                 @endphp
                                                                 @foreach($paths as $index => $path)
-                                                                    <button type="button" class="btn btn-sm btn-success"
-                                                                        onclick="openVideoPreview('{{ urlencode($path) }}', '{{ $upload->file_type }}')">
+                                                                    <a href="{{ route('preview.files', ['path' => $path]) }}"
+                                                                        target="_blank" class="btn btn-sm btn-success">
                                                                         Open
-                                                                    </button>
+                                                                    </a>
                                                                     {{ $names[$index] ?? '' }}
                                                                     <br>
                                                                 @endforeach
@@ -120,16 +119,6 @@
                                 </div>
                                 <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
 
-                                <!-- Video Preview Modal -->
-                                <div id="videoPreviewModal"
-                                    class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex justify-center items-center z-50">
-                                    <div class="bg-white rounded-lg p-4 w-full max-w-3xl relative shadow-lg">
-                                        <button class="absolute top-2 right-3 text-gray-500 hover:text-black text-2xl"
-                                            onclick="closeVideoPreview()">&times;</button>
-                                        <video id="previewVideoPlayer" class="w-full rounded-lg" controls
-                                            autoplay></video>
-                                    </div>
-                                </div>
                                 <!-- Edit Modal -->
                                 <div id="editFeedbackVideoModal"
                                     class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
@@ -141,7 +130,21 @@
                                             @csrf
                                             @method('PUT')
 
-                                            <div id="currentFeedbackVideoInfo" class="mb-4 space-y-2">
+                                            <div id="currentFeedbackVideoInfo" class="mb-4 space-y-2"></div>
+                                            <div class="mb-4">
+                                                <label class="block text-sm font-medium mb-1">Designation</label>
+                                                <select name="designation" id="editDesignation"
+                                                    class="border p-2 w-full rounded">
+                                                    <option value="">-- Select Designation --</option>
+                                                    <option value="Teacher">Teacher</option>
+                                                    <option value="HM">HM</option>
+                                                    <option value="Student">Student</option>
+                                                    <option value="DEO">DEO</option>
+                                                    <option value="BEO">BEO</option>
+                                                    <option value="Guest">Guest</option>
+                                                    <option value="OCAC Staff">OCAC Staff</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
                                             </div>
 
                                             <div class="mb-4">
@@ -171,42 +174,21 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function openVideoPreview(path) {
-            const modal = document.getElementById('videoPreviewModal');
-            const videoPlayer = document.getElementById('previewVideoPlayer');
-
-            // Set the video source (Laravel route)
-            videoPlayer.src = `/preview-video?path=${path}`;
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeVideoPreview() {
-            const modal = document.getElementById('videoPreviewModal');
-            const videoPlayer = document.getElementById('previewVideoPlayer');
-
-            videoPlayer.pause();
-            videoPlayer.src = '';
-            modal.classList.add('hidden');
-        }
-    </script>
-
-    <script>
         function openFeedbackVideoEditModal(id) {
             fetch(`/uploadfeedback-list/${id}/edit`)
                 .then(res => res.json())
                 .then(data => {
-                    // Data now contains single strings for file_name and onedrive_path
                     let html = `
-                <label class="block text-sm font-medium">Current Video</label>
-                <div class="flex items-center space-x-3 border p-2 rounded">
-                    <video src="/preview-video?path=${encodeURIComponent(data.onedrive_path)}" class="w-32 h-20 rounded" controls></video>
-                    <span>${data.file_name}</span>
-                </div>
-            `;
+                        <label class="block text-sm font-medium">Current Video</label>
+                        <div class="flex items-center space-x-3 border p-2 rounded">
+                            <video src="/preview-video?path=${encodeURIComponent(data.onedrive_path)}" class="w-32 h-20 rounded" controls></video>
+                            <span>${data.file_name}</span>
+                        </div>
+                    `;
 
                     document.querySelector('#currentFeedbackVideoInfo').innerHTML = html;
                     document.querySelector('#editFeedbackVideoForm').action = `/uploadfeedback-list/${id}`;
+                    document.querySelector('#editDesignation').value = data.designation || "";
                     document.querySelector('#editFeedbackVideoModal').classList.remove('hidden');
                 });
         }

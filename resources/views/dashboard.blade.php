@@ -3,91 +3,110 @@
   <title>EmergingTech | Dashboard</title>
   <style>
     .fc .fc-col-header-cell-cushion {
-        color: #ffffff !important;
-        text-align: center !important;
-        justify-content: center !important;
-        width: 100%;
-        display: block;
+      color: #ffffff !important;
+      text-align: center !important;
+      justify-content: center !important;
+      width: 100%;
+      display: block;
     }
+
     .fc .fc-daygrid-day-number {
-        color: #ffffff !important;
-        text-align: center !important;
-        width: 100%;
-        display: block;
-        font-weight: 600;
+      color: #ffffff !important;
+      text-align: center !important;
+      width: 100%;
+      display: block;
+      font-weight: 600;
     }
+
     .fc .fc-toolbar-title {
-        color: #ffffff !important;
+      color: #ffffff !important;
     }
+
     .fc-tooltip {
-        position: absolute;
-        background: #333;
-        color: #fff;
-        padding: 6px 10px;
-        font-size: 13px;
-        border-radius: 4px;
-        white-space: nowrap;
-        z-index: 9999;
-        pointer-events: none;
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 4px;
+      white-space: nowrap;
+      z-index: 9999;
+      pointer-events: none;
     }
+
     .fc-daygrid-day.fc-day-today {
-        background: #09a319 !important;
-        animation: blinkDate 1.2s infinite;
-        color: #fff !important;
+      background: #09a319 !important;
+      animation: blinkDate 1.2s infinite;
+      color: #fff !important;
     }
+
     @keyframes blinkDate {
-        0% { opacity: 1; }
-        50% { opacity: 0.35; }
-        100% { opacity: 1; }
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.35;
+      }
+
+      100% {
+        opacity: 1;
+      }
     }
+
     .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
-        color: #ffffff !important;
-        font-weight: bolder;
+      color: #ffffff !important;
+      font-weight: bolder;
     }
+
     .fc-daygrid-day {
-        border: none !important;
+      border: none !important;
     }
+
     .fc-daygrid-day-frame {
-        border: none !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      border: none !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     .fc-daygrid-day,
     .fc-daygrid-day-frame {
-        border: none !important;
+      border: none !important;
     }
 
     .fc-daygrid-day:hover .fc-daygrid-day-frame {
-        border-radius: 6px;
-        transition: border 0.2s ease;
-        background: #0f6318 
+      border-radius: 6px;
+      transition: border 0.2s ease;
+      background: #0f6318
     }
+
     .fc-daygrid-day-events {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr); 
-        gap: 4px;
-        padding: 4px;
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
     }
 
     .fc-daygrid-event {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     .event-dot {
-        width: 14px;
-        height: 14px;
-        border-radius: 4px;
-        margin: auto;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      margin: auto;
     }
+
     #gallery img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border: 1px solid #3a3030;
+      /* border: 1px solid #3a3030; */
       border-radius: 2px;
       opacity: 0;
       transform: scale(1.05);
@@ -118,6 +137,7 @@
       padding: 0;
       margin: 0;
     }
+
     .slide {
       position: absolute;
       top: 0;
@@ -260,18 +280,12 @@
                   <i class="nav-icon fas fa-university "></i>
                 </div>
 
-                <a 
-                  @php
-                    $roleId = Auth::user()->role_id;
-                  @endphp 
-                  @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
-                    href="{{ route('select.district') }}"
-                  @elseif($roleId == 3 || $roleId == 6)
-                    href="{{ route('my.schools') }}"
-                  @else 
-                    href="#" 
-                  @endif class="small-box-footer">More info <i
-                      class="fas fa-arrow-circle-right"></i>
+                <a @php
+                  $roleId = Auth::user()->role_id;
+                @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
+                  href="{{ route('select.district') }}" @elseif($roleId == 3 || $roleId == 6)
+                  href="{{ route('my.schools') }}" @else href="#" @endif class="small-box-footer">More info <i
+                    class="fas fa-arrow-circle-right"></i>
                 </a>
               </div>
             </div>
@@ -290,12 +304,8 @@
 
                 <a @php
                   $roleId = Auth::user()->role_id;
-                @endphp 
-                @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
-                  href="{{ route('student.school') }}" 
-                @else 
-                  href="{{ route('studentlist') }}"
-                @endif
+                @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
+                href="{{ route('student.school') }}" @else href="{{ route('studentlist') }}" @endif
                   class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
               </div>
             </div>
@@ -441,22 +451,34 @@
                 <div class="card-body bg-white">
                   <div class="tab-content p-0">
                     <div class="flex items-center justify-center py-3">
-                      <div id="gallery" class="w-full max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3">
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
-                        <div class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300"></div>
+                      <div id="gallery"
+                        class="w-full max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3">
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
+                        <div
+                          class="relative aspect-square overflow-hidden rounded-lg bg-gray-200 shadow hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                        </div>
                       </div>
                     </div>
                     @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8 || $user->role_id == 9)
                       <div class="text-right mt-1">
-                          <a href="{{ route('gallery') }}" 
-                            class="inline-flex items-center text-indigo-600 font-medium px-3 py-1 
-                            rounded hover:text-indigo-700 hover:underline transition">View More
-                              <span class="ml-1 text-lg">&#11166;</span>
-                          </a>
+                        <a href="{{ route('gallery') }}" class="inline-flex items-center text-indigo-600 font-medium px-3 py-1 
+                              rounded hover:text-indigo-700 hover:underline transition">View More
+                          <span class="ml-1 text-lg">&#11166;</span>
+                        </a>
                       </div>
                     @endif
                   </div>
@@ -510,7 +532,7 @@
             <!-- right col (We are only adding the ID to make the widgets sortable)-->
             <section class="col-lg-5 connectedSortable">
 
-              
+
               <!-- calendar -->
               <div class="card bg-gradient-success">
                 <div class="card-header border-0 bg-success">
@@ -542,7 +564,7 @@
                   </h3>
                   <!-- tools card -->
                   <div class="card-tools">
-                    
+
                     <button type="button" class="btn btn-success btn-sm" data-card-widget="collapse">
                       <i class="fas fa-minus"></i>
                     </button>
@@ -560,7 +582,7 @@
                 <!-- /.card-body -->
               </div> --}}
 
-              
+
 
               <!-- Map card -->
               <div class="card bg-gradient-primary" style="display:none">
@@ -623,66 +645,66 @@
     <!-- /.content-wrapper -->
     @include('components.footer')
   </div>
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
 
-      var tooltip; 
+      var tooltip;
       var calendarEl = document.getElementById('trainingCalendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          height: 550,
-          events: '/calendar-events',
-          eventContent: function(arg) {
-              let color = arg.event.extendedProps.color;
-              return {
-                  html: `<div style="width:12px;height:12px;background:${color};border-radius:4px;margin:auto;"></div>`
-              };
-          },
-          eventMouseEnter: function(info) {
-              let districtName = info.event.extendedProps.district_name;
-              let schoolName = info.event.title;
-              let date = info.event.start.toDateString();
-              
-              tooltip = document.createElement('div');
-              tooltip.classList.add('fc-tooltip');
-              tooltip.innerHTML = `
+        initialView: 'dayGridMonth',
+        height: 550,
+        events: '/calendar-events',
+        eventContent: function (arg) {
+          let color = arg.event.extendedProps.color;
+          return {
+            html: `<div style="width:12px;height:12px;background:${color};border-radius:4px;margin:auto;"></div>`
+          };
+        },
+        eventMouseEnter: function (info) {
+          let districtName = info.event.extendedProps.district_name;
+          let schoolName = info.event.title;
+          let date = info.event.start.toDateString();
+
+          tooltip = document.createElement('div');
+          tooltip.classList.add('fc-tooltip');
+          tooltip.innerHTML = `
                   <b>${schoolName}</b><br>
                   District: ${districtName}<br>
                   Date: ${date}
               `;
 
-              document.body.appendChild(tooltip);
+          document.body.appendChild(tooltip);
 
-              // Move tooltip with mouse
-              info.el.addEventListener('mousemove', function(e) {
-                  tooltip.style.top = (e.pageY + 15) + 'px';
-                  tooltip.style.left = (e.pageX + 15) + 'px';
-              });
-          },
-          eventMouseLeave: function(info) {
-              if (tooltip) {
-                  tooltip.remove();
-                  tooltip = null;
-              }
-          },
-          eventDidMount: function(info) {
-              // full cell element
-              let cell = info.el.closest(".fc-daygrid-day");
-
-              if (cell) {
-                  let bgColor = info.event.extendedProps.color; // your district color
-                  cell.style.backgroundColor = bgColor + "33";   // light transparent shade
-                  cell.style.borderRadius = "6px";               // optional
-              }
+          // Move tooltip with mouse
+          info.el.addEventListener('mousemove', function (e) {
+            tooltip.style.top = (e.pageY + 15) + 'px';
+            tooltip.style.left = (e.pageX + 15) + 'px';
+          });
+        },
+        eventMouseLeave: function (info) {
+          if (tooltip) {
+            tooltip.remove();
+            tooltip = null;
           }
+        },
+        eventDidMount: function (info) {
+          // full cell element
+          let cell = info.el.closest(".fc-daygrid-day");
+
+          if (cell) {
+            let bgColor = info.event.extendedProps.color; // your district color
+            cell.style.backgroundColor = bgColor + "33";   // light transparent shade
+            cell.style.borderRadius = "6px";               // optional
+          }
+        }
 
       });
-      
+
       calendar.render();
-  });
-</script>
+    });
+  </script>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -1046,7 +1068,7 @@
     });
   </script>
 
-  //camera button
+  {{-- camera button --}}
   <script>
     $(function () {
       $('[data-toggle="tooltip"]').tooltip();

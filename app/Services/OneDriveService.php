@@ -56,7 +56,7 @@ class OneDriveService
         ]);
 
         $tokens = $response->json();
-        
+
         if (!isset($tokens['access_token'])) {
             throw new \Exception("Failed to get token: " . $response->body());
         }
@@ -68,10 +68,10 @@ class OneDriveService
     }
 
     // Get access token (refresh if expired)
-     protected function getAccessToken()
+    protected function getAccessToken()
     {
         if (!file_exists($this->tokenFile)) {
-            // throw new \Exception("⚠️ Run login flow first to get OneDrive token (use getAuthUrl()).");
+            // throw new \Exception(" Run login flow first to get OneDrive token (use getAuthUrl()).");
             throw new HttpResponseException(
                 Redirect::to('/onedrive/login')
             );
@@ -149,10 +149,10 @@ class OneDriveService
             'Authorization' => "Bearer {$accessToken}",
             'Content-Type'  => $file->getMimeType() ?? 'application/octet-stream',
         ])
-        ->timeout(120)
-        ->send('PUT', $uploadUrl, [
-            'body' => $stream,
-        ]);
+            ->timeout(120)
+            ->send('PUT', $uploadUrl, [
+                'body' => $stream,
+            ]);
 
         fclose($stream);
 
@@ -176,18 +176,25 @@ class OneDriveService
             'path' => $onedrivePath,
             'url'  => $shareableUrl,
         ];
-        
     }
-    // public function getThumbnailUrl($onedrivePath)
-    // {
-    //     $accessToken = $this->getAccessToken();
-    //     $url = "https://graph.microsoft.com/v1.0/me/drive/root:/$onedrivePath:/thumbnails/0/medium/content";
+    public function renameFolder($folderPath, $newName)
+    {
+        $info = $this->getFileInfo($folderPath);
 
-    //     return [
-    //         'thumbnail_url' => $url,
-    //         'headers' => ['Authorization' => "Bearer {$accessToken}"]
-    //     ];
-    // }
+        $folderId = $info['id'] ?? null;
+        if (!$folderId) {
+            throw new \Exception("Folder not found for rename.");
+        }
+
+        $accessToken = $this->getAccessToken();
+        $response = Http::withToken($accessToken)
+            ->patch("https://graph.microsoft.com/v1.0/me/drive/items/{$folderId}", [
+                "name" => $newName
+            ]);
+
+        return $response->json();
+    }
+
     public function getFileInfo($path)
     {
         $accessToken = $this->getAccessToken();
@@ -226,5 +233,4 @@ class OneDriveService
 
         throw new \Exception('Failed to delete file from OneDrive');
     }
-
 }

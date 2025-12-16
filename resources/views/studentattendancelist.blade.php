@@ -79,10 +79,10 @@
                                                         <td>
                                                             @if($upload->onedrive_path)
                                                                 @foreach($upload->onedrive_path as $index => $path)
-                                                                    <button type="button" class="btn btn-sm btn-success"
-                                                                        onclick="openFileModal('{{ urlencode($path) }}', '{{ $upload->file_type }}')">
+                                                                    <a href="{{ route('preview.files', ['path' => $path]) }}"
+                                                                        target="_blank" class="btn btn-sm btn-success">
                                                                         Open
-                                                                    </button>
+                                                                    </a>
                                                                     @if(isset($upload->file_name[$index]))
                                                                         {{ $upload->file_name[$index] }} ({{ ucwords(str_replace('_', ' ', $upload->file_type)) }})
                                                                     @endif
@@ -115,25 +115,6 @@
                                     </table>
                                 </div>
                                 <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
-
-                                <!-- File Preview Modal -->
-                                <div id="fileModal"
-                                    class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 overflow-y-auto">
-                                    <div
-                                        class="relative bg-white rounded-lg shadow-lg p-4  h-auto w-auto flex flex-col">
-                                        <button onclick="closeFileModal()"
-                                            class="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-3xl">&times;</button>
-
-                                        <!-- PDF Viewer -->
-                                        <iframe id="pdfViewer" class="hidden w-full flex-1 rounded"
-                                            frameborder="0"></iframe>
-
-                                        <!-- Image Viewer -->
-                                        <img id="imageViewer"
-                                            class="hidden max-h-[80vh] h-[20rem] mx-auto rounded object-contain"
-                                            alt="Preview">
-                                    </div>
-                                </div>
 
                                 <!-- Edit File Modal -->
                                 <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
@@ -271,53 +252,6 @@
             renderTable();
         });
     </script>
-    <script>
-        function openFileModal(path, fileType) {
-            const modal = document.getElementById('fileModal');
-            const pdfViewer = document.getElementById('pdfViewer');
-            const imageViewer = document.getElementById('imageViewer');
-
-            // Reset both viewers
-            pdfViewer.classList.add('hidden');
-            imageViewer.classList.add('hidden');
-            pdfViewer.src = '';
-            imageViewer.src = '';
-
-            // Set the appropriate source
-            const previewUrl = `/preview-file?path=${path}`;
-
-            if (fileType === 'attendance_sheet') {
-                // Detect whether it's a PDF or image based on extension
-                if (path.endsWith('.pdf')) {
-                    pdfViewer.src = previewUrl;
-                    pdfViewer.classList.remove('hidden');
-                } else {
-                    imageViewer.src = previewUrl;
-                    imageViewer.classList.remove('hidden');
-                }
-            } else if (fileType === 'trainer_photo') {
-                imageViewer.src = previewUrl;
-                imageViewer.classList.remove('hidden');
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeFileModal() {
-            const modal = document.getElementById('fileModal');
-            const pdfViewer = document.getElementById('pdfViewer');
-            const imageViewer = document.getElementById('imageViewer');
-
-            pdfViewer.src = '';
-            imageViewer.src = '';
-            modal.classList.add('hidden');
-        }
-
-        // Optional: close modal by clicking background
-        document.getElementById('fileModal').addEventListener('click', (e) => {
-            if (e.target.id === 'fileModal') closeFileModal();
-        });
-    </script>
 
     <script>
         function openEditModal(id, fileType) {
@@ -338,7 +272,5 @@
             editModal.show();
         }
     </script>
-
-
 </body>
 @include('components.footer')

@@ -36,7 +36,7 @@
                                         <div class="col-md-6">
                                             <label for="district_id">Select District</label>
                                             <select name="district_id" id="district_id" class="form-control">
-                                                <option value="">All Districts</option>
+                                                <option value="">Select Districts</option>
                                                 @foreach($districts as $district)
                                                     <option value="{{ $district->DSM_DSCD }}" {{ $districtId == $district->DSM_DSCD ? 'selected' : '' }}>
                                                         {{ $district->DSM_DSNM }}

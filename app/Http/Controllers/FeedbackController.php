@@ -37,15 +37,14 @@ class FeedbackController extends Controller
     public function uploadwrittenfeedback(Request $request)
 
     {
-        // dd($request->all());
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
-            'written_feedback' => 'required|mimes:pdf|max:2048',
+            'written_feedback' => 'required|mimes:pdf|max:10240',
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
 
         $fileTypeMap = config('filetypes');
 
@@ -90,37 +89,35 @@ class FeedbackController extends Controller
         return view('uploadfeedback', compact('schools'));
     }
 
-
     public function uploadvideofeedback(Request $request)
-
     {
-
         $request->validate([
-            'school_id'        => 'required|integer',
-            'training_date'    => 'required|date',
+            'school_id'      => 'required|integer',
+            'training_date'  => 'required|date',
             'designation'    => 'required|string',
-            'video_feedback' => 'required|mimes:mp4,mov,avi,wmv|max:51200',
-            'description'     => 'nullable|string',
-            'designation'     => 'nullable|string',
+            'video_feedback' => 'required|mimes:mp4,mov,avi,wmv|max:102400',
+            'description'    => 'nullable|string',
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
 
         $fileTypeMap = config('filetypes');
-
 
         $file = $request->file('video_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
         $designation = $request->designation;
-        $folder   = "School_{$schoolId}/User_{$userId}/video_feedback/designation_{$designation}";
+        $folder   = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/designation_{$designation}";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
         TrainingUpload::create([
             'school_id'      => $schoolId,
-            // 'coordinator_id' => $userId,
             'file_type'      => 'video_feedback',
             'filetype_id'    => $fileTypeMap['video_feedback'] ?? null,
             'file_name'      => $file->getClientOriginalName(),
@@ -156,7 +153,7 @@ class FeedbackController extends Controller
             } elseif ($roleId == 6 || $roleId == 5) {
 
                 // Coordinator: see own uploads + DLC + trainers under same DLC
-                $dlcId = $user->assignUnder_id; // DLC user_id
+                $dlcId = $user->assignUnder_id;
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
@@ -169,7 +166,6 @@ class FeedbackController extends Controller
     {
         $upload = TrainingUpload::findOrFail($id);
 
-        // Make sure it’s a video_feedback type
         if ($upload->file_type !== 'video_feedback') {
             abort(403, 'Invalid file type');
         }
@@ -185,6 +181,7 @@ class FeedbackController extends Controller
             'onedrive_path' => $path,
             'onedrive_url'  => $url,
             'file_type'     => $upload->file_type,
+            'designation'   => $upload->designation,
         ]);
     }
 
@@ -192,15 +189,46 @@ class FeedbackController extends Controller
     {
         $upload = TrainingUpload::findOrFail($id);
 
+        $oldDesignation = $upload->designation;
+        $newDesignation = $request->designation;
+        
         $request->validate([
-            'new_feedback_video' => 'nullable|mimes:mp4,mov,avi,wmv|max:51200',
+            'new_feedback_video' => 'nullable|mimes:mp4,mov,avi,wmv|max:102400',
         ]);
 
-        $userId = Auth::id();
         $schoolId = $upload->school_id;
-        $designation = $upload->designation;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+        
+        $oldfolder = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/designation_{$oldDesignation}";
+        $newfolder = "designation_{$newDesignation}";
+        
+        if ($oldDesignation !== $newDesignation) {
+            try {
+                $this->oneDrive->renameFolder($oldfolder, $newfolder);
 
-        // NOTE: The input is singular: 'new_feedback_video'
+                // Update ONE saved path
+                $existingPath = is_array($upload->onedrive_path)
+                    ? ($upload->onedrive_path[0] ?? null)
+                    : $upload->onedrive_path;
+
+                // Replace old folder name with new one in path
+                if ($existingPath) {
+                    $upload->onedrive_path = [
+                        str_replace(
+                            "designation_{$oldDesignation}",
+                            "designation_{$newDesignation}",
+                            $existingPath
+                        )
+                    ];
+                }
+
+            } catch (\Exception $e) {
+                Log::warning("Failed to rename feedback folder: " . $e->getMessage());
+            }
+        }
+
         if ($request->hasFile('new_feedback_video')) {
 
             $existingPath = $upload->onedrive_path;
@@ -218,7 +246,7 @@ class FeedbackController extends Controller
 
             $file = $request->file('new_feedback_video');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "School_{$schoolId}/User_{$userId}/video_feedback/designation_{$designation}";
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/{$newfolder}";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -226,12 +254,11 @@ class FeedbackController extends Controller
             $upload->onedrive_path = [$result['path']];
             $upload->onedrive_url = [$result['url'] ?? null];
         }
-
+        $upload->designation = $newDesignation;
         $upload->save();
 
         return back()->with('success', 'Feedback Video updated successfully!');
     }
-
 
     public function previewVideo(Request $request)
     {

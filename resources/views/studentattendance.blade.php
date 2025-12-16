@@ -1,34 +1,46 @@
 @include('components.navbar')
 @include('components.sidebar')
 <style>
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-.animate-gradient-move {
-  animation: gradientMove 2s linear infinite;
-}
+    @keyframes gradientMove {
+        0% {
+            background-position: 0% 50%;
+        }
 
-  #uploadOverlay {
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-  }
+        100% {
+            background-position: 200% 50%;
+        }
+    }
 
-  .loader {
-    border-right-color: transparent;
-    border-bottom-color: transparent;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
-  }
+    .animate-gradient-move {
+        animation: gradientMove 2s linear infinite;
+    }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  /* .wrapper, .content-wrapper {
+    #uploadOverlay {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(2px);
+    }
+
+    .loader {
+        border-right-color: transparent;
+        border-bottom-color: transparent;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* .wrapper, .content-wrapper {
   position: static !important;
 } */
-
 </style>
+
 <body class="hold-transition sidebar-mini layout-fixed">
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -53,19 +65,19 @@
             <section class="content relative">
                 <div id="uploadOverlay"
                     class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
-                 <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
-                 <p class="text-white text-lg font-medium mt-4">Uploading, please wait...</p>
-               </div>
+                    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
+                    <p class="text-white text-lg font-medium mt-4">Uploading, please wait...</p>
+                </div>
                 <div class="container-fluid py-12">
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    <div class="max-w-8xl mx-auto space-y-6">
                         <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                            <div class="bg-white p-8 rounded-lg w-full">
+                            <div class="bg-white rounded-lg w-full">
                                 <h2 class="text-2xl font-semibold text-center mb-6">Upload Student Attendance</h2>
                                 <div class="mb-4 flex justify-end">
                                     <a href="{{route('attendance.list')}}"><button
-                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                        <i class="fas fa-list"></i> View Attendance Records
-                                    </button></a>
+                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                            <i class="fas fa-list"></i> View Attendance Records
+                                        </button></a>
                                 </div>
 
 
@@ -117,7 +129,7 @@
                                         <p class="text-gray-500">Drag and drop PDF / Image, or click to select</p>
 
                                         <input type="file" name="attendance_files[]" id="fileUpload" class="hidden"
-                                            multiple accept="application/pdf,image/*" required>
+                                            multiple accept="application/pdf,image/*,.heic,.heif" required>
                                         <!-- File Preview Section -->
                                         <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                         </div>
@@ -141,36 +153,40 @@
                                         class="border p-2 rounded w-full mb-6"> --}}
 
                                     <div id="trainerDropZone"
-                                         class="border-2 border-dashed border-gray-400 rounded-md p-8 text-center cursor-pointer hover:border-green-500 transition mb-6">
+                                        class="border-2 border-dashed border-gray-400 rounded-md p-8 text-center cursor-pointer hover:border-green-500 transition mb-6">
                                         <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="mx-auto h-10 w-10 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24"
-                                             stroke="currentColor">
+                                            class="mx-auto h-10 w-10 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12V4m0 8l-3-3m3 3l3-3"/>
+                                                d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12V4m0 8l-3-3m3 3l3-3" />
                                         </svg>
                                         <p class="text-gray-500">Drag and drop trainer image, or click to select</p>
-                                        <input type="file" name="trainer_image" id="trainerUpload" class="hidden" accept="image/*" required>
-                                        <div id="trainerPreview" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3"></div>
+                                        <input type="file" name="trainer_image" id="trainerUpload" class="hidden"
+                                            accept="image/*" required>
+                                        <div id="trainerPreview"
+                                            class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3"></div>
                                     </div>
 
                                     <!-- Modal for trainer image -->
                                     <div id="trainerModal"
-                                         class="fixed inset-0 bg-black bg-opacity-70 hidden justify-center items-center z-50">
+                                        class="fixed inset-0 bg-black bg-opacity-70 hidden justify-center items-center z-50">
                                         <div class="relative max-w-4xl max-h-[90%]">
                                             <button id="closeTrainerModal"
-                                                    class="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full">X
+                                                class="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full">X
                                             </button>
-                                            <img id="modalTrainerImage" src="" class="max-w-full max-h-[90vh] rounded shadow-lg"/>
+                                            <img id="modalTrainerImage" src=""
+                                                class="max-w-full max-h-[90vh] rounded shadow-lg" />
                                         </div>
                                     </div>
                                     <!-- Upload Progress Section -->
                                     <div id="progressContainer" class="hidden mt-6">
                                         <div class="w-full bg-gray-200 rounded-full overflow-hidden h-5">
                                             <div id="progressBar"
-                                            class="h-5 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-[length:200%_100%] animate-gradient-move text-center text-white text-sm font-medium rounded-full transition-all duration-300 ease-linear"
-                                            style="width:0%">0%</div>
+                                                class="h-5 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-[length:200%_100%] animate-gradient-move text-center text-white text-sm font-medium rounded-full transition-all duration-300 ease-linear"
+                                                style="width:0%">0%</div>
                                         </div>
-                                        <p id="progressStatus" class="text-gray-600 text-sm mt-2 text-center italic">Preparing upload...</p>
+                                        <p id="progressStatus" class="text-gray-600 text-sm mt-2 text-center italic">
+                                            Preparing upload...</p>
                                     </div>
 
                                     <!-- Submit Button -->
@@ -188,111 +204,111 @@
         </div>
     </div>
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('attendanceUploadForm');
-    const overlay = document.getElementById('uploadOverlay');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressStatus = document.getElementById('progressStatus');
-    const attendanceInput = document.getElementById('fileUpload');
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('attendanceUploadForm');
+            const overlay = document.getElementById('uploadOverlay');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressStatus = document.getElementById('progressStatus');
+            const attendanceInput = document.getElementById('fileUpload');
 
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-        const file = attendanceInput.files[0];
-        if (!file) {
-            Swal.fire('Error', 'Please select a file before uploading.', 'error');
-            return;
-        }
-
-        const formData = new FormData(form);
-        progressContainer.classList.remove('hidden');
-        progressBar.style.width = '0%';
-        progressBar.textContent = '0%';
-        progressStatus.textContent = 'Uploading...';
-        progressBar.classList.remove('bg-red-500');
-        progressBar.classList.add('bg-gradient-to-r');
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', "{{ route('upload.attendance') }}", true);
-        xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-
-        let smoothProgress = 0;
-        let animationSpeed = 50; // lower = faster visual motion
-        let targetPercent = 0;
-        let animTimer;
-
-        function smoothTo(target) {
-            clearInterval(animTimer);
-            animTimer = setInterval(() => {
-                if (smoothProgress < target && smoothProgress < 90) {
-                    smoothProgress += 0.5; // fine-grained smooth motion
-                    progressBar.style.width = smoothProgress + '%';
-                    progressBar.textContent = Math.floor(smoothProgress) + '%';
-                } else {
-                    clearInterval(animTimer);
+                const file = attendanceInput.files[0];
+                if (!file) {
+                    Swal.fire('Error', 'Please select a file before uploading.', 'error');
+                    return;
                 }
-            }, animationSpeed);
-        }
 
-        xhr.upload.addEventListener('progress', function (e) {
-            if (e.lengthComputable) {
-                targetPercent = Math.min(Math.round((e.loaded / e.total) * 100), 90);
-                smoothTo(targetPercent);
-            }
-        });
+                const formData = new FormData(form);
+                progressContainer.classList.remove('hidden');
+                progressBar.style.width = '0%';
+                progressBar.textContent = '0%';
+                progressStatus.textContent = 'Uploading...';
+                progressBar.classList.remove('bg-red-500');
+                progressBar.classList.add('bg-gradient-to-r');
 
-        xhr.onload = function () {
-            clearInterval(animTimer);
-            if (xhr.status === 200) {
-                progressStatus.textContent = 'Finalizing...';
-                let final = smoothProgress;
-                const finishTimer = setInterval(() => {
-                    if (final < 100) {
-                        final += 0.5;
-                        progressBar.style.width = final + '%';
-                        progressBar.textContent = Math.floor(final) + '%';
-                    } else {
-                        clearInterval(finishTimer);
-                        progressStatus.textContent = 'Upload Complete!';
-                        setTimeout(() => {
-                            Swal.fire('✅ Success', 'File uploaded successfully!', 'success');
-                            overlay.classList.add('hidden');
-                            form.reset();
-                            progressContainer.classList.add('hidden');
-                            document.getElementById('attendanceList').innerHTML = '';
-                        }, 700);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', "{{ route('upload.attendance') }}", true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+
+                let smoothProgress = 0;
+                let animationSpeed = 50; // lower = faster visual motion
+                let targetPercent = 0;
+                let animTimer;
+
+                function smoothTo(target) {
+                    clearInterval(animTimer);
+                    animTimer = setInterval(() => {
+                        if (smoothProgress < target && smoothProgress < 90) {
+                            smoothProgress += 0.5; // fine-grained smooth motion
+                            progressBar.style.width = smoothProgress + '%';
+                            progressBar.textContent = Math.floor(smoothProgress) + '%';
+                        } else {
+                            clearInterval(animTimer);
+                        }
+                    }, animationSpeed);
+                }
+
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        targetPercent = Math.min(Math.round((e.loaded / e.total) * 100), 90);
+                        smoothTo(targetPercent);
                     }
-                }, 60);
-            } else {
-                progressBar.classList.remove('bg-gradient-to-r');
-                progressBar.classList.add('bg-red-500');
-                progressStatus.textContent = '❌ Upload failed.';
-                Swal.fire('❌ Failed', 'Upload failed. Please try again.', 'error');
-                overlay.classList.add('hidden');
-            }
-        };
-        overlay.classList.remove('hidden');
-        xhr.send(formData);
-    });
-});
-</script>
-<!-- Validation Errors -->
-@if ($errors->any())
-<script>
-    let errorMessage = "";
-    @foreach ($errors->all() as $error)
-        errorMessage += "{{ $error }}\n";
-    @endforeach
+                });
 
-    Swal.fire({
-        title: '⚠️ Warning!',
-        text: errorMessage,
-        icon: 'warning',
-        confirmButtonText: 'OK'
-    });
-</script>
-@endif
+                xhr.onload = function () {
+                    clearInterval(animTimer);
+                    if (xhr.status === 200) {
+                        progressStatus.textContent = 'Finalizing...';
+                        let final = smoothProgress;
+                        const finishTimer = setInterval(() => {
+                            if (final < 100) {
+                                final += 0.5;
+                                progressBar.style.width = final + '%';
+                                progressBar.textContent = Math.floor(final) + '%';
+                            } else {
+                                clearInterval(finishTimer);
+                                progressStatus.textContent = 'Upload Complete!';
+                                setTimeout(() => {
+                                    Swal.fire('✅ Success', 'File uploaded successfully!', 'success');
+                                    overlay.classList.add('hidden');
+                                    form.reset();
+                                    progressContainer.classList.add('hidden');
+                                    document.getElementById('attendanceList').innerHTML = '';
+                                }, 700);
+                            }
+                        }, 60);
+                    } else {
+                        progressBar.classList.remove('bg-gradient-to-r');
+                        progressBar.classList.add('bg-red-500');
+                        progressStatus.textContent = '❌ Upload failed.';
+                        Swal.fire('❌ Failed', 'Upload failed. Please try again.', 'error');
+                        overlay.classList.add('hidden');
+                    }
+                };
+                overlay.classList.remove('hidden');
+                xhr.send(formData);
+            });
+        });
+    </script>
+    <!-- Validation Errors -->
+    @if ($errors->any())
+        <script>
+            let errorMessage = "";
+            @foreach ($errors->all() as $error)
+                errorMessage += "{{ $error }}\n";
+            @endforeach
+
+            Swal.fire({
+                title: '⚠️ Warning!',
+                text: errorMessage,
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    @endif
     <script>
         // Auto-set today's date
         document.addEventListener('DOMContentLoaded', function () {
@@ -319,8 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Handle file input change
         fileInput.addEventListener("change", (e) => {
-            handleFile(e.target.files[0]); // only take first file
-            // fileInput.value = ""; // reset
+            handleFile(e.target.files[0]);
         });
 
         // Drag events
@@ -441,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let uploadedTrainerImage = null;
 
         trainerDropZone.addEventListener("click", (e) => {
-            if ([trainerDropZone.tagName, "P","SVG","PATH"].includes(e.target.tagName) || e.target === trainerDropZone) {
+            if ([trainerDropZone.tagName, "P", "SVG", "PATH"].includes(e.target.tagName) || e.target === trainerDropZone) {
                 trainerInput.click();
             }
         });
@@ -453,7 +468,10 @@ document.addEventListener('DOMContentLoaded', function () {
         function handleTrainerImage(file) {
             if (!file) return;
             if (uploadedTrainerImage) { alert("You can only upload one trainer image."); return; }
-            if (!file.type.startsWith("image/")) { alert("Only image files are allowed!"); return; }
+            if (!file.type.startsWith("image/")) {
+                alert("Only image files are allowed!");
+                return;
+            }
 
             uploadedTrainerImage = file;
             trainerPreview.innerHTML = "";
@@ -482,8 +500,8 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById("training_date").value = today;
         });
     </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        @if (session('success'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (session('success'))
         <script>
             Swal.fire({
                 title: '✅ Success!',
@@ -493,11 +511,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Redirect to another page
-                    window.location.href = "{{ route('attendance.list') }}"; 
-                    
+                    window.location.href = "{{ route('attendance.list') }}";
+
                 }
             });
-            </script>
-            @endif
+        </script>
+    @endif
 </body>
 @include('components.footer')

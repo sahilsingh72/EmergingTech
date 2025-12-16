@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Coordinator;
 use App\Models\District;
 use App\Models\School;
 use App\Models\StudentMst;
-use App\Models\Trainer;
 use App\Models\TrainingUpload;
 use App\Models\User;
 use App\Services\OneDriveService;
@@ -14,10 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TrainingEvidenceController extends Controller
 {
-
     protected $oneDrive;
 
     public function __construct(OneDriveService $oneDrive)
@@ -47,18 +45,20 @@ class TrainingEvidenceController extends Controller
     }
 
     public function upload(Request $request)
-
     {
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'training_photo' => 'required|array',
-            'training_photo.*' => 'file|mimes:jpg,jpeg,png|max:4096',
+            'training_photo.*' => 'file|mimes:jpg,jpeg,png|max:10240',
             'description'     => 'nullable|string',
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $fileTypeMap = config('filetypes');
 
@@ -66,12 +66,11 @@ class TrainingEvidenceController extends Controller
         $filePaths = [];
         $fileUrls  = [];
 
-
         if ($request->hasFile('training_photo')) {
             foreach ($request->file('training_photo') as $file) {
 
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "School_{$schoolId}/User_{$userId}/training_photo";
+                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_photo";
 
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -81,7 +80,6 @@ class TrainingEvidenceController extends Controller
             }
             TrainingUpload::create([
                 'school_id'      => $schoolId,
-                // 'coordinator_id' => $userId,
                 'file_type'      => 'training_photo',
                 'filetype_id'    => $fileTypeMap['training_photo'],
                 'file_name'      => $fileNames,
@@ -131,7 +129,6 @@ class TrainingEvidenceController extends Controller
     {
         $upload = TrainingUpload::findOrFail($id);
 
-        // Make sure it’s a training_photo type
         if ($upload->file_type !== 'training_photo') {
             abort(403, 'Invalid file type');
         }
@@ -139,32 +136,50 @@ class TrainingEvidenceController extends Controller
         return response()->json($upload); // we’ll load it dynamically in modal via JS
     }
 
-
     public function updateTrainingPhoto(Request $request, $id)
     {
         $upload = TrainingUpload::findOrFail($id);
+
+        $schoolId = $upload->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $existingNames = $upload->file_name;
         $existingPaths = $upload->onedrive_path;
         $existingUrls  = $upload->onedrive_url;
 
-        // Remove selected files (optional)
+        // Remove selected files
         if ($request->has('remove_files')) {
             foreach ($request->remove_files as $remove) {
                 $index = array_search($remove, $existingNames);
                 if ($index !== false) {
+                    $pathToDelete = $existingPaths[$index] ?? null;
+
+                    // Delete from OneDrive
+                    if (!empty($pathToDelete)) {
+                        try {
+                            $this->oneDrive->deleteFile($pathToDelete);
+                        } catch (\Exception $e) {
+                            Log::warning("Failed to delete file from OneDrive: " . $e->getMessage());
+                        }
+                    }
+
                     unset($existingNames[$index]);
                     unset($existingPaths[$index]);
                     unset($existingUrls[$index]);
                 }
             }
+            $existingNames = array_values($existingNames);
+            $existingPaths = array_values($existingPaths);
+            $existingUrls  = array_values($existingUrls);
         }
 
         // Upload new files
         if ($request->hasFile('new_training_photo')) {
             foreach ($request->file('new_training_photo') as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "School_{$upload->school_id}/User_{$upload->uploaded_by}/training_photo";
+                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_photo";
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
                 $existingNames[] = $file->getClientOriginalName();
@@ -187,8 +202,6 @@ class TrainingEvidenceController extends Controller
     {
         $path = $request->query('path');
 
-        // $thumbnail = $this->oneDrive->getThumbnailUrl($path);
-
         $fileInfo = $this->oneDrive->getFileInfo($path);
         if (!isset($fileInfo['@microsoft.graph.downloadUrl'])) {
             return response('Download URL not found', 404);
@@ -196,11 +209,10 @@ class TrainingEvidenceController extends Controller
 
         $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
 
-        // Stream the full-quality image directly to the browser
         return response()->stream(function () use ($downloadUrl) {
             $response = Http::get($downloadUrl);
             echo $response->body();
-        }, 200, ['Content-Type' => 'image/jpeg']);
+        }, 200, ['Content-Type' => 'image/']);
     }
 
     public function trainingvideos()
@@ -217,19 +229,22 @@ class TrainingEvidenceController extends Controller
         }
         return view('trainingvideos', compact('schools'));
     }
-    public function uploadvideo(Request $request)
 
+    public function uploadvideo(Request $request)
     {
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'training_video' => 'required|array',
-            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:512000',
+            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:102400',
             'description'     => 'nullable|string',
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $fileTypeMap = config('filetypes');
 
@@ -237,10 +252,9 @@ class TrainingEvidenceController extends Controller
         $filePaths = [];
         $fileUrls  = [];
 
-
         foreach ($request->file('training_video') as $file) {
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder   = "School_{$schoolId}/User_{$userId}/training_video";
+            $folder   = "EmergingTech/{$districtName}/{$schoolName}/training_video";
 
             // Upload to OneDrive
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -252,7 +266,6 @@ class TrainingEvidenceController extends Controller
         }
         TrainingUpload::create([
             'school_id'      => $schoolId,
-            // 'coordinator_id' => $userId,
             'file_type'      => 'training_video',
             'filetype_id'    => $fileTypeMap['training_video'] ?? null,
             'file_name'      => $fileNames,
@@ -272,22 +285,36 @@ class TrainingEvidenceController extends Controller
     {
         $path = $request->query('path');
 
-        // Cache download URL for performance
-        $downloadUrl = Cache::remember("onedrive_video_$path", 300, function () use ($path) {
-            $fileInfo = $this->oneDrive->getFileInfo($path);
-            return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
-        });
-
-        if (!$downloadUrl) {
-            return response('Video not found', 404);
+        $fileInfo = $this->oneDrive->getFileInfo($path);
+        if (!isset($fileInfo['@microsoft.graph.downloadUrl'])) {
+            return response('Download URL not found', 404);
         }
 
-        // Stream video directly from OneDrive
-        $response = Http::get($downloadUrl);
+        $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
 
-        return response($response->body(), 200)
-            ->header('Content-Type', 'video/mp4'); // use video/mp4
+        // Detect correct video MIME type
+        $mimeType = $fileInfo['file']['mimeType'] ?? 'video/mp4';
+
+        return response()->stream(function () use ($downloadUrl) {
+
+            $stream = fopen($downloadUrl, 'r');
+
+            while (!feof($stream)) {
+                echo fread($stream, 1024 * 64); // 64KB chunks
+                ob_flush();
+                flush();
+            }
+
+            fclose($stream);
+        }, 200, [
+            'Content-Type'        => $mimeType,
+            'Accept-Ranges'       => 'bytes',
+            'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+            'Pragma'              => 'no-cache',
+            'Expires'             => '0',
+        ]);
     }
+
     public function trainingvideoslist()
     {
         $user = Auth::user();
@@ -323,7 +350,6 @@ class TrainingEvidenceController extends Controller
     {
         $upload = TrainingUpload::findOrFail($id);
 
-        // Make sure it’s a training_video type
         if ($upload->file_type !== 'training_video') {
             abort(403, 'Invalid file type');
         }
@@ -331,32 +357,48 @@ class TrainingEvidenceController extends Controller
         return response()->json($upload); // we’ll load it dynamically in modal via JS
     }
 
-
     public function updateTrainingVideo(Request $request, $id)
     {
         $upload = TrainingUpload::findOrFail($id);
+
+        $schoolId = $upload->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $existingNames = $upload->file_name;
         $existingPaths = $upload->onedrive_path;
         $existingUrls  = $upload->onedrive_url;
 
-        // Remove selected files (optional)
         if ($request->has('remove_files')) {
             foreach ($request->remove_files as $remove) {
                 $index = array_search($remove, $existingNames);
                 if ($index !== false) {
+                    $pathToDelete = $existingPaths[$index] ?? null;
+
+                    if (!empty($pathToDelete)) {
+                        try {
+                            $this->oneDrive->deleteFile($pathToDelete);
+                        } catch (\Exception $e) {
+                            Log::warning("Failed to delete file from OneDrive: " . $e->getMessage());
+                        }
+                    }
+
                     unset($existingNames[$index]);
                     unset($existingPaths[$index]);
                     unset($existingUrls[$index]);
                 }
             }
+            $existingNames = array_values($existingNames);
+            $existingPaths = array_values($existingPaths);
+            $existingUrls  = array_values($existingUrls);
         }
 
         // Upload new files
         if ($request->hasFile('new_training_video')) {
             foreach ($request->file('new_training_video') as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "School_{$upload->school_id}/User_{$upload->uploaded_by}/training_video";
+                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_video";
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
                 $existingNames[] = $file->getClientOriginalName();
@@ -365,7 +407,6 @@ class TrainingEvidenceController extends Controller
             }
         }
 
-        // Update record
         $upload->update([
             'file_name'     => array_values($existingNames),
             'onedrive_path' => array_values($existingPaths),
@@ -377,7 +418,6 @@ class TrainingEvidenceController extends Controller
 
     public function trainingcompcertificate()
     {
-
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
@@ -398,7 +438,6 @@ class TrainingEvidenceController extends Controller
             'video_feedback'    => 'Video Feedback',
         ];
 
-        // If the page shows per school (e.g., selected via dropdown)
         $selectedSchoolId = request()->get('school_id');
 
         $uploadedFiles = [];
@@ -437,24 +476,26 @@ class TrainingEvidenceController extends Controller
     }
 
     public function uploadcertificate(Request $request)
-
     {
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
-            'training_completion_certificate.*' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+            'training_completion_certificate.*' => 'required|mimes:pdf,jpg,jpeg,png|max:10240',
             'declaration' => 'accepted',
             'training_completed' => 'accepted',
         ]);
 
-        $schoolId = $request->school_id;
         $userId   = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $fileTypeMap = config('filetypes');
 
         $file = $request->file('training_completion_certificate');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $folder   = "School_{$schoolId}/User_{$userId}/training_completion_certificate";
+        $folder   = "EmergingTech/{$districtName}/{$schoolName}/training_completion_certificate";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -472,7 +513,7 @@ class TrainingEvidenceController extends Controller
             'description'    => $request->description,
         ]);
 
-        // ✅ Mark school as completed only if ALL required files are uploaded
+        //  Mark school as completed only if ALL required files are uploaded
         $requiredFiles = [
             'attendance_sheet',
             'training_photo',
@@ -529,10 +570,10 @@ class TrainingEvidenceController extends Controller
                 ->with(['user', 'school', 'school.district']);
 
             if ($schoolId) {
-                // ✅ specific school
+                //  specific school
                 $query->where('school_id', $schoolId);
             } else {
-                // ✅ all schools in that district
+                //  all schools in that district
                 $schoolIds = $schools->pluck('scm_id');
                 $query->whereIn('school_id', $schoolIds);
             }
@@ -540,7 +581,31 @@ class TrainingEvidenceController extends Controller
             $certificates = $query->get();
         }
 
-
         return view('viewcertificates', compact('districts', 'districtId', 'schools', 'schoolId', 'certificates'));
+    }
+    public function previewFile(Request $request)
+    {
+        $path = $request->query('path');
+
+        $downloadUrl = Cache::remember("onedrive_download_" . md5($path), 300, function () use ($path) {
+            $fileInfo = $this->oneDrive->getFileInfo($path);
+            return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
+        });
+
+        if (!$downloadUrl) {
+            return response('Download URL not found', 404);
+        }
+        // Fetch the file content
+        $response = Http::get($downloadUrl);
+        $contentType = $response->header('Content-Type', 'application/octet-stream');
+
+        // Stream based on type
+        if (str_contains($contentType, 'pdf')) {
+            return response($response->body(), 200)->header('Content-Type', 'application/pdf');
+        } elseif (str_contains($contentType, 'image')) {
+            return response($response->body(), 200)->header('Content-Type', $contentType);
+        } else {
+            return response('Unsupported file type', 415);
+        }
     }
 }

@@ -1,24 +1,31 @@
 @include('components.navbar')
 @include('components.sidebar')
 <style>
-.loader {
-  border-right-color: transparent;
-    border-bottom-color: transparent;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+    .loader {
+        border-right-color: transparent;
+        border-bottom-color: transparent;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    }
 
-/* Smooth fade for overlay */
-#contentBlurOverlay {
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-}
-#contentBlurOverlay.flex {
-  opacity: 1;
-}
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Smooth fade for overlay */
+    #contentBlurOverlay {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(2px);
+    }
+
+    #contentBlurOverlay.flex {
+        opacity: 1;
+    }
 </style>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -49,26 +56,26 @@
             <section class="content relative">
 
                 <div id="contentBlurOverlay"
-     class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
-    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
-    <p class="text-white text-base font-medium">Uploading, please wait...</p>
-</div>
+                    class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
+                    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
+                    <p class="text-white text-base font-medium">Uploading, please wait...</p>
+                </div>
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class="p-3 sm:p-8 bg-white shadow sm:rounded-lg">
+                                <div class="bg-white rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Videos</h2>
 
                                     <div class="mb-4 flex justify-end">
                                         <a href="{{route('trainingvideos.list')}}"><button
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-list"></i>  View uploaded training video
-                                        </button></a>
+                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                <i class="fas fa-list"></i> View uploaded training video
+                                            </button></a>
                                     </div>
-                                    <form id="videoUploadForm" method="POST" action="{{ route('upload.trainingvideos') }}"
-                                        enctype="multipart/form-data">
+                                    <form id="videoUploadForm" method="POST"
+                                        action="{{ route('upload.trainingvideos') }}" enctype="multipart/form-data">
                                         @csrf
                                         <!-- School Name (readonly) -->
                                         <div>
@@ -114,7 +121,7 @@
                                             <p class="text-gray-500">Drag and drop Video, or click to select</p>
 
                                             <input type="file" name="training_video[]" id="videoUpload" class="hidden"
-                                                accept="video/*" multiple>
+                                                accept="video/*" multiple required>
                                             <!-- File Preview Section -->
                                             <div id="videoList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                             </div>
@@ -157,58 +164,58 @@
     </div>
     </div>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector('form[action="{{ route('upload.trainingvideos') }}"]');
-    const overlay = document.getElementById("contentBlurOverlay");
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector('form[action="{{ route('upload.trainingvideos') }}"]');
+            const overlay = document.getElementById("contentBlurOverlay");
 
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
 
-            // Show overlay
-            overlay.classList.remove("hidden");
-            overlay.classList.add("flex");
+                    // Show overlay
+                    overlay.classList.remove("hidden");
+                    overlay.classList.add("flex");
 
-            // Create form data
-            const formData = new FormData(form);
+                    // Create form data
+                    const formData = new FormData(form);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", form.action, true);
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", form.action, true);
 
-            xhr.upload.onprogress = function (e) {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    console.log("Upload Progress: " + percent + "%");
-                }
-            };
+                    xhr.upload.onprogress = function (e) {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            console.log("Upload Progress: " + percent + "%");
+                        }
+                    };
 
-            xhr.onload = function () {
-                overlay.classList.add("hidden");
-                overlay.classList.remove("flex");
+                    xhr.onload = function () {
+                        overlay.classList.add("hidden");
+                        overlay.classList.remove("flex");
 
-                if (xhr.status === 200) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Upload complete!",
-                        text: "Your videos have been uploaded successfully."
-                    })
-                    // .then(() => {
-                    //     window.location.href = "{{ route('trainingvideos.list') }}";
-                    // });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "❌ Upload failed",
-                        text: "Something went wrong. Please try again."
-                    });
-                }
-            };
+                        if (xhr.status === 200) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Upload complete!",
+                                text: "Your videos have been uploaded successfully."
+                            })
+                            // .then(() => {
+                            //     window.location.href = "{{ route('trainingvideos.list') }}";
+                            // });
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "❌ Upload failed",
+                                text: "Something went wrong. Please try again."
+                            });
+                        }
+                    };
 
-            xhr.send(formData);
+                    xhr.send(formData);
+                });
+            }
         });
-    }
-});
-</script>
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -328,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("training_date").value = today;
         });
     </script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @if (session('success'))
         <script>
             Swal.fire({

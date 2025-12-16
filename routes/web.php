@@ -26,9 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/district-progress', [DashboardController::class, 'getDistrictProgress'])->name('district.progress');
     
     Route::get('/chart-data', [DashboardController::class, 'getChartData'])->name('chart.data');
-
 });
-
 
 Route::post('/uploadgallery', [DashboardController::class, 'photogallery'])->name('uploadgallery');
 
@@ -59,15 +57,14 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/attendance-list/{id}/edit', [AttendanceController::class, 'edit'])->name('attendance.list.edit');
     Route::put('/attendance-list/{id}', [AttendanceController::class, 'update'])->name('attendance.list.update');
     Route::get('/preview-file', [AttendanceController::class, 'previewFile'])->name('preview.file');
-    
-    
+    Route::get('/preview-files', [AttendanceController::class, 'previewFiles'])->name('preview.files');
+
     Route::get('/trainingphotos',[TrainingEvidenceController::class,'trainingphotos'])->name('trainingphotos');
     Route::post('/trainingphotos',[TrainingEvidenceController::class,'upload'])->name('upload.trainingphotos');
     Route::get('/trainingphotos-list',[TrainingEvidenceController::class,'trainingphotoslist'])->name('trainingphotos.list');
     Route::get('/trainingphotos-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingPhoto'])->name('training.photo.edit');
     Route::put('/trainingphotos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingPhoto'])->name('training.photo.update');
     Route::get('/preview-image', [TrainingEvidenceController::class, 'previewImage'])->name('preview.image');
-    
     
     Route::get('/trainingvideos',[TrainingEvidenceController::class,'trainingvideos'])->name('trainingvideos');
     Route::post('/trainingvideos',[TrainingEvidenceController::class,'uploadvideo'])->name('upload.trainingvideos');
@@ -76,13 +73,11 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::put('/trainingvideos-list/{id}', [TrainingEvidenceController::class, 'updateTrainingVideo'])->name('training.video.update');
     Route::get('/preview-video', [TrainingEvidenceController::class, 'previewVideo'])->name('preview.video');
 
-
     Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
     Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadcertificate'])->name('upload.certificate');
     Route::get('/uploaded-certificates', [TrainingEvidenceController::class, 'viewUploadedCertificates'])->name('uploaded.certificates');
 
     Route::get('/addstudent',[StudentController::class,'addstudent'])->name('addstudent');
-    // Route::view('/addstudentsin','addstudentsin')->name('addstudentsin');
     
     Route::get('/addstudentsep', [StudentController::class, 'addstudentsin'])->name('single.addstudent');
     Route::post('/addstudentsep', [StudentController::class, 'store'])->name('student.store');
@@ -139,8 +134,6 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::post('/trainer-travel/{id}/reject', [BillController::class, 'reject'])->name('trainerTravel.reject');
     Route::post('/trainer-travel/{id}/revert', [BillController::class, 'revert'])->name('trainerTravel.revert');
 
-
-    
     Route::get('/uploadcampexpense',[BillController::class,'uploadcampexpense'])->name('uploadexpensebills');
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('student.school');
@@ -162,11 +155,10 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     // School details
     Route::get('/dist-school-{id}', [SchoolController::class, 'schoolDetails'])->name('dlc.school.details');
     Route::post('/dlc-school-update-{id}', [SchoolController::class, 'updateSchool'])->name('dlc.school.update');
-
 });
-Route::middleware([RoleMiddleware::class . ':OKCL,DLC'])->group(function () {
+Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,Accounts,Social Media'])->group(function () {
+    Route::get('/gallery', [GalleryController::class, 'gallery'])->name('gallery');
 });
-
 
 Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,DLC,Coordinator'])->group(function () {
     Route::get('/coordinatorlist', [CoordinatorController::class, 'index'])->name('coordinators.index');
@@ -190,6 +182,5 @@ Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,DLC,Coordinator'])->group
 
 Route::get('/onedrive/login', [OneDriveController::class, 'redirectToProvider'])->name('onedrive.login');
 Route::get('/onedrive/callback', [OneDriveController::class, 'handleCallback'])->name('onedrive.callback');
-
 
 require __DIR__.'/auth.php';
