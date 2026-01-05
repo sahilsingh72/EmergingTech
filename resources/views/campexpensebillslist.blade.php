@@ -200,8 +200,12 @@
                                                                     <span class="badge bg-warning">Pending</span>
                                                                 @elseif($row->status == 'Approved')
                                                                     <span class="badge bg-success">Approved</span>
-                                                                @else
+                                                                @elseif($row->status == 'Rejected')
                                                                     <span class="badge bg-danger">Rejected</span>
+                                                                    <br>
+                                                                    <small class="text-warning">
+                                                                        Correction required to resubmit bill.
+                                                                    </small>
                                                                 @endif
                                                                 @if($row->status_updated_by)
                                                                     <br>
@@ -215,14 +219,30 @@
 
                                                             @if(in_array(Auth::user()->role_id, [3]))
                                                                 <td>
-                                                                    <button class="btn btn-sm btn-warning mt-1"
-                                                                        onclick="openEditModal({{ $row->id }})">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </button>
-                                                                    <button class="btn btn-sm btn-danger mt-1"
-                                                                        onclick="if(confirm('Are you sure you want to delete this record?')) { window.location='{{ route('camp.expense.delete', $row->id) }}' }">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
+                                                                    @if($row->status !== 'Approved')
+                                                                        {{-- Edit allowed for Pending & Rejected --}}
+                                                                        <button class="btn btn-sm btn-warning mt-1"
+                                                                            onclick="openEditModal({{ $row->id }})" title="Edit Bill">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        <button class="btn btn-sm btn-danger mt-1"
+                                                                            onclick="if(confirm('Are you sure you want to delete this record?')) { window.location='{{ route('camp.expense.delete', $row->id) }}' }"
+                                                                            title="Delete Bill">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    @else
+                                                                        {{-- Edit disabled when Approved --}}
+                                                                        <button class="btn btn-sm btn-secondary mt-1"
+                                                                            title="Approved bills cannot be edited" disabled>
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        <button class="btn btn-sm btn-danger mt-1"
+                                                                            onclick="if(confirm('Are you sure you want to delete this record?')) { window.location='{{ route('camp.expense.delete', $row->id) }}' }"
+                                                                            title="Approved bills cannot be deleted" disabled>
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    @endif
+
                                                                 </td>
                                                             @elseif (in_array(Auth::user()->role_id, [8]))
                                                                 <td>
@@ -311,12 +331,16 @@
 
                 <div class="mb-4">
                     <label class="font-semibold block mb-1">Bill Type</label>
-                    <select name="bill_type" class="border p-2 rounded w-full" id="edit_bill_type" required>
-                        <option value="Inauguration">Inauguration</option>
-                        <option value="Generator">Generator</option>
-                        <option value="Camp Fooding">Camp Fooding</option>
-                        <option value="Miscellaneous">Miscellaneous</option>
+                    <select name="bill_type" class="border p-2 rounded w-full billTypeSelect" id="edit_bill_type"
+                        required>
+                        <option value="">-- Select --</option>
+                        @foreach($billTypes as $type)
+                            <option value="{{ $type }}">{{ $type }}</option>
+                        @endforeach
                     </select>
+
+                    <input type="text" name="custom_bill_type" id="edit_custom_bill_type" placeholder="Enter bill type"
+                        class="border p-2 rounded w-full mt-2 hidden" />
                 </div>
                 <div class="mb-4">
                     <label class="font-semibold block mb-1">Training Date</label>
@@ -334,7 +358,6 @@
                         class="border p-2 rounded w-full" />
                     <small class="text-muted">Leave blank to keep existing bill.</small>
                 </div>
-
 
                 <div class="mt-4 flex justify-end gap-2">
                     <button type="button" class="bg-gray-400 px-4 py-2 rounded"
@@ -358,13 +381,56 @@
         }
     </script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const billTypeSelect = document.getElementById('edit_bill_type');
+            const customInput = document.getElementById('edit_custom_bill_type');
+
+            billTypeSelect.addEventListener('change', function () {
+                if (this.value === 'Misc') {
+                    customInput.classList.remove('hidden');
+                    customInput.required = true;
+                    customInput.focus();
+                } else {
+                    customInput.classList.add('hidden');
+                    customInput.required = false;
+                    customInput.value = '';
+                }
+            });
+        });
+    </script>
+    <script>
         function openEditModal(id) {
             const record = @json($records->keyBy('id'));
             const data = record[id];
-            document.getElementById('edit_bill_type').value = data.bill_type;
+
+            const billTypeSelect = document.getElementById('edit_bill_type');
+            const customInput = document.getElementById('edit_custom_bill_type');
+
+            // Reset
+            billTypeSelect.value = '';
+            customInput.value = '';
+            customInput.classList.add('hidden');
+
+            // Check if bill_type exists in predefined list
+            let exists = false;
+            for (let option of billTypeSelect.options) {
+                if (option.value === data.bill_type) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists) {
+                billTypeSelect.value = data.bill_type;
+            } else {
+                // Custom bill type (Misc)
+                billTypeSelect.value = 'Misc';
+                customInput.classList.remove('hidden');
+                customInput.value = data.bill_type;
+            }
+
             document.getElementById('edit_training_date').value = data.training_date;
             document.getElementById('edit_amount').value = data.amount;
-            // Bill file is not set as it's optional to change the existing file
 
             document.getElementById('editRecordId').value = id;
             document.getElementById('editForm').action = `/camp-expense/${id}`;

@@ -193,7 +193,14 @@ class BillController extends Controller
                 return $rows->sum('amount');
             });
 
-        return view('campexpensebillslist', compact('records', 'districts', 'districtId', 'schoolTotals'));
+        $billTypes = [
+            'Inauguration',
+            'Generator',
+            'Camp Fooding',
+            'Misc'
+        ];
+
+        return view('campexpensebillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes'));
     }
     public function CampExpensepreview(Request $request)
     {
@@ -274,20 +281,31 @@ class BillController extends Controller
 
         $request->validate([
             'bill_type' => 'required|string',
+            'custom_bill_type' => 'nullable|string|max:255',
             'training_date' => 'required|date',
             'amount' => 'required|numeric|min:1',
             'bill_file' => 'nullable|file|mimes:pdf|max:5120',
         ]);
+
+        $oldBillType = $bill->bill_type;
+
+        $finalBillType = $request->bill_type;
+
+        if ($request->bill_type === 'Misc' && $request->filled('custom_bill_type')) {
+            $finalBillType = $request->custom_bill_type;
+        }
+
+        $finalBillType = preg_replace('/\s+/', '_', $finalBillType);
+
         $school = School::find($bill->school_id);
         $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
         $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist); 
         // Upload new bill if provided
         if ($request->hasFile('bill_file')) {
             // delete previous bill if exists
-            $existingBill = $bill->bill_path;
-            if (is_array($existingBill)) {
-                $existingBill = $existingBill[0] ?? null;
-            }
+            $existingBill = is_array($bill->bill_path)
+                ? ($bill->bill_path[0] ?? null)
+                : $bill->bill_path;
 
             if (!empty($existingBill)) {
                 try {
@@ -300,18 +318,58 @@ class BillController extends Controller
             $billFile = $request->file('bill_file');
             $billFileName = time() . '_' . $billFile->getClientOriginalName();
 
-            $billFolder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$request->bill_type}";
+            $billFolder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$finalBillType}";
 
             $uploadBill = $this->oneDrive->uploadDirect($billFile, $billFolder, $billFileName);
 
             $bill->bill_path = $uploadBill['path'] ?? $bill->bill_path;
             $bill->bill_url = $uploadBill['url'] ?? $bill->bill_url;
         }
-        // Update other fields
-        $bill->bill_type = $request->bill_type;
+
+        if (
+            !$request->hasFile('bill_file') &&
+            $oldBillType !== $finalBillType &&
+            !empty($bill->bill_path)
+        ) {
+            try {
+                // bill_path example:
+                // EmergingTech/District/School/Camp_Expenses/OldType/file.pdf
+
+                $pathParts = explode('/', $bill->bill_path);
+
+                // Remove filename
+                array_pop($pathParts);
+
+                // Old folder path
+                $oldFolderPath = implode('/', $pathParts);
+
+                // Rename last folder to new bill type
+                $this->oneDrive->renameFolder($oldFolderPath, $finalBillType);
+
+            } catch (\Exception $e) {
+                Log::warning("Failed to rename OneDrive bill folder: " . $e->getMessage());
+            }
+        }
+
+        // Block editing if already approved
+        if ($bill->status === 'Approved') {
+            return back()->with('error', 'Approved bills cannot be edited.');
+        }
+        
+        // Update editable fields
+        $bill->bill_type = $finalBillType;
         $bill->training_date = $request->training_date;
         $bill->amount = $request->amount;
+
+        // If bill was Rejected → move back to Pending
+        if ($bill->status === 'Rejected') {
+            $bill->status = 'Pending';
+            $bill->remarks = null;
+            $bill->status_updated_at = null;
+            $bill->status_updated_by = null;
+        }
         $bill->save();
+
         return back()->with('success', 'Camp expense bill updated successfully!');
 
     }
