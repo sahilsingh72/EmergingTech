@@ -287,15 +287,11 @@ class BillController extends Controller
             'bill_file' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        $oldBillType = $bill->bill_type;
-
         $finalBillType = $request->bill_type;
 
         if ($request->bill_type === 'Misc' && $request->filled('custom_bill_type')) {
             $finalBillType = $request->custom_bill_type;
         }
-
-        $finalBillType = preg_replace('/\s+/', '_', $finalBillType);
 
         $school = School::find($bill->school_id);
         $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
@@ -303,9 +299,10 @@ class BillController extends Controller
         // Upload new bill if provided
         if ($request->hasFile('bill_file')) {
             // delete previous bill if exists
-            $existingBill = is_array($bill->bill_path)
-                ? ($bill->bill_path[0] ?? null)
-                : $bill->bill_path;
+            $existingBill = $bill->bill_path;
+            if (is_array($existingBill)) {
+                $existingBill = $existingBill[0] ?? null;
+            }
 
             if (!empty($existingBill)) {
                 try {
@@ -324,31 +321,6 @@ class BillController extends Controller
 
             $bill->bill_path = $uploadBill['path'] ?? $bill->bill_path;
             $bill->bill_url = $uploadBill['url'] ?? $bill->bill_url;
-        }
-
-        if (
-            !$request->hasFile('bill_file') &&
-            $oldBillType !== $finalBillType &&
-            !empty($bill->bill_path)
-        ) {
-            try {
-                // bill_path example:
-                // EmergingTech/District/School/Camp_Expenses/OldType/file.pdf
-
-                $pathParts = explode('/', $bill->bill_path);
-
-                // Remove filename
-                array_pop($pathParts);
-
-                // Old folder path
-                $oldFolderPath = implode('/', $pathParts);
-
-                // Rename last folder to new bill type
-                $this->oneDrive->renameFolder($oldFolderPath, $finalBillType);
-
-            } catch (\Exception $e) {
-                Log::warning("Failed to rename OneDrive bill folder: " . $e->getMessage());
-            }
         }
 
         // Block editing if already approved
