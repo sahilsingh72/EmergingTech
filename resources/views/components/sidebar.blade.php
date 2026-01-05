@@ -332,9 +332,9 @@
         @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'trainer.travels', 'trainer.travel.list') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list') ? 'menu-open' : '' }}">
             <a href="{{route('uploadbills')}}"
-              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'trainer.travels', 'trainer.travel.list') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list') ? 'active' : '' }}">
               <i class="nav-icon fas fa-file-invoice-dollar"></i>
               <p>
                 Finance & Bills
@@ -368,14 +368,19 @@
                   <i class="fas fa-utensils nav-icon"></i>
                   <p>Staff Expenses</p>
                 </a>
-              </li>
+              </li> --}}
               <li class="nav-item">
-                <a href="{{route('uploadexpensebills')}}"
-                  class="nav-link {{ request()->routeIs('uploadexpensebills') ? 'active' : '' }}">
+                <a 
+                  @if($user->role_id == 3)
+                    href="{{route('uploadexpensebills')}}"
+                  @elseif($user->role_id == 8 || $user->role_id == 2)
+                    href="{{route('camp.expense.list')}}"
+                  @endif
+                  class="nav-link {{ request()->routeIs('uploadexpensebills', 'camp.expense.list') ? 'active' : '' }}">
                   <i class="fas fa-dollar-sign nav-icon"></i>
                   <p>Camp Expenses</p>
                 </a>
-              </li> --}}
+              </li>
             </ul>
           </li>
         @endif

@@ -278,7 +278,7 @@
                     $("#filterTable tbody").append(row);
                 });
 
-                currentPage = 1; // reset pagination after sort
+                currentPage = 1; 
                 renderTable();
             });
 

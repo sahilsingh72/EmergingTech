@@ -123,18 +123,28 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/trainertravels',[BillController::class,'trainerTravels'])->name('trainer.travels');    
     Route::get('/get-trainers/{district}/{specialization}', [BillController::class, 'getTrainersBySpecialization']);
     Route::post('/trainertravels-store',[BillController::class,'trainerTravelStore'])->name('trainer.travel.store');
-    
     Route::get('/trainer-travel-list', [BillController::class, 'trainerTravelList'])->name('trainer.travel.list');
     Route::put('/trainer-travel/{id}', [BillController::class, 'trainerTravelUpdate'])->name('trainer.travel.update');
     Route::post('/trainer-travel/{id}/update-training-date', [BillController::class, 'updateTrainingDate'])->name('trainerTravel.updateTrainingDate');
-
+ 
     Route::get('/trainer-bill-preview', [BillController::class, 'previewFile'])->name('trainer.travel.preview');
 
     Route::post('/trainer-travel/{id}/approve', [BillController::class, 'approve'])->name('trainerTravel.approve');
     Route::post('/trainer-travel/{id}/reject', [BillController::class, 'reject'])->name('trainerTravel.reject');
     Route::post('/trainer-travel/{id}/revert', [BillController::class, 'revert'])->name('trainerTravel.revert');
-
+      
     Route::get('/uploadcampexpense',[BillController::class,'uploadcampexpense'])->name('uploadexpensebills');
+    Route::post('/camp-expense/store', [BillController::class, 'campexpenseStore'])->name('camp.expense.store');
+    Route::get('/camp-expense-list', [BillController::class, 'campExpenseList'])->name('camp.expense.list');
+    Route::put('/camp-expense/{id}', [BillController::class, 'campExpenseUpdate'])->name('camp.expense.update');
+    Route::get('/camp-expense/{id}/delete', [BillController::class, 'campExpenseDelete'])->name('camp.expense.delete');
+
+    Route::get('/camp-expense-preview', [BillController::class, 'CampExpensepreview'])->name('camp.expense.preview');
+
+    Route::post('/camp-expense/{id}/approve', [BillController::class, 'CampExpenseapprove'])->name('camp.expense.approve');
+    Route::post('/camp-expense/{id}/reject', [BillController::class, 'CampExpensereject'])->name('camp.expense.reject');
+    Route::post('/camp-expense/{id}/revert', [BillController::class, 'CampExpenserevert'])->name('camp.expense.revert');
+        
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('student.school');
     Route::get('/district-{id}-schools', [SchoolController::class, 'getSchools']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CampExpenseBill;
 use App\Models\Coordinator;
 use App\Models\District;
 use App\Models\Role;
@@ -89,10 +90,249 @@ class BillController extends Controller
         return response()->json($staff);
     }
 
-
     public function uploadcampexpense()
     {
-        return view('campexpensebills');
+        $user = Auth::user();
+        $roleId = $user->role_id;
+
+        $userId = $user->id;
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+        return view('campexpensebills', compact('schools'));
+    }
+    public function campexpenseStore(Request $request)
+    {
+        $request->validate([
+            'school_id' => 'required|exists:school_mst,scm_id',
+            'bill_type' => 'required|array|min:1',
+            'bill_type.*' => 'required|string',
+            'training_date' => 'required|array',
+            'training_date.*' => 'required|date',
+            'amount' => 'required|array',
+            'amount.*' => 'required|numeric|min:1',
+            'bill_file' => 'required|array',
+            'bill_file.*' => 'required|file|mimes:pdf|max:5120',
+            'custom_bill_type' => 'nullable|array',
+        ]);
+
+        $userId = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
+        $billTypes = $request->bill_type;
+        $customTypes = $request->custom_bill_type;
+        $dates = $request->training_date;
+        $amounts = $request->amount;
+        $files = $request->file('bill_file');
+
+        foreach ($billTypes as $i => $type) {
+
+            $billType = $type === 'Misc'
+            ? ($customTypes[$i] ?? 'Misc')
+            : $type;
+
+            $file = $files[$i];
+            $fileName = time().'_'.$file->getClientOriginalName();
+
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
+            $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
+
+            CampExpenseBill::create([
+                'school_id'     => $request->school_id,
+                'uploaded_by'   => $userId,
+                'bill_type'     => $billType,
+                'training_date' => $dates[$i],
+                'amount'        => $amounts[$i],
+                'bill_path'     => $upload['path'] ?? null,
+                'bill_url'      => $upload['url'] ?? null,
+            ]);
+        }
+
+        return back()->with('success', 'Camp expense bills submitted successfully.');
+    }
+    public function campExpenseList(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role->name;
+
+        $districtId = $request->district_id;
+        $districts = District::orderBy('DSM_DSNM')->get();
+
+        $query = CampExpenseBill::with(['school', 'uploadedBy'])
+            ->join('school_mst', 'school_mst.scm_id', '=', 'camp_expense_bills.school_id')
+            ->select('camp_expense_bills.*')
+            ->orderBy('school_mst.scm_dist', 'ASC')
+            ->orderBy('school_mst.scm_name', 'ASC');
+
+        if (in_array($role, ['Accounts', 'OKCL']) && $request->district_id) {
+            $query->where('school_mst.scm_dist_id', $request->district_id);
+        }
+
+        // DLC → only own district
+        if ($role === 'DLC') {
+            $query->where('school_mst.scm_dist_id', $user->district_id);
+        }
+
+        // Status filter (optional – if you add later)
+        if ($request->status) {
+            $query->where('camp_expense_bills.status', $request->status);
+        }
+
+        $records = $query->get();
+
+        $schoolTotals = $records
+            ->groupBy('school_id')
+            ->map(function ($rows) {
+                return $rows->sum('amount');
+            });
+
+        return view('campexpensebillslist', compact('records', 'districts', 'districtId', 'schoolTotals'));
+    }
+    public function CampExpensepreview(Request $request)
+    {
+        $path = $request->query('path');
+        if (!$path) {
+            return response('Invalid file path', 400);
+        }
+
+        $downloadUrl = Cache::remember("onedrive_download_" . md5($path), 300, function () use ($path) {
+            $fileInfo = $this->oneDrive->getFileInfo($path);
+            return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
+        });
+
+        if (!$downloadUrl) {
+            return response('File not found or access denied', 404);
+        }
+
+        // Fetch file headers from OneDrive
+        $response = Http::head($downloadUrl);
+        $contentType = $response->header('Content-Type', 'application/octet-stream');
+
+        // ✅ Only allow PDF files
+        if (!str_contains($contentType, 'pdf')) {
+            return response('Only PDF preview is supported.', 415);
+        }
+
+        // Fetch the PDF content and stream inline
+        $pdfContent = Http::get($downloadUrl)->body();
+
+        return response($pdfContent, 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="CampExpense_bills.pdf"');
+    }
+
+    public function CampExpenseapprove(Request $request, $id)
+    {
+        $bill = CampExpenseBill::findOrFail($id);
+
+        $bill->status = 'Approved';
+        $bill->remarks = $request->remarks;
+        $bill->status_updated_at = now();
+        $bill->status_updated_by = Auth::id();
+        $bill->save();
+
+        return back()->with('success', 'Travel bill approved successfully!');
+    }
+    public function CampExpensereject(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $bill = CampExpenseBill::findOrFail($id);
+
+        $bill->status = 'Rejected';
+        $bill->remarks = $request->remarks;
+        $bill->status_updated_at = now();
+        $bill->status_updated_by = Auth::id();
+        $bill->save();
+
+        return back()->with('error', 'Travel bill rejected.');
+    }
+    public function CampExpenserevert($id)
+    {
+        $record = CampExpenseBill::findOrFail($id);
+
+        $record->status = 'Pending';
+        $record->remarks = null;
+        $record->status_updated_at = now();
+        $record->status_updated_by = Auth::id();
+        $record->save();
+
+        return back()->with('success', 'Status reverted to Pending.');
+    }
+    public function campexpenseUpdate(Request $request, $id)
+    {
+        $bill = CampExpenseBill::findOrFail($id);
+
+        $request->validate([
+            'bill_type' => 'required|string',
+            'training_date' => 'required|date',
+            'amount' => 'required|numeric|min:1',
+            'bill_file' => 'nullable|file|mimes:pdf|max:5120',
+        ]);
+        $school = School::find($bill->school_id);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist); 
+        // Upload new bill if provided
+        if ($request->hasFile('bill_file')) {
+            // delete previous bill if exists
+            $existingBill = $bill->bill_path;
+            if (is_array($existingBill)) {
+                $existingBill = $existingBill[0] ?? null;
+            }
+
+            if (!empty($existingBill)) {
+                try {
+                    $this->oneDrive->deleteFile($existingBill);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to delete old camp expense bill: " . $e->getMessage());
+                }
+            }
+
+            $billFile = $request->file('bill_file');
+            $billFileName = time() . '_' . $billFile->getClientOriginalName();
+
+            $billFolder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$request->bill_type}";
+
+            $uploadBill = $this->oneDrive->uploadDirect($billFile, $billFolder, $billFileName);
+
+            $bill->bill_path = $uploadBill['path'] ?? $bill->bill_path;
+            $bill->bill_url = $uploadBill['url'] ?? $bill->bill_url;
+        }
+        // Update other fields
+        $bill->bill_type = $request->bill_type;
+        $bill->training_date = $request->training_date;
+        $bill->amount = $request->amount;
+        $bill->save();
+        return back()->with('success', 'Camp expense bill updated successfully!');
+
+    }
+    public function campexpenseDelete($id)
+    {
+        $bill = CampExpenseBill::findOrFail($id);
+
+        // delete bill file from OneDrive if exists
+        $existingBill = $bill->bill_path;
+        if (is_array($existingBill)) {
+            $existingBill = $existingBill[0] ?? null;
+        }
+        if (!empty($existingBill)) {
+            try {
+                $this->oneDrive->deleteFile($existingBill);
+            } catch (\Exception $e) {
+                Log::warning("Failed to delete camp expense bill file: " . $e->getMessage());
+            }
+        }
+        $bill->delete();
+        return back()->with('success', 'Camp expense bill deleted successfully!');
     }
 
     public function trainerTravels()
@@ -403,7 +643,6 @@ class BillController extends Controller
 
         return back()->with('success', 'Training date updated successfully!');
     }
-
 
     public function previewFile(Request $request)
     {

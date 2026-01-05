@@ -211,7 +211,6 @@
                                                         </td>
 
                                                         <td>
-                                                            {{-- <span class="badge bg-warning">Pending</span> --}}
                                                             @if($row->status == 'Pending')
                                                                 <span class="badge bg-warning">Pending</span>
                                                             @elseif($row->status == 'Approved')
