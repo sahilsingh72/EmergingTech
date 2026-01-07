@@ -132,7 +132,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::post('/trainer-travel/{id}/approve', [BillController::class, 'approve'])->name('trainerTravel.approve');
     Route::post('/trainer-travel/{id}/reject', [BillController::class, 'reject'])->name('trainerTravel.reject');
     Route::post('/trainer-travel/{id}/revert', [BillController::class, 'revert'])->name('trainerTravel.revert');
-      
+
     Route::get('/uploadcampexpense',[BillController::class,'uploadcampexpense'])->name('uploadexpensebills');
     Route::post('/camp-expense/store', [BillController::class, 'campexpenseStore'])->name('camp.expense.store');
     Route::get('/camp-expense-list', [BillController::class, 'campExpenseList'])->name('camp.expense.list');
@@ -160,6 +160,8 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/school/{id}/trainers-json', [SchoolController::class, 'schoolTrainersJson']);
     Route::get('/school/{id}/staffs-json', [SchoolController::class, 'schoolStaffsJson']);
 
+    Route::get('/school-list', [SchoolController::class, 'schoolList'])->name('main.school.list');
+    
     // Show list of schools for dlc
     Route::get('/dist-my-schools', [SchoolController::class, 'mySchools'])->name('my.schools');
     // School details

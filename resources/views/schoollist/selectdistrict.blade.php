@@ -128,10 +128,20 @@
                         <div class="max-w-8xl mx-auto  space-y-6">
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                                 <div class="bg-white rounded-lg w-full">
-                                    <!-- Title -->
-                                    {{-- <h2 class="text-2xl font-semibold text-center mb-6"></i>Coordinator List</h2>
-                                    --}}
 
+                                    @php
+                                        $roleId = Auth::user()->role_id;
+                                    @endphp
+                                    @if($roleId == 2)
+                                        <div class="flex justify-end">
+                                            <a href="{{ route('main.school.list') }}">
+                                                <button
+                                                    class="bg-blue-950 hover:bg-blue-900 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                    <i class="fas fa-list"></i> School List
+                                                </button>
+                                            </a>
+                                        </div>
+                                    @endif
 
                                     <div class="directory-header">
                                         <h1 class="text-3xl font-bold">District Schools Directory</h1>
@@ -221,7 +231,7 @@
             @foreach($districts as $d)
                 $.get(`/district-{{ $d->DSM_DSCD }}-schools`, function (response) {
 
-                    let schools = response.schools; 
+                    let schools = response.schools;
 
                     let previewBox = $("#school-preview-{{ $d->DSM_DSCD }}");
 
