@@ -206,12 +206,34 @@ class SchoolController extends Controller
             'scm_powerbackup'   => $request->scm_powerbackup === 'Yes' ? 1 : 0,
             'scm_powerbackup_type'  => $request->scm_powerbackup === 'Yes' ? $request->scm_powerbackup_type : null,
             'scm_internet'      => $request->scm_internet === 'Yes' ? 1 : 0,
-            'scm_internet_type'     => $request->scm_internet === 'Yes' ? $request->scm_internet_type : null,
+            'scm_internet_type' => $request->scm_internet === 'Yes' ? $request->scm_internet_type : null,
             'scm_smartclass'    => $request->scm_smartclass,
 
             'scm_address'       => $request->scm_address,
         ]);
 
         return back()->with('success', 'School details updated successfully!');
+    }
+
+    public function schoolList()
+    {
+        $schools = School::all();
+        $studentCounts = StudentMst::select('stu_scm_id', DB::raw('COUNT(*) as total_students'))
+            ->groupBy('stu_scm_id')
+            ->pluck('total_students', 'stu_scm_id');
+        $trainerCounts = DB::table('trainer_scm_allocation')
+            ->select('scm_id', DB::raw('COUNT(trainer_id) as total_trainers'))
+            ->groupBy('scm_id')
+            ->pluck('total_trainers', 'scm_id');
+        $coordinatorCounts = DB::table('coordinator_scm_allocation')
+            ->select('scm_id', DB::raw('COUNT(coordinator_id) as total_coordinators'))
+            ->groupBy('scm_id')
+            ->pluck('total_coordinators', 'scm_id');
+        $supportStaffCounts = DB::table('staff_scm_allocation')
+            ->select('scm_id', DB::raw('COUNT(staff_id) as total_staffs'))
+            ->groupBy('scm_id')
+            ->pluck('total_staffs', 'scm_id');  
+
+        return view('schoollist.mainSchoollist', compact('schools', 'studentCounts', 'trainerCounts', 'coordinatorCounts', 'supportStaffCounts'));
     }
 }
