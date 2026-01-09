@@ -34,7 +34,7 @@
                                         <i class="fas fa-file-excel"></i> Export Report
                                     </button>
                                 </div>
-                                <div class="flex justify-between items-center mb-4">
+                                <div class="flex justify-between items-center mb-4 space-y-2 sm:space-y-0 flex-col sm:flex-row gap-2">
                                     <!-- Rows per page -->
                                     <div>
                                         <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -109,14 +109,12 @@
                                         <input type="text" id="searchInput" placeholder="Search..."
                                             class="border rounded p-2 h-7 w-full sm:w-64  focus:outline-none focus:ring-2 focus:ring-blue-400">
                                     </div>
-
-
                                 </div>
 
                                 <div class="bg-white rounded-lg w-full">
-                                    <div class="table-responsive">
+                                    <div class="table-responsive border rounded-lg">
                                         <table id="schoolTable"
-                                            class="table table-bordered table-striped table-hover text-sm">
+                                            class="table table-bordered table-striped table-hover text-sm rounded-lg">
                                             <thead class="bg-gray-400">
                                                 <tr>
                                                     <th>S.No</th>
@@ -154,7 +152,7 @@
                                                         <td>{{ $studentCounts[$school->scm_id] ?? '-' }}</td>
                                                         <td>{{ $coordinatorCounts[$school->scm_id] ?? '-' }}</td>
                                                         <td>{{ $trainerCounts[$school->scm_id] ?? '-' }}</td>
-                                                        <td>{{ $ssupportStaffCounts[$school->scm_id] ?? '-' }}</td>
+                                                        <td>{{ $supportStaffCounts[$school->scm_id] ?? '-' }}</td>
                                                         <td>{{ $school->scm_hm_name ?? '-' }}</td>
                                                         <td>{{ $school->scm_hm_phone ?? '-' }}</td>
                                                         <td>{{ $school->scm_spoc_name ?? '-' }}</td>

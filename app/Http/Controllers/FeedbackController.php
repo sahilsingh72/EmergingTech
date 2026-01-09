@@ -95,7 +95,7 @@ class FeedbackController extends Controller
             'school_id'      => 'required|integer',
             'training_date'  => 'required|date',
             'designation'    => 'required|string',
-            'video_feedback' => 'required|mimes:mp4,mov,avi,wmv|max:102400',
+            'video_feedback' => 'required|mimes:mp4,mov,avi,wmv|max:112640',
             'description'    => 'nullable|string',
         ]);
 
@@ -129,7 +129,7 @@ class FeedbackController extends Controller
             'designation'    => $request->designation,
         ]);
 
-        return redirect()->route('trainingphotos.list')->with('success', 'Feedback video uploaded successfully!');
+        return redirect()->route('videofeedback.list')->with('success', 'Feedback video uploaded successfully!');
     }
 
     public function videofeedbacklist()
@@ -193,7 +193,7 @@ class FeedbackController extends Controller
         $newDesignation = $request->designation;
         
         $request->validate([
-            'new_feedback_video' => 'nullable|mimes:mp4,mov,avi,wmv|max:102400',
+            'new_feedback_video' => 'nullable|mimes:mp4,mov,avi,wmv|max:112640',
         ]);
 
         $schoolId = $upload->school_id;

@@ -69,8 +69,15 @@
             <section class="content relative">
                 <div id="uploadOverlay"
                     class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
-                    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
+                    <div class="relative mb-4">
+                        <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin"></div>
+                        <div id="overlayUploadPercent"
+                            class="absolute inset-0 flex items-center justify-center text-white font-semibold text-sm">
+                            0%
+                        </div>
+                    </div>
                     <p class="text-white text-lg font-medium mt-4">Uploading, please wait...</p>
+
                 </div>
                 <div class="container-fluid">
                     <div class="py-12">
@@ -129,9 +136,6 @@
                                                     <input type="date" id="training_date" name="training_date"
                                                         class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
                                                 </div>
-
-                                                <!-- Time From - To -->
-
                                             </div>
 
                                             <!-- Upload Instruction -->
@@ -160,6 +164,7 @@
                                                 </div>
                                             </div>
 
+
                                             <!-- Modal (overlay) -->
                                             <div id="videoModal" class="fixed inset-0 bg-black/70 hidden z-[9999]">
                                                 <!-- close button is on overlay, not inside the video box -->
@@ -181,19 +186,6 @@
                                                     placeholder="Write details here..."
                                                     class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300"></textarea>
                                             </div>
-
-                                            <!-- Upload Progress Section -->
-                                            <div id="progressContainer" class="hidden mt-6">
-                                                <div class="w-full bg-gray-200 rounded-full overflow-hidden h-5">
-                                                    <div id="progressBar"
-                                                        class="h-5 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-[length:200%_100%] animate-gradient-move text-center text-white text-sm font-medium rounded-full transition-all duration-300 ease-linear"
-                                                        style="width:0%">0%</div>
-                                                </div>
-                                                <p id="progressStatus"
-                                                    class="text-gray-600 text-sm mt-2 text-center italic">Preparing
-                                                    upload...</p>
-                                            </div>
-
 
                                             <!-- Submit Button -->
                                             <button type="submit"
@@ -217,88 +209,73 @@
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('videoUploadForm');
             const overlay = document.getElementById('uploadOverlay');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressStatus = document.getElementById('progressStatus');
+            const overlayPercent = document.getElementById('overlayUploadPercent');
             const videoInput = document.getElementById('videoUpload');
 
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
 
+                const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100 MB
                 const file = videoInput.files[0];
+
                 if (!file) {
                     Swal.fire('Error', 'Please select a video before uploading.', 'error');
                     return;
                 }
 
+                if (file.size > MAX_VIDEO_SIZE) {
+                    Swal.fire(
+                        'File Too Large',
+                        'Please upload a video less than 100 MB.',
+                        'error'
+                    );
+                    return;
+                }
+
                 const formData = new FormData(form);
-                progressContainer.classList.remove('hidden');
-                progressBar.style.width = '0%';
-                progressBar.textContent = '0%';
-                progressStatus.textContent = 'Uploading...';
-                progressBar.classList.remove('bg-red-500');
-                progressBar.classList.add('bg-gradient-to-r');
+
+                overlay.classList.remove('hidden');
+                overlayPercent.textContent = '0%';
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', "{{ route('upload.videofeedback') }}", true);
                 xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
 
-                let smoothProgress = 0;
-                let animationSpeed = 50; // lower = faster visual motion
-                let targetPercent = 0;
-                let animTimer;
-
-                function smoothTo(target) {
-                    clearInterval(animTimer);
-                    animTimer = setInterval(() => {
-                        if (smoothProgress < target && smoothProgress < 90) {
-                            smoothProgress += 0.5; // fine-grained smooth motion
-                            progressBar.style.width = smoothProgress + '%';
-                            progressBar.textContent = Math.floor(smoothProgress) + '%';
-                        } else {
-                            clearInterval(animTimer);
-                        }
-                    }, animationSpeed);
-                }
-
-                xhr.upload.addEventListener('progress', function (e) {
+                xhr.upload.onprogress = function (e) {
                     if (e.lengthComputable) {
-                        targetPercent = Math.min(Math.round((e.loaded / e.total) * 100), 90);
-                        smoothTo(targetPercent);
-                    }
-                });
-
-                xhr.onload = function () {
-                    clearInterval(animTimer);
-                    if (xhr.status === 200) {
-                        progressStatus.textContent = 'Finalizing...';
-                        let final = smoothProgress;
-                        const finishTimer = setInterval(() => {
-                            if (final < 100) {
-                                final += 0.5;
-                                progressBar.style.width = final + '%';
-                                progressBar.textContent = Math.floor(final) + '%';
-                            } else {
-                                clearInterval(finishTimer);
-                                progressStatus.textContent = 'Upload Complete!';
-                                setTimeout(() => {
-                                    Swal.fire('✅ Success', 'Video uploaded successfully!', 'success');
-                                    overlay.classList.add('hidden');
-                                    form.reset();
-                                    progressContainer.classList.add('hidden');
-                                    document.getElementById('videoList').innerHTML = '';
-                                }, 700);
-                            }
-                        }, 60);
-                    } else {
-                        progressBar.classList.remove('bg-gradient-to-r');
-                        progressBar.classList.add('bg-red-500');
-                        progressStatus.textContent = '❌ Upload failed.';
-                        Swal.fire('❌ Failed', 'Upload failed. Please try again.', 'error');
-                        overlay.classList.add('hidden');
+                        const percent = Math.min(
+                            Math.round((e.loaded / e.total) * 100),
+                            99 // lock at 99% until server finishes
+                        );
+                        overlayPercent.textContent = percent + '%';
                     }
                 };
-                overlay.classList.remove('hidden');
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        overlayPercent.textContent = '100%';
+
+                        setTimeout(() => {
+                            overlay.classList.add('hidden');
+                            overlayPercent.textContent = '0%';
+                            Swal.fire('✅ Success', 'Video uploaded successfully!', 'success');
+                            form.reset();
+                            document.getElementById('videoList').innerHTML = '';
+                        }, 600);
+
+                    } else {
+                        overlay.classList.add('hidden');
+                        overlayPercent.textContent = '0%';
+                        Swal.fire('Failed', 'Upload failed. Please try again.', 'error');
+                    }
+                };
+
+                xhr.onerror = function () {
+                    overlay.classList.add('hidden');
+                    overlayPercent.textContent = '0%';
+                    Swal.fire('Error', 'Network error occurred.', 'error');
+                };
+
                 xhr.send(formData);
             });
         });
@@ -343,13 +320,24 @@
             });
 
             function handleVideos(files) {
+                const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100 MB
+
                 [...files].forEach(file => {
-                    if (uploadedVideos.length >= 1) {
-                        alert("You can only upload up to 1 videos.");
+                    if (file.size > MAX_VIDEO_SIZE) {
+                        Swal.fire(
+                            'File Too Large',
+                            'Please upload a video less than 100 MB.',
+                            'error'
+                        );
                         return;
                     }
                     if (!file.type.startsWith("video/")) {
-                        alert("Only video files are allowed!");
+                        Swal.fire('Invalid File', 'Only video files are allowed!', 'error');
+                        return;
+                    }
+
+                    if (uploadedVideos.length >= 1) {
+                        Swal.fire('⚠️ Limit Reached', 'You can upload only one video.', 'warning');
                         return;
                     }
 
@@ -360,10 +348,10 @@
                     videoDiv.className = "relative w-40 h-28 border rounded overflow-hidden shadow";
 
                     videoDiv.innerHTML = `
-        <video src="${url}" class="w-full h-full object-cover cursor-pointer"></video>
-        <button type="button"
-          class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded z-10">X</button>
-      `;
+                        <video src="${url}" class="w-full h-full object-cover cursor-pointer"></video>
+                        <button type="button"
+                        class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded z-10">X</button>
+                    `;
 
                     // Remove thumb
                     videoDiv.querySelector("button").addEventListener("click", (ev) => {

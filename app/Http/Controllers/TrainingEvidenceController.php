@@ -236,7 +236,7 @@ class TrainingEvidenceController extends Controller
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
             'training_video' => 'required|array',
-            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:102400',
+            'training_video.*' => 'mimes:mp4,avi,mov,mkv|max:112640',
             'description'     => 'nullable|string',
         ]);
 

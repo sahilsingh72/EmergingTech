@@ -57,7 +57,13 @@
 
                 <div id="contentBlurOverlay"
                     class="hidden absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-[9999] rounded-lg backdrop-blur-sm">
-                    <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin mb-4"></div>
+                    <div class="relative mb-4">
+                        <div class="loader border-t-4 border-green-400 rounded-full w-16 h-16 animate-spin"></div>
+                        <div id="uploadPercent"
+                            class="absolute inset-0 flex items-center justify-center text-white font-semibold text-sm">
+                            0%
+                        </div>
+                    </div>
                     <p class="text-white text-base font-medium">Uploading, please wait...</p>
                 </div>
                 <div class="container-fluid">
@@ -80,7 +86,7 @@
                                         <!-- School Name (readonly) -->
                                         <div>
                                             <x-input-label for="school_id" :value="__('School Name')" />
-                                            <select name="school_id" id="school_id" class="form-control">
+                                            <select name="school_id" id="school_id" class="form-control" required>
                                                 <option value="">-- Select School --</option>
                                                 @foreach($schools as $school)
                                                     <option value="{{ $school->scm_id }}">
@@ -172,6 +178,25 @@
                 form.addEventListener("submit", function (e) {
                     e.preventDefault();
 
+                    const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100 MB
+                    const files = document.getElementById("videoUpload").files;
+
+                    if (!files.length) {
+                        Swal.fire('Error', 'Please select at least one video.', 'error');
+                        return;
+                    }
+
+                    for (let file of files) {
+                        if (file.size > MAX_VIDEO_SIZE) {
+                            Swal.fire(
+                                'File Too Large',
+                                'Each video must be less than 100 MB.',
+                                'error'
+                            );
+                            return;
+                        }
+                    }
+
                     // Show overlay
                     overlay.classList.remove("hidden");
                     overlay.classList.add("flex");
@@ -185,7 +210,10 @@
                     xhr.upload.onprogress = function (e) {
                         if (e.lengthComputable) {
                             const percent = Math.round((e.loaded / e.total) * 100);
-                            console.log("Upload Progress: " + percent + "%");
+                            const percentEl = document.getElementById("uploadPercent");
+                            if (percentEl) {
+                                percentEl.textContent = percent + "%";
+                            }
                         }
                     };
 
@@ -193,19 +221,19 @@
                         overlay.classList.add("hidden");
                         overlay.classList.remove("flex");
 
+                        const percentEl = document.getElementById("uploadPercent");
+                        if (percentEl) percentEl.textContent = "0%";
+
                         if (xhr.status === 200) {
                             Swal.fire({
                                 icon: "success",
                                 title: "Upload complete!",
                                 text: "Your videos have been uploaded successfully."
-                            })
-                            // .then(() => {
-                            //     window.location.href = "{{ route('trainingvideos.list') }}";
-                            // });
+                            });
                         } else {
                             Swal.fire({
                                 icon: "error",
-                                title: "❌ Upload failed",
+                                title: "Upload failed",
                                 text: "Something went wrong. Please try again."
                             });
                         }
@@ -255,13 +283,32 @@
             });
 
             function handleVideos(files) {
+                const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
                 [...files].forEach(file => {
-                    if (uploadedVideos.length >= 5) {
-                        alert("You can only upload up to 5 videos.");
+                    if (file.size > MAX_VIDEO_SIZE) {
+                        Swal.fire(
+                            'File Too Large',
+                            'Please upload videos less than 100 MB.',
+                            'error'
+                        );
                         return;
                     }
+
                     if (!file.type.startsWith("video/")) {
-                        alert("Only video files are allowed!");
+                        Swal.fire(
+                            'Invalid File',
+                            'Only video files are allowed!',
+                            'error'
+                        );
+                        return;
+                    }
+
+                    if (uploadedVideos.length >= 5) {
+                        Swal.fire(
+                            '⚠️ Limit Reached',
+                            'You can upload only up to 5 videos.',
+                            'warning'
+                        );
                         return;
                     }
 
@@ -272,10 +319,10 @@
                     videoDiv.className = "relative w-40 h-28 border rounded overflow-hidden shadow";
 
                     videoDiv.innerHTML = `
-        <video src="${url}" class="w-full h-full object-cover cursor-pointer"></video>
-        <button type="button"
-          class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded z-10">X</button>
-      `;
+                            <video src="${url}" class="w-full h-full object-cover cursor-pointer"></video>
+                            <button type="button"
+                            class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded z-10">X</button>
+                        `;
 
                     // Remove thumb
                     videoDiv.querySelector("button").addEventListener("click", (ev) => {
