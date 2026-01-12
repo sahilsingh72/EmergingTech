@@ -387,9 +387,9 @@
                     let html = `
                         <table class="table table-bordered">
                             @php
-                                $SahiluserId = Auth::user()->id;
+                                $roleId = Auth::user()->role_id;
                             @endphp
-                            @if($SahiluserId == 1)
+                            @if($roleId == 2)
                                 <!-- Event Date Row -->
                                 <tr>
                                     <th>Date of Training</th>
