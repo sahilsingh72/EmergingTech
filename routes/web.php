@@ -15,6 +15,7 @@ use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\OneDriveController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TrainingEvidenceController;
+use App\Http\Controllers\YouTubeLiveController;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -138,13 +139,17 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/camp-expense-list', [BillController::class, 'campExpenseList'])->name('camp.expense.list');
     Route::put('/camp-expense/{id}', [BillController::class, 'campExpenseUpdate'])->name('camp.expense.update');
     Route::get('/camp-expense/{id}/delete', [BillController::class, 'campExpenseDelete'])->name('camp.expense.delete');
-
+    
     Route::get('/camp-expense-preview', [BillController::class, 'CampExpensepreview'])->name('camp.expense.preview');
-
+    
     Route::post('/camp-expense/{id}/approve', [BillController::class, 'CampExpenseapprove'])->name('camp.expense.approve');
     Route::post('/camp-expense/{id}/reject', [BillController::class, 'CampExpensereject'])->name('camp.expense.reject');
     Route::post('/camp-expense/{id}/revert', [BillController::class, 'CampExpenserevert'])->name('camp.expense.revert');
-        
+    
+    Route::get('/foodexpense',[BillController::class,'foodExpense'])->name('foodbills');
+    Route::post('/foodexpense/store',[BillController::class,'foodExpenseStore'])->name('foodbills.store');
+    Route::get('/foodexpense-list',[BillController::class,'foodExpenseList'])->name('foodbills.list');
+    Route::get('/food-bill-slip-{id}',[BillController::class, 'foodBillSlip'])->name('foodbill.slip');
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('student.school');
     Route::get('/district-{id}-schools', [SchoolController::class, 'getSchools']);
