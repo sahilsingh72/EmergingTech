@@ -126,6 +126,21 @@ class StudentController extends Controller
         return view('studentlist', compact('students', 'schools', 'schoolId'));
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+
+        if (!$ids || count($ids) == 0) {
+            return response()->json(['message' => 'No students selected'], 400);
+        }
+
+        StudentMst::whereIn('stu_id', $ids)->delete();
+
+        return response()->json([
+            'message' => 'Selected students deleted successfully'
+        ]);
+    }
+
     public function getStudentsBySchool($schoolId)
     {
         $students = StudentMst::where('stu_schoolname', $schoolId)
@@ -360,11 +375,14 @@ class StudentController extends Controller
             ->whereNotNull('feedback_file_url')
             ->count();
 
-        $allStudentFeedbackCompleted =
-            ($totalStudents === 0) || ($studentsWithFeedback === $totalStudents);
+        $meetsStudentRule  =
+            ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
+
+        School::where('scm_id', $schoolId)
+            ->update(['training_completed' => 0]);
 
         // Final decision
-        if ($allTrainingFilesUploaded && $allStudentFeedbackCompleted) {
+        if ($allTrainingFilesUploaded && $meetsStudentRule) {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 1]);
         }

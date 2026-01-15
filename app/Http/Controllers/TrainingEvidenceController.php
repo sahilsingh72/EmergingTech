@@ -503,36 +503,7 @@ class TrainingEvidenceController extends Controller
             'training_date'  => $request->training_date,
             'description'    => $request->description,
         ]);
-
-        //  Mark school as completed only if ALL required files are uploaded
-        $requiredFiles = [
-            'attendance_sheet',
-            'training_photo',
-            'training_video',
-            'video_feedback',
-            'training_completion_certificate'
-        ];
-
-        $uploadedFiles = TrainingUpload::where('uploaded_by', $userId)
-            ->where('school_id', $schoolId)
-            ->whereIn('file_type', $requiredFiles)
-            ->pluck('file_type')
-            ->unique()
-            ->toArray();
-
-        // Check all required files uploaded
-        $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
-
-        // Check all students feedback
-        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)->where('attendance', 1)->count();
-
-        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->whereNotNull('feedback_file_url')
-            ->count();
-
-        $allStudentFeedbackCompleted = ($totalStudents > 0 && $studentsWithFeedback === $totalStudents);
-
+        
         //  Re-check training completion after certificate upload
         $this->evaluateTrainingCompletion($schoolId);
 
@@ -558,7 +529,7 @@ class TrainingEvidenceController extends Controller
 
         $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
 
-        // Student feedback check
+        // Student attendance count
         $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
             ->where('attendance', 1)
             ->count();
@@ -568,13 +539,15 @@ class TrainingEvidenceController extends Controller
             ->whereNotNull('feedback_file_url')
             ->count();
 
-        $allStudentFeedbackCompleted =
-            ($totalStudents === 0) || ($studentsWithFeedback === $totalStudents);
+        $meetsStudentRule =
+            ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
 
-        // Final decision
-        if ($allTrainingFilesUploaded && $allStudentFeedbackCompleted) {
+        if ($allTrainingFilesUploaded && $meetsStudentRule) {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 1]);
+        } else {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 0]);
         }
     }
     public function viewUploadedCertificates(Request $request)

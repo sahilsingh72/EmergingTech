@@ -50,23 +50,11 @@
                 <div class="container-fluid">
                     <div class="py-12">
                         <div class="max-w-8xl mx-auto space-y-6">
-                            <div class="sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-4 rounded-lg w-full">
+                            <div class="p-3 sm:p-8 bg-white shadow sm:rounded-lg">
+                                <div class="bg-white rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Student List</h2>
-                                    @php
-                                        $roleId = Auth::user()->role_id;
-                                    @endphp
-                                    @if($roleId == 3 || $roleId == 6)
-                                        <div class="mb-4 flex justify-end">
-                                            <a href="{{route('single.addstudent')}}">
-                                                <button id=""
-                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                                    <i class="fas fa-user-plus"></i>Add Student
-                                                </button>
-                                            </a>
-                                        </div>
-                                    @endif
+                                    
                                     <!-- Flash Messages -->
                                     @if (session('success'))
                                         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
@@ -84,7 +72,7 @@
                                     @endif
 
                                     <!-- Student Table -->
-                                    <div class="flex justify-between items-center mb-4">
+                                    <div class="flex justify-between items-center mb-2">
                                         <!-- Rows per page -->
                                         <div>
                                             <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -103,22 +91,40 @@
                                                 class="border rounded p-2 w-40">
                                         </div>
                                     </div>
-                                    <div class="mb-4 flex justify-end items-center mb-4 gap-2">
-                                        <label for="filterSchool" class="font-semibold text-gray-700">Select School:</label>
-                                        <select id="filterSchool" class="border rounded p-2 w-40">
-                                            <option value="">-- Select School --</option>
-                                            @foreach ($schools as $school)
-                                                <option value="{{ $school->scm_id }}" 
-                                                    {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
-                                                    {{ $school->scm_name }} ({{ $school->scm_udise_code }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
+                                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                            <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
+                                            <select id="filterSchool" class="border rounded p-2 w-full">
+                                                <option value="">-- Select School --</option>
+                                                @foreach ($schools as $school)
+                                                    <option value="{{ $school->scm_id }}" 
+                                                        {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                                                        {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @php
+                                            $roleId = Auth::user()->role_id;
+                                        @endphp
+                                        @if($roleId == 3 || $roleId == 6)
+                                            <div class="mb-4 flex justify-end">
+                                                <a href="{{route('single.addstudent')}}">
+                                                    <button id=""
+                                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
+                                                        <i class="fas fa-user-plus"></i>Add Student
+                                                    </button>
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
                                         <table id="studentTable" class="w-full border-collapse">
                                             <thead class="bg-gray-100">
                                                 <tr>
+                                                    <th class="border px-4 py-2 text-center">
+                                                        <input type="checkbox" id="selectAll">
+                                                    </th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="0">S.No</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
@@ -150,6 +156,9 @@
                                             <tbody>
                                                 @forelse($students as $index => $student)
                                                     <tr class="hover:bg-gray-50">
+                                                        <td class="border px-4 py-2 text-center">
+                                                            <input type="checkbox" class="rowCheckbox" value="{{ $student->stu_id }}">
+                                                        </td>
                                                         <td class="border px-4 py-2 text-center">{{ $index + 1 }}
                                                         </td>
                                                         <td class="border px-4 py-2">{{ $student->stu_name }}</td>
@@ -205,6 +214,12 @@
                                                 @endforelse
                                             </tbody>
                                         </table>
+                                        <div id="bulkDeleteWrapper" class="mt-4 text-right hidden">
+                                            <button id="deleteSelected"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md">
+                                                <i class="fas fa-trash"></i> Delete Selected
+                                            </button>
+                                        </div>
                                     </div>
                                     
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
@@ -517,6 +532,63 @@
                     }
                 });
             }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+            function toggleBulkDeleteButton() {
+                let selectedCount = $(".rowCheckbox:checked").length;
+                if (selectedCount > 0) {
+                    $("#bulkDeleteWrapper").removeClass("hidden");
+                } else {
+                    $("#bulkDeleteWrapper").addClass("hidden");
+                }
+            }
+
+            // Select All
+            $("#selectAll").on("change", function () {
+                $(".rowCheckbox").prop("checked", $(this).prop("checked"));
+                toggleBulkDeleteButton();
+            });
+
+            // Individual checkbox change
+            $(document).on("change", ".rowCheckbox", function () {
+                if (!$(this).prop("checked")) {
+                    $("#selectAll").prop("checked", false);
+                }
+                toggleBulkDeleteButton();
+            });
+
+            // Delete Selected
+            $("#deleteSelected").on("click", function () {
+
+                let ids = $(".rowCheckbox:checked").map(function () {
+                    return $(this).val();
+                }).get();
+
+                if (ids.length === 0) return;
+
+                if (!confirm("Are you sure you want to delete selected students?")) return;
+
+                $.ajax({
+                    url: "{{ route('students.bulkDelete') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        ids: ids
+                    },
+                    success: function (res) {
+                        alert(res.message);
+                        location.reload();
+                    },
+                    error: function () {
+                        alert("Failed to delete students!");
+                    }
+                });
+            });
+
         });
     </script>
 

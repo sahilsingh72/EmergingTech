@@ -208,6 +208,12 @@
                                                     ({{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded)
                                                 </div>
                                             @endif --}}
+                                            @if($selectedSchoolId && $totalStudents < 120)
+                                                <div class="text-red-600 mt-2 font-semibold">
+                                                    ⚠️ Minimum 120 students are required to complete training.
+                                                    (Currently {{ $totalStudents }} students)
+                                                </div>
+                                            @endif
                                         @endif
 
                                         @if(!$canUploadCertificate)
