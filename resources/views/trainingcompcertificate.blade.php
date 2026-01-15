@@ -202,17 +202,17 @@
                                                     ->whereNotNull('feedback_file_url')
                                                     ->count();
                                             @endphp
-                                            @if($studentsWithFeedback < $totalStudents)
+                                            {{-- @if($studentsWithFeedback < $totalStudents)
                                                 <div class="text-red-600 mt-2">
                                                     ⚠️ All student feedback must be uploaded before uploading the Training Completion Certificate.
                                                     ({{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded)
                                                 </div>
-                                            @endif
+                                            @endif --}}
                                         @endif
 
                                         @if(!$canUploadCertificate)
                                             <p class="text-red-600 mt-2">
-                                                ⚠️ You must upload all previous training evidence files (pages 1-5) before
+                                                ⚠️ You must upload all previous training evidence files (pages 1 to 4) before
                                                 uploading the Training Completion Certificate.
                                             </p>
                                         @endif
@@ -232,24 +232,21 @@
                                                         'attendance_sheet' => 'attendance',
                                                         'training_photo' => 'trainingphotos',
                                                         'training_video' => 'trainingvideos',
-                                                        // 'written_feedback' => 'writtenfeedback',
-                                                        // "written_feedback" now refers to all student uploads
-                                                        'written_feedback' => null,
                                                         'video_feedback' => 'uploadfeedback',
                                                         default => null,
                                                     };
-                                                    // ✅ For written_feedback, check if all student feedbacks uploaded
-                                                    if ($key === 'written_feedback' && isset($selectedSchoolId)) {
-                                                        $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
-                                                        $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
-                                                            ->where('attendance', 1)
-                                                            ->whereNotNull('feedback_file_url')
-                                                            ->count();
-                                                        $isUploaded = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);
-                                                    }
+                                                    // For written_feedback, check if all student feedbacks uploaded
+                                                    // if ($key === 'written_feedback' && isset($selectedSchoolId)) {
+                                                    //     $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
+                                                    //     $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                    //         ->where('attendance', 1)
+                                                    //         ->whereNotNull('feedback_file_url')
+                                                    //         ->count();
+                                                    //     $isUploaded = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);
+                                                    // }
                                                 @endphp
 
-                                                <a href="{{ $routeName ? route($routeName) : '#' }}"
+                                                {{-- <a href="{{ $routeName ? route($routeName) : '#' }}"
                                                     class="flex flex-col items-center group hover:scale-110 transition-transform duration-200"
                                                     title="{{ $label }}">
                                                     <div class="flex flex-col items-center">
@@ -269,15 +266,23 @@
                                                             class="mt-2 text-sm font-medium {{ $isUploaded ? 'text-green-600' : 'text-gray-500' }}">
                                                             {{ $key === 'written_feedback' ? 'Student Feedbacks' : $label }}
                                                         </span>
-
-                                                        {{--  progress count --}}
-                                                        {{-- @if($key === 'written_feedback' && isset($selectedSchoolId))
-                                                            <span class="text-xs text-gray-500 mt-1">
-                                                                {{ $studentsWithFeedback ?? 0 }}/{{ $totalStudents ?? 0 }} uploaded
-                                                            </span>
-                                                        @endif --}}
                                                   </div>
-                                              </a>
+                                                </a> --}}
+                                                <a href="{{ $routeName ? route($routeName) : '#' }}"
+                                                    class="flex flex-col items-center group hover:scale-110 transition"
+                                                    title="{{ $label }}">
+
+                                                    <div class="w-12 h-12 flex items-center justify-center rounded-full border-4
+                                                        {{ $isUploaded ? 'border-green-500 bg-green-100 text-green-600'
+                                                                    : 'border-gray-300 bg-gray-100 text-gray-400' }}">
+                                                        <i class="fas {{ $isUploaded ? 'fa-check' : 'fa-times' }} text-xl"></i>
+                                                    </div>
+
+                                                    <span class="mt-2 text-sm font-medium
+                                                        {{ $isUploaded ? 'text-green-600' : 'text-gray-500' }}">
+                                                        {{ $label }}
+                                                    </span>
+                                                </a>
                                             @endforeach
 
                                             {{-- ✅ Always show the 6th step: Completion Certificate --}}
@@ -297,10 +302,55 @@
                                                     Completion Certificate
                                                 </span>
                                             </div>
+                                            @if($selectedSchoolId)
+                                                @php
+                                                    $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                        ->where('attendance', 1)->count();
+
+                                                    $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
+                                                        ->where('attendance', 1)
+                                                        ->whereNotNull('feedback_file_url')->count();
+
+                                                    $feedbackCompleted = ($totalStudents > 0 && $studentsWithFeedback === $totalStudents);
+                                                @endphp
+
+                                                <div class="flex flex-col items-center">
+                                                    <div class="w-12 h-12 flex items-center justify-center rounded-full border-4
+                                                        {{ $feedbackCompleted ? 'border-green-500 bg-green-100 text-green-600'
+                                                                            : 'border-yellow-500 bg-yellow-100 text-yellow-600' }}">
+                                                        <i class="fas fa-users text-xl"></i>
+                                                    </div>
+
+                                                    <span class="mt-2 text-sm font-medium">
+                                                        Student Feedbacks
+                                                    </span>
+
+                                                    <span class="text-xs text-gray-600 mt-1">
+                                                        {{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded
+                                                    </span>
+                                                </div>
+                                            @endif
+                                            {{-- ✅ FINAL STEP: Training Completed --}}
+                                            <div class="flex flex-col items-center">
+                                                <div class="w-14 h-14 flex items-center justify-center rounded-full border-4 transition-all duration-300
+                                                    {{ $trainingCompleted
+                                                        ? 'border-green-600 bg-green-200 text-green-700'
+                                                        : 'border-gray-300 bg-gray-100 text-gray-400'
+                                                    }}">
+                                                    @if($trainingCompleted)
+                                                        <i class="fas fa-check-double text-2xl"></i>
+                                                    @else
+                                                        <i class="fas fa-flag-checkered text-2xl"></i>
+                                                    @endif
+                                                </div>
+
+                                                <span class="mt-2 text-sm font-semibold
+                                                    {{ $trainingCompleted ? 'text-green-700' : 'text-gray-500' }}">
+                                                    Training Completed
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-
-
                                 </div>
                             </div>
                         </div>
@@ -311,7 +361,7 @@
     </div>
     </div>
     <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const uploadBtn = document.getElementById('uploadBtn');
     const checkbox1 = document.getElementById('declarationCheckbox');
     const checkbox2 = document.getElementById('trainingCompletedCheckbox');

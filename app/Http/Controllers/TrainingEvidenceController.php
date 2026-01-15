@@ -434,7 +434,6 @@ class TrainingEvidenceController extends Controller
             'attendance_sheet'  => 'Attendance Sheet',
             'training_photo'    => 'Training Photo',
             'training_video'    => 'Training Video',
-            'written_feedback'  => 'Student Feedbacks',
             'video_feedback'    => 'Video Feedback',
         ];
 
@@ -448,31 +447,23 @@ class TrainingEvidenceController extends Controller
                 ->toArray();
         }
 
-        // 🔹 Calculate which of the required ones are completed
+        // Calculate which of the required ones are completed
         $completedFiles = array_intersect(array_keys($requiredFiles), $uploadedFiles);
-
-        // 🔹 Check if all students in that school uploaded feedback
-        $allStudentFeedbackComplete = false;
-        if ($selectedSchoolId) {
-            $totalStudents = StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
-            $studentsWithFeedback = StudentMst::where('stu_scm_id', $selectedSchoolId)
-                ->whereNotNull('feedback_file_url')
-                ->count();
-
-            if ($totalStudents > 0 && $studentsWithFeedback == $totalStudents) {
-                $allStudentFeedbackComplete = true;
-                // Treat written_feedback as completed
-                $completedFiles[] = 'written_feedback';
-            }
-        }
 
         $progress = count($completedFiles) / count($requiredFiles) * 100;
         // Determine if all files are uploaded
         $canUploadCertificate = $selectedSchoolId
-            && count(array_unique($completedFiles)) === count($requiredFiles)
-            && $allStudentFeedbackComplete;
+            && count(array_unique($completedFiles)) === count($requiredFiles);
 
-        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'progress', 'canUploadCertificate', 'selectedSchoolId'));
+        $trainingCompleted = false;
+
+        if ($selectedSchoolId) {
+            $trainingCompleted = School::where('scm_id', $selectedSchoolId)
+                ->where('training_completed', 1)
+                ->exists();
+        }
+
+        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'progress', 'canUploadCertificate', 'selectedSchoolId', 'trainingCompleted'));
     }
 
     public function uploadcertificate(Request $request)
@@ -518,7 +509,6 @@ class TrainingEvidenceController extends Controller
             'attendance_sheet',
             'training_photo',
             'training_video',
-            // 'written_feedback',
             'video_feedback',
             'training_completion_certificate'
         ];
@@ -527,24 +517,66 @@ class TrainingEvidenceController extends Controller
             ->where('school_id', $schoolId)
             ->whereIn('file_type', $requiredFiles)
             ->pluck('file_type')
+            ->unique()
             ->toArray();
 
-        // 🔹 Check all students feedback
+        // Check all required files uploaded
+        $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
+
+        // Check all students feedback
         $totalStudents = StudentMst::where('stu_scm_id', $schoolId)->where('attendance', 1)->count();
+
         $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
             ->where('attendance', 1)
             ->whereNotNull('feedback_file_url')
             ->count();
 
-        $allStudentFeedbackComplete = ($totalStudents > 0 && $studentsWithFeedback == $totalStudents);
+        $allStudentFeedbackCompleted = ($totalStudents > 0 && $studentsWithFeedback === $totalStudents);
 
-        if (empty(array_diff($requiredFiles, $uploadedFiles)) && $allStudentFeedbackComplete) {
-            School::where('scm_id', $schoolId)->update(['training_completed' => 1]);
-        }
+        //  Re-check training completion after certificate upload
+        $this->evaluateTrainingCompletion($schoolId);
 
         return back()->with('success', 'training completion certificate uploaded successfully!');
     }
 
+    private function evaluateTrainingCompletion(int $schoolId): void
+    {
+        // Required training files
+        $requiredFiles = [
+            'attendance_sheet',
+            'training_photo',
+            'training_video',
+            'video_feedback',
+            'training_completion_certificate'
+        ];
+
+        $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
+            ->whereIn('file_type', $requiredFiles)
+            ->pluck('file_type')
+            ->unique()
+            ->toArray();
+
+        $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
+
+        // Student feedback check
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->count();
+
+        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->whereNotNull('feedback_file_url')
+            ->count();
+
+        $allStudentFeedbackCompleted =
+            ($totalStudents === 0) || ($studentsWithFeedback === $totalStudents);
+
+        // Final decision
+        if ($allTrainingFilesUploaded && $allStudentFeedbackCompleted) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 1]);
+        }
+    }
     public function viewUploadedCertificates(Request $request)
     {
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM')->get();

@@ -8,6 +8,7 @@ use App\Models\District;
 use App\Models\School;
 use App\Models\StudentFeedback;
 use App\Models\StudentMst;
+use App\Models\TrainingUpload;
 use App\Models\User;
 use App\Services\OneDriveService;
 use Illuminate\Support\Facades\Auth;
@@ -312,6 +313,9 @@ class StudentController extends Controller
                 'feedback_file_url' => $upload['url'] ?? null,
                 'feedback_uploaded_at' => now(),
             ]);
+            
+            // IMPORTANT: re-check training completion
+            $this->evaluateTrainingCompletion($schoolId);
 
             return response()->json([
                 'success' => true,
@@ -327,7 +331,44 @@ class StudentController extends Controller
             ], 500);
         }
     }
+    private function evaluateTrainingCompletion(int $schoolId): void
+    {
+        // Required training files
+        $requiredFiles = [
+            'attendance_sheet',
+            'training_photo',
+            'training_video',
+            'video_feedback',
+            'training_completion_certificate'
+        ];
 
+        $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
+            ->whereIn('file_type', $requiredFiles)
+            ->pluck('file_type')
+            ->unique()
+            ->toArray();
+
+        $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
+
+        // Student feedback check
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->count();
+
+        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->whereNotNull('feedback_file_url')
+            ->count();
+
+        $allStudentFeedbackCompleted =
+            ($totalStudents === 0) || ($studentsWithFeedback === $totalStudents);
+
+        // Final decision
+        if ($allTrainingFilesUploaded && $allStudentFeedbackCompleted) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 1]);
+        }
+    }
     public function updateFeedback(Request $request, OneDriveService $oneDriveService)
     {
         $request->validate([
