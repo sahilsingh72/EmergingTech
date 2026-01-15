@@ -90,6 +90,142 @@ class BillController extends Controller
         return response()->json($staff);
     }
 
+    public function foodExpense()
+    {
+        $user = Auth::user();
+        $roleId = $user->role_id;
+
+        $userId = $user->id;
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
+        if ($roleId == 1 || $roleId == 2) {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
+        } else {
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        }
+        return view('bills.foodbills', compact('schools'));
+    }
+
+    public function foodExpenseStore(Request $request)
+    {
+        $request->validate([
+            'school_id' => 'required|exists:school_mst,scm_id',
+            'bill_type' => 'required|array|min:1',
+            'bill_type.*' => 'required|string',
+            'training_date' => 'required|array',
+            'training_date.*' => 'required|date',
+            'amount' => 'required|array',
+            'amount.*' => 'required|numeric|min:1',
+            'bill_file' => 'required|array',
+            'bill_file.*' => 'required|file|mimes:pdf|max:5120',
+        ]);
+
+        $userId = Auth::id();
+        $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
+        $billTypes = $request->bill_type;
+        $dates = $request->training_date;
+        $amounts = $request->amount;
+        $files = $request->file('bill_file');
+
+        foreach ($billTypes as $i => $type) {
+
+            $billType = 'Camp Fooding';
+
+            $trainingDate = $dates[$i];
+            $newAmount = $amounts[$i];
+
+            $existingTotal = CampExpenseBill::where('school_id', $schoolId)
+            ->where('bill_type', 'Camp Fooding')
+            ->where('training_date', $trainingDate)
+            ->sum('amount');
+
+            if (($existingTotal + $newAmount) > 17500) {
+            return back()->with(
+                'error',
+                'Total food bill amount for this school cannot exceed ₹17,500.'
+            );
+        }
+            $file = $files[$i];
+            $fileName = time().'_'.$file->getClientOriginalName();
+
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
+            $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
+
+            // $exists = CampExpenseBill::where('school_id', $schoolId)
+            //     ->where('bill_type', 'Camp Fooding')
+            //     ->where('training_date', $dates[$i])
+            //     ->exists();
+
+            // if ($exists) {
+            //     return back()->with('error', 'Food bill already submitted for this training date.');
+            // }
+            
+            CampExpenseBill::create([
+                'school_id'     => $request->school_id,
+                'uploaded_by'   => $userId,
+                'bill_type'     => $billType,
+                'training_date' => $trainingDate,
+                'amount'        => $newAmount,
+                'bill_path'     => $upload['path'] ?? null,
+                'bill_url'      => $upload['url'] ?? null,
+            ]);
+        }
+
+        return back()->with('success', 'Food bill submitted successfully.');
+    }
+    public function foodExpenseList(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role->name;
+
+        $districtId = $request->district_id;
+        $districts = District::orderBy('DSM_DSNM')->get();
+
+        $query = CampExpenseBill::with(['school', 'uploadedBy'])
+            ->join('school_mst', 'school_mst.scm_id', '=', 'camp_expense_bills.school_id')
+            ->select('camp_expense_bills.*')
+            ->where('camp_expense_bills.bill_type',  'camp fooding')
+            ->orderBy('school_mst.scm_dist', 'ASC')
+            ->orderBy('school_mst.scm_name', 'ASC');
+
+        if (in_array($role, ['Accounts', 'OKCL']) && $request->district_id) {
+            $query->where('school_mst.scm_dist_id', $request->district_id);
+        }
+
+        // DLC → only own district
+        if ($role === 'DLC') {
+            $query->where('school_mst.scm_dist_id', $user->district_id);
+        }
+
+        // Status filter (optional – if you add later)
+        if ($request->status) {
+            $query->where('camp_expense_bills.status', $request->status);
+        }
+
+        $records = $query->get();
+
+        $schoolTotals = $records
+            ->groupBy('school_id')
+            ->map(fn ($rows) => $rows->sum('amount'));
+
+        $billTypes = [
+            'Camp Fooding',
+        ];
+
+        return view('bills.foodbillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes'));
+    }
+    public function foodBillSlip($id)
+    {
+        $bill = CampExpenseBill::with('school', 'uploadedBy')
+            ->where('bill_type', 'Camp Fooding')
+            ->findOrFail($id);
+
+        return view('bills.food_bill_slip', compact('bill'));
+    }
     public function uploadcampexpense()
     {
         $user = Auth::user();
@@ -168,6 +304,7 @@ class BillController extends Controller
         $query = CampExpenseBill::with(['school', 'uploadedBy'])
             ->join('school_mst', 'school_mst.scm_id', '=', 'camp_expense_bills.school_id')
             ->select('camp_expense_bills.*')
+            ->where('camp_expense_bills.bill_type', '!=', 'Camp Fooding')
             ->orderBy('school_mst.scm_dist', 'ASC')
             ->orderBy('school_mst.scm_name', 'ASC');
 
@@ -189,14 +326,11 @@ class BillController extends Controller
 
         $schoolTotals = $records
             ->groupBy('school_id')
-            ->map(function ($rows) {
-                return $rows->sum('amount');
-            });
+            ->map(fn ($rows) => $rows->sum('amount'));
 
         $billTypes = [
             'Inauguration',
             'Generator',
-            'Camp Fooding',
             'Misc'
         ];
 
@@ -287,59 +421,61 @@ class BillController extends Controller
             'bill_file' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
-        $finalBillType = $request->bill_type;
+        if ($bill->bill_type === 'Camp Fooding') {
 
-        if ($request->bill_type === 'Misc' && $request->filled('custom_bill_type')) {
-            $finalBillType = $request->custom_bill_type;
-        }
+            $newAmount = $request->amount;
 
-        $school = School::find($bill->school_id);
-        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
-        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist); 
-        // Upload new bill if provided
-        if ($request->hasFile('bill_file')) {
-            // delete previous bill if exists
-            $existingBill = $bill->bill_path;
-            if (is_array($existingBill)) {
-                $existingBill = $existingBill[0] ?? null;
+            // Total of other food bills (exclude current one)
+            $otherTotal = CampExpenseBill::where('school_id', $bill->school_id)
+                ->where('bill_type', 'Camp Fooding')
+                ->where('training_date', $bill->training_date)
+                ->where('id', '!=', $bill->id)
+                ->sum('amount');
+
+            if (($otherTotal + $newAmount) > 17500) {
+                return back()
+                    ->withErrors([
+                        'amount' => 'Total food bill amount for this school cannot exceed ₹17,500.'
+                    ])
+                    ->withInput();
             }
-
-            if (!empty($existingBill)) {
-                try {
-                    $this->oneDrive->deleteFile($existingBill);
-                } catch (\Exception $e) {
-                    Log::warning("Failed to delete old camp expense bill: " . $e->getMessage());
-                }
-            }
-
-            $billFile = $request->file('bill_file');
-            $billFileName = time() . '_' . $billFile->getClientOriginalName();
-
-            $billFolder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$finalBillType}";
-
-            $uploadBill = $this->oneDrive->uploadDirect($billFile, $billFolder, $billFileName);
-
-            $bill->bill_path = $uploadBill['path'] ?? $bill->bill_path;
-            $bill->bill_url = $uploadBill['url'] ?? $bill->bill_url;
         }
 
         // Block editing if already approved
         if ($bill->status === 'Approved') {
             return back()->with('error', 'Approved bills cannot be edited.');
         }
-        
-        // Update editable fields
-        $bill->bill_type = $finalBillType;
+
+        $finalBillType = $request->bill_type;
+
+        if ($request->bill_type === 'Misc' && $request->filled('custom_bill_type')) {
+            $finalBillType = $request->custom_bill_type;
+        }
+
+        if ($request->hasFile('bill_file')) {
+            $school = School::find($bill->school_id);
+            $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
+            $file = $request->file('bill_file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$bill->bill_type}";
+            $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
+
+            $bill->bill_path = $upload['path'] ?? $bill->bill_path;
+            $bill->bill_url  = $upload['url'] ?? $bill->bill_url;
+        }
         $bill->training_date = $request->training_date;
         $bill->amount = $request->amount;
 
-        // If bill was Rejected → move back to Pending
         if ($bill->status === 'Rejected') {
             $bill->status = 'Pending';
             $bill->remarks = null;
             $bill->status_updated_at = null;
             $bill->status_updated_by = null;
         }
+        
         $bill->save();
 
         return back()->with('success', 'Camp expense bill updated successfully!');
