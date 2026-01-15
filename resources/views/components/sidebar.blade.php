@@ -326,15 +326,13 @@
           </li>
         @endif
 
-
-
         {{-- Finance & Bills --}}
         @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list') ? 'menu-open' : '' }}">
             <a href="{{route('uploadbills')}}"
-              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list') ? 'active' : '' }}">
               <i class="nav-icon fas fa-file-invoice-dollar"></i>
               <p>
                 Finance & Bills
@@ -342,6 +340,20 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
+                <li class="nav-item">
+                  <a 
+                    @if($user->role_id == 3)
+                      href="{{route('foodbills')}}"
+                    @elseif($user->role_id == 8 || $user->role_id == 2)
+                      href="{{route('foodbills.list')}}"
+                    @endif
+                    class="nav-link {{ request()->routeIs('foodbills', 'foodbills.list') ? 'active' : '' }}">
+                    <i class="fas fa-utensils nav-icon"></i>
+                    <p>Food Bills</p>
+                  </a>
+                </li>
+              @endif
               @if($user->role_id == 3)
                 <li class="nav-item">
                   <a href="{{route('trainer.travels')}}"
