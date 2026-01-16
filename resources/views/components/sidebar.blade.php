@@ -325,6 +325,21 @@
             @endif
           </li>
         @endif
+        
+        {{-- Audit & Approval --}}
+        @if($user->role_id == 2 || $user->role_id == 8)
+
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('accounts.audit', 'audit.list', 'audit.show') ? 'menu-open' : '' }}">
+            <a href="{{ route('audit.list') }}"
+              class="nav-link {{ request()->routeIs('accounts.audit', 'audit.list', 'audit.show') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-clipboard-check"></i>
+              <p>
+                Audit & Approval
+              </p>
+            </a>
+          </li>
+        @endif
 
         {{-- Finance & Bills --}}
         @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)

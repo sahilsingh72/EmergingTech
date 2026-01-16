@@ -68,5 +68,13 @@ class School extends Model
     {
         return $this->hasMany(StudentMst::class, 'stu_scm_id', 'scm_id');
     }
+    public function trainingUploads()
+    {
+        return $this->hasMany(
+            TrainingUpload::class,
+            'school_id',   // FK in training_uploads table
+            'scm_id'       // PK in school_mst
+        );
+    }
 
 }
