@@ -1300,7 +1300,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- Section Header -->
       <div class="text-center mb-16 reveal">
-        <h2 class="text-4xl sm:text-5xl font-bold text-[#0B2540] mb-4 section-title">About EmergingTech</h2>
+        <h2 class="text-4xl sm:text-5xl font-bold text-[#0B2540] mb-4 section-title">About</h2>
         <p class="text-lg text-gray-600 max-w-3xl mx-auto mt-8">
           Pioneering the future of education through cutting-edge technology training
         </p>
