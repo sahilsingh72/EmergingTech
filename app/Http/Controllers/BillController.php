@@ -10,6 +10,7 @@ use App\Models\School;
 use App\Models\SuppStaff;
 use App\Models\Trainer;
 use App\Models\TrainerTravelBill;
+use App\Models\TrainingUpload;
 use App\Models\User;
 use App\Services\OneDriveService;
 use Illuminate\Http\Request;
@@ -139,31 +140,22 @@ class BillController extends Controller
             $newAmount = $amounts[$i];
 
             $existingTotal = CampExpenseBill::where('school_id', $schoolId)
-            ->where('bill_type', 'Camp Fooding')
-            ->where('training_date', $trainingDate)
-            ->sum('amount');
+                ->where('bill_type', 'Camp Fooding')
+                ->where('training_date', $trainingDate)
+                ->sum('amount');
 
             if (($existingTotal + $newAmount) > 17500) {
-            return back()->with(
-                'error',
-                'Total food bill amount for this school cannot exceed ₹17,500.'
-            );
-        }
+                return back()->with(
+                    'error',
+                    'Total food bill amount for this school cannot exceed ₹17,500.'
+                );
+            }
             $file = $files[$i];
-            $fileName = time().'_'.$file->getClientOriginalName();
+            $fileName = time() . '_' . $file->getClientOriginalName();
 
             $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
             $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
 
-            // $exists = CampExpenseBill::where('school_id', $schoolId)
-            //     ->where('bill_type', 'Camp Fooding')
-            //     ->where('training_date', $dates[$i])
-            //     ->exists();
-
-            // if ($exists) {
-            //     return back()->with('error', 'Food bill already submitted for this training date.');
-            // }
-            
             CampExpenseBill::create([
                 'school_id'     => $request->school_id,
                 'uploaded_by'   => $userId,
@@ -210,13 +202,86 @@ class BillController extends Controller
 
         $schoolTotals = $records
             ->groupBy('school_id')
-            ->map(fn ($rows) => $rows->sum('amount'));
+            ->map(fn($rows) => $rows->sum('amount'));
 
         $billTypes = [
             'Camp Fooding',
         ];
 
-        return view('bills.foodbillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes'));
+        $schoolProgress = $records->groupBy('school_id')->map(function ($rows) {
+            $schoolId = $rows->first()->school_id;
+            $uploads = TrainingUpload::where('school_id', $schoolId)->pluck('file_type')->unique();
+            return [
+                'attendance' => $uploads->contains('attendance_sheet'), 
+                'photos' => $uploads->contains('training_photo'), 
+                'video' => $uploads->contains('training_video'), 
+                'video_feedback' => $uploads->contains('video_feedback'), 
+                'certificate' => $uploads->contains('training_completion_certificate'),
+            ];
+        });
+
+        return view('bills.foodbillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes', 'schoolProgress'));
+    }
+    public function getTrainingUploads($schoolId, $type)
+    {
+        $uploads = TrainingUpload::where('school_id', $schoolId)
+            ->where('file_type', $type)
+            ->get();
+
+        $files = collect();
+
+        foreach ($uploads as $upload) {
+
+            // Normalize URL
+            $urls = is_array($upload->onedrive_url)
+                ? $upload->onedrive_url
+                : [$upload->onedrive_url];
+
+            // Normalize Path
+            $paths = is_array($upload->onedrive_path)
+                ? $upload->onedrive_path
+                : [$upload->onedrive_path];
+
+            foreach ($urls as $index => $url) {
+                if (!$url) continue;
+
+                $files->push([
+                    'file_url'   => $url,
+                    'file_path'  => $paths[$index] ?? $paths[0] ?? null,
+                    'created_at' => $upload->created_at,
+                ]);
+            }
+        }
+
+        return response()->json($files->values());
+    }
+
+    public function previewFiles(Request $request)
+    {
+        $path = $request->query('path');
+
+        if (!$path) {
+            return response('Invalid file path', 400);
+        }
+
+        $fileInfo = $this->oneDrive->getFileInfo($path);
+
+        if (!isset($fileInfo['@microsoft.graph.downloadUrl'])) {
+            return response('Download URL not found', 404);
+        }
+
+        $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
+
+        // Detect content type from OneDrive
+        $head = Http::head($downloadUrl);
+        $contentType = $head->header('Content-Type', 'application/octet-stream');
+
+        return response()->stream(function () use ($downloadUrl) {
+            echo Http::get($downloadUrl)->body();
+        }, 200, [
+            'Content-Type' => $contentType,
+            'Content-Disposition' => 'inline', //  opens in new tab
+        ]);
     }
     public function foodBillSlip($id)
     {
@@ -271,11 +336,11 @@ class BillController extends Controller
         foreach ($billTypes as $i => $type) {
 
             $billType = $type === 'Misc'
-            ? ($customTypes[$i] ?? 'Misc')
-            : $type;
+                ? ($customTypes[$i] ?? 'Misc')
+                : $type;
 
             $file = $files[$i];
-            $fileName = time().'_'.$file->getClientOriginalName();
+            $fileName = time() . '_' . $file->getClientOriginalName();
 
             $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
             $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
@@ -326,7 +391,7 @@ class BillController extends Controller
 
         $schoolTotals = $records
             ->groupBy('school_id')
-            ->map(fn ($rows) => $rows->sum('amount'));
+            ->map(fn($rows) => $rows->sum('amount'));
 
         $billTypes = [
             'Inauguration',
@@ -475,11 +540,10 @@ class BillController extends Controller
             $bill->status_updated_at = null;
             $bill->status_updated_by = null;
         }
-        
+
         $bill->save();
 
         return back()->with('success', 'Camp expense bill updated successfully!');
-
     }
     public function campexpenseDelete($id)
     {
@@ -640,7 +704,7 @@ class BillController extends Controller
         // Load districts for filter (Only for Accounts)
         $districts = District::orderBy('DSM_DSNM')->get();
 
-        if (in_array($role, ['Accounts','OKCL'])) {
+        if (in_array($role, ['Accounts', 'OKCL'])) {
 
             $districtId = $request->district_id;   // can be null → all districts
             $status = $request->status;
@@ -648,10 +712,10 @@ class BillController extends Controller
             $records = TrainerTravelBill::with(['trainer', 'district'])
                 ->join('dst_mst01', 'dst_mst01.DSM_DSCD', '=', 'trainer_travel_expenses.district_id')
                 ->join('trainers', 'trainers.trainer_id', '=', 'trainer_travel_expenses.trainer_id')
-                ->when($districtId, function($q) use ($districtId) {
+                ->when($districtId, function ($q) use ($districtId) {
                     return $q->where('district_id', $districtId);
                 })
-                ->when($status, function($q) use ($status) {
+                ->when($status, function ($q) use ($status) {
                     return $q->where('status', $status);
                 })
                 ->orderBy('dst_mst01.DSM_DSNM', 'ASC')
@@ -682,7 +746,7 @@ class BillController extends Controller
             // DLC — SEE RECORDS OF THEIR DISTRICT
             $records = TrainerTravelBill::with(['trainer', 'district'])
                 ->where('district_id', $user->district_id)
-                ->when($status, function($query) use ($status) {
+                ->when($status, function ($query) use ($status) {
                     return $query->where('status', $status);
                 })
                 ->latest()
@@ -693,9 +757,9 @@ class BillController extends Controller
         }
 
         return view('travels.trainertravellist', [
-                'records' => $records,
-                'selectedDistrict' => $districtId
-            ]);
+            'records' => $records,
+            'selectedDistrict' => $districtId
+        ]);
     }
     public function trainerTravelUpdate(Request $request, $id)
     {

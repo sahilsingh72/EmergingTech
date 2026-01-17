@@ -138,55 +138,118 @@
                                             @endphp
                                             <tbody>
                                                 @foreach($groupedRecords as $schoolId => $schoolRows)
-                                                    @php
-                                                        $school = $schoolRows->first()->school;
-                                                        $schoolTotal = $schoolRows->sum('amount');
-                                                        $collapseId = 'school_' . $schoolId;
-                                                    @endphp
+                                                                    @php
+                                                                        $school = $schoolRows->first()->school;
+                                                                        $schoolTotal = $schoolRows->sum('amount');
+                                                                        $collapseId = 'school_' . $schoolId;
+                                                                    @endphp
 
-                                                    {{--SCHOOL HEADER ROW --}}
-                                                    <tr class="school-row bg-gray-100 cursor-pointer font-semibold"
-                                                        onclick="toggleSchool('{{ $collapseId }}')">
-                                                        <td class="text-center">
-                                                            <i class="fas fa-chevron-down" id="icon-{{ $collapseId }}"></i>
-                                                        </td>
-                                                        <td>{{ $school->scm_dist }}</td>
-                                                        <td>{{ $school->scm_name }}</td>
-                                                        <td>
-                                                            {{ \Carbon\Carbon::parse($schoolRows->first()->training_date)->format('d-m-Y') }}
-                                                        </td>
-                                                        <td class="text-green-700">
-                                                            ₹{{ number_format($schoolTotal, 2) }}
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge bg-info">
-                                                                {{ $schoolRows->count() }} Bills
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $statuses = $schoolRows->pluck('status')->unique();
-                                                            @endphp
-                                                            @if($statuses->count() === 1)
-                                                                @if($statuses->first() == 'Pending')
-                                                                    <span class="badge bg-warning">All Pending</span>
-                                                                @elseif($statuses->first() == 'Approved')
-                                                                    <span class="badge bg-success">All Approved</span>
-                                                                @else
-                                                                    <span class="badge bg-danger">All Rejected</span>
-                                                                @endif
-                                                            @else
-                                                                <span class="badge bg-secondary">Mixed Statuses</span>
-                                                            @endif
-                                                        </td>
-                                                        @if(in_array(Auth::user()->role_id, [3, 8, 2]))
-                                                            <td>
-                                                                <i class="fas fa-print"></i>
-                                                            </td>
-                                                        @endif
-                                                        @if(in_array(Auth::user()->role_id, [3, 8]))
-                                                            <td><i class="fas fa-folder-open"></i></td>
-                                                        @endif
+                                                                    {{--SCHOOL HEADER ROW --}}
+                                                                    <tr class="school-row bg-gray-100 cursor-pointer font-semibold"
+                                                                        onclick="toggleSchool('{{ $collapseId }}')">
+                                                                        <td class="text-center">
+                                                                            <i class="fas fa-chevron-down" id="icon-{{ $collapseId }}"></i>
+                                                                        </td>
+                                                                        <td>{{ $school->scm_dist }}</td>
+                                                                        <td>{{ $school->scm_name }}</td>
+                                                                        <td>
+                                                                            {{ \Carbon\Carbon::parse($schoolRows->first()->training_date)->format('d-m-Y') }}
+                                                                        </td>
+                                                                        <td class="text-green-700">
+                                                                            ₹{{ number_format($schoolTotal, 2) }}
+                                                                        </td>
+                                                                        <td>
+                                                                            <span class="badge bg-info">
+                                                                                {{ $schoolRows->count() }} Bills
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            @php
+                                                                                $statuses = $schoolRows->pluck('status')->unique();
+                                                                            @endphp
+                                                                            @if($statuses->count() === 1)
+                                                                                @if($statuses->first() == 'Pending')
+                                                                                    <span class="badge bg-warning">All Pending</span>
+                                                                                @elseif($statuses->first() == 'Approved')
+                                                                                    <span class="badge bg-success">All Approved</span>
+                                                                                @else
+                                                                                    <span class="badge bg-danger">All Rejected</span>
+                                                                                @endif
+                                                                            @else
+                                                                                <span class="badge bg-secondary">Mixed Statuses</span>
+                                                                            @endif
+                                                                        </td>
+                                                                        @if(in_array(Auth::user()->role_id, [3, 8, 2]))
+                                                                            <td>
+                                                                                <i class="fas fa-print"></i>
+                                                                            </td>
+                                                                        @endif
+                                                                        @if(in_array(Auth::user()->role_id, [3, 8]))
+                                                                            <td><i class="fas fa-folder-open"></i></td>
+                                                                        @endif
+                                                                    </tr>
+
+                                                                    {{-- PROGRESS ROW --}}
+                                                                    <tr class="bg-white {{ $collapseId }} d-none">
+                                                                        <td></td>
+                                                                        <td colspan="100%">
+                                                                            @php
+                                                                                $progress = $schoolProgress[$schoolId] ?? [];
+                                                                                $steps = [
+                                                                                    'Attendance Uploaded' => $progress['attendance'] ?? false,
+                                                                                    'Training Photos Uploaded' => $progress['photos'] ?? false,
+                                                                                    'Training Video Uploaded' => $progress['video'] ?? false,
+                                                                                    'Video Feedback Submitted' => $progress['video_feedback'] ?? false,
+                                                                                    'Completion Certificate Uploaded' => $progress['certificate'] ?? false,
+                                                                                ];
+
+                                                                                $allCompleted = collect($steps)->every(fn($v) => $v === true);
+                                                                                $completed = collect($steps)->filter()->count();
+                                                                                $total = count($steps);
+                                                                                $percent = ($completed / $total) * 100;
+                                                                            @endphp
+
+                                                                            <!-- Progress Bar -->
+
+                                                                            <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                                                <div class="h-3 bg-green-600"
+                                                                                    style="width: {{ $percent }}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <small class="text-muted">
+                                                                                {{ $completed }} / {{ $total }} steps completed
+                                                                            </small>
+                                                        </div>
+                                                        <!-- Step Icons -->
+                                                        <div class="flex justify-between text-sm mt-2">
+                                                            @foreach($steps as $label => $done)
+                                                                @php
+                                                                    $map = [
+                                                                        'Attendance Uploaded' => 'attendance_sheet',
+                                                                        'Training Photos Uploaded' => 'training_photo',
+                                                                        'Training Video Uploaded' => 'training_video',
+                                                                        'Video Feedback Submitted' => 'video_feedback',
+                                                                        'Completion Certificate Uploaded' => 'training_completion_certificate',
+                                                                    ];
+                                                                    $type = $map[$label];
+                                                                @endphp
+                                                                <div class="flex items-center gap-1 cursor-pointer"
+                                                                    onclick="loadUploads({{ $schoolId }}, '{{ $type }}', '{{ $label }}')">
+
+                                                                    @if($done)
+                                                                        <i class="fas fa-check-circle text-green-600"></i>
+                                                                    @else
+                                                                        <i class="fas fa-clock text-gray-400"></i>
+                                                                    @endif
+
+                                                                    <span class="{{ $done ? 'text-green-700' : 'text-gray-500' }}">
+                                                                        {{ $label }}
+                                                                    </span>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                    </td>
                                                     </tr>
 
                                                     {{--BILL ROWS (COLLAPSIBLE) --}}
@@ -234,12 +297,11 @@
                                                             </td>
 
                                                             <td>
-    <a href="{{ route('foodbill.slip', $row->id) }}"
-       target="_blank"
-       class="btn btn-sm btn-info">
-        <i class="fas fa-file-alt"></i> Slip
-    </a>
-</td>
+                                                                <a href="{{ route('foodbill.slip', $row->id) }}" target="_blank"
+                                                                    class="btn btn-sm btn-info">
+                                                                    <i class="fas fa-file-alt"></i> Slip
+                                                                </a>
+                                                            </td>
                                                             @if(in_array(Auth::user()->role_id, [3]))
                                                                 <td>
                                                                     @if($row->status !== 'Approved')
@@ -270,14 +332,20 @@
                                                             @elseif (in_array(Auth::user()->role_id, [8]))
                                                                 <td>
                                                                     @if($row->status == 'Pending')
-                                                                        <form method="POST"
-                                                                            action="{{ route('camp.expense.approve', $row->id) }}"
+                                                                        <form method="POST" action="{{ route('camp.expense.approve', $row->id) }}"
                                                                             class="inline">
                                                                             @csrf
-                                                                            <button type="submit" class="btn btn-sm btn-success mt-1"
-                                                                                title="Approve">
-                                                                                <i class="fas fa-check"></i>
-                                                                            </button>
+                                                                            @if($allCompleted)
+                                                                                <button type="submit" class="btn btn-sm btn-success mt-1" title="Approve">
+                                                                                    <i class="fas fa-check"></i>
+                                                                                </button>
+                                                                            @else
+                                                                                <button type="button" class="btn btn-sm btn-secondary mt-1" disabled
+                                                                                    title="Complete all uploads before approval">
+                                                                                    <i class="fas fa-check"></i>
+                                                                                </button>
+                                                                            @endif
+
                                                                         </form>
                                                                         <button class="btn btn-danger btn-sm mt-1" data-toggle="modal"
                                                                             data-target="#rejectModal{{ $row->id }}" title="Reject">
@@ -286,8 +354,7 @@
 
                                                                     @else
                                                                         {{-- SHOW REVERT BUTTON WHEN APPROVED OR REJECTED- --}}
-                                                                        <form action="{{ route('camp.expense.revert', $row->id) }}"
-                                                                            method="POST">
+                                                                        <form action="{{ route('camp.expense.revert', $row->id) }}" method="POST">
                                                                             @csrf
                                                                             <button class="btn btn-warning btn-sm mt-1" title="Revert">
                                                                                 <i class="fas fa-undo"></i>
@@ -299,8 +366,7 @@
                                                                 {{-- revert modal --}}
                                                                 <div class="modal fade" id="rejectModal{{ $row->id }}">
                                                                     <div class="modal-dialog">
-                                                                        <form action="{{ route('camp.expense.reject', $row->id) }}"
-                                                                            method="POST">
+                                                                        <form action="{{ route('camp.expense.reject', $row->id) }}" method="POST">
                                                                             @csrf
 
                                                                             <div class="modal-content">
@@ -327,17 +393,32 @@
                                                         </tr>
                                                     @endforeach
                                                 @endforeach
-                                            </tbody>
-                                        </table>
+                                </tbody>
+                                </table>
+                            </div>
+                            <div class="modal fade" id="uploadViewerModal" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="uploadViewerTitle"></h5>
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div id="uploadList" class="list-group"></div>
+                                        </div>
                                     </div>
-                                    <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                 </div>
                             </div>
+
+                            <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+        </div>
+    </div>
+    </div>
+    </section>
     </div>
     <!-- Edit Expense Modal -->
     <div id="editModal"
@@ -566,8 +647,55 @@
             icon.classList.toggle('fa-chevron-up');
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+        function loadUploads(schoolId, type, title) {
 
+            let url = "{{ route('school.uploads.byType', ['schoolId' => '__ID__', 'type' => '__TYPE__']) }}"
+                .replace('__ID__', schoolId)
+                .replace('__TYPE__', type);
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) {
+                        console.error('HTTP Error:', res.status);
+                        throw new Error('Request failed');
+                    }
+                    return res.json();
+                })
+                .then(files => {
+                    console.log('FILES:', files); // DEBUG
+
+                    document.getElementById('uploadViewerTitle').innerText = title;
+                    const list = document.getElementById('uploadList');
+                    list.innerHTML = '';
+
+                    if (!files.length) {
+                        list.innerHTML = `<div class="text-muted">No files uploaded</div>`;
+                        $('#uploadViewerModal').modal('show');
+                        return;
+                    }
+
+                    files.forEach(file => {
+                        list.innerHTML += `
+                <a href="/preview-files?path=${encodeURIComponent(file.file_path)}" target="_blank"
+                   class="list-group-item list-group-item-action">
+                    <i class="fas fa-eye mr-2 text-primary"></i>
+                    Uploaded on ${new Date(file.created_at).toLocaleDateString()}
+                </a>
+            `;
+                    });
+
+                    $('#uploadViewerModal').modal('show');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Unable to load uploads');
+                });
+
+        }
+    </script>
 
 </body>
 @include('components.footer')
