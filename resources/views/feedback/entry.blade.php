@@ -188,8 +188,27 @@
                           </div>
 
                           <div class="col-md-6 mb-3">
+                            {{-- <label>5. How interested are you in job in technology ?</label> --}}
+                            <label>୪. Technology ସମ୍ବନ୍ଧୀୟ ଚାକିରି ପ୍ରତି ଆପଣ କେତେ ଇଚ୍ଛୁକ?</label>
+                            @php
+                              $value = old('pre_career', $existingFeedback->pre_career ?? '');
+                            @endphp
+                            <div class="star-rating">
+                              @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="pre_career"
+                                  onclick="setRating('pre_career', {{ $i }})"></i>
+                              @endfor
+                            </div>
+                            <input type="hidden" id="pre_career_input" name="pre_career" class="form-control"
+                              value="{{ $value }}" required>
+                            @error('pre_career')
+                              <span class="text-danger small">{{ $message }}</span>
+                            @enderror
+                          </div>
+
+                          <div class="col-md-6 mb-3">
                             {{-- <label>5. How interested are you in learning about technology before this training?</label> --}}
-                            <label>୪. ନୂଆଁ Technology ଶିଖିବା ପାଇଁ ଆପଣ କେତେ ଆଗ୍ରହୀ?</label>
+                            <label>୫. ନୂଆଁ Technology ଶିଖିବା ପାଇଁ ଆପଣ କେତେ ଆଗ୍ରହୀ?</label>
                             @php
                               $value = old('pre_interest', $existingFeedback->pre_interest ?? '');
                             @endphp
@@ -208,7 +227,7 @@
 
                           <div class="col-md-6 mb-3">
                             {{-- <label>6. How useful do you think this camp will be for your learning or career?</label> --}}
-                            <label>୫. ଭବିଷ୍ୟତରେ ଚାକିରି ପାଇଁ Emerging Technology ଭଳି ପ୍ରଯୁକ୍ତିବିଦ୍ୟାକୁ ଆପଣ କେତେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଭାବୁଛନ୍ତି?</label>
+                            <label>୬. ଭବିଷ୍ୟତରେ ଚାକିରି ପାଇଁ Emerging Technology ଭଳି ପ୍ରଯୁକ୍ତିବିଦ୍ୟାକୁ ଆପଣ କେତେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଭାବୁଛନ୍ତି?</label>
                             @php
                               $value = old('pre_usefulness', $existingFeedback->pre_usefulness ?? '');
                             @endphp
@@ -224,12 +243,62 @@
                               <span class="text-danger small">{{ $message }}</span>
                             @enderror
                           </div>
+                          <div class="col-md-6 mb-3">
+                            {{-- <label>7. How aware are you about the ethical, responsible, and safe use of technology?</label> --}}
+                            <label>୭. ନୀତିସମ୍ମତ, ଦାୟିତ୍ୱପୂର୍ଣ୍ଣ ଓ ସୁରକ୍ଷିତ ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ବ୍ୟବହାର ବିଷୟରେ ଆପଣ କେତେ ସଚେତନ?</label>
+                            @php
+                              $value = old('pre_aware', $existingFeedback->pre_aware ?? '');
+                            @endphp
+                            <div class="star-rating">
+                              @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="pre_aware"
+                                  onclick="setRating('pre_aware', {{ $i }})"></i>
+                              @endfor
+                            </div>
+                            <input type="hidden" id="pre_aware_input" name="pre_aware" class="form-control"
+                              value="{{ $value }}" required>
+                            @error('pre_aware')
+                              <span class="text-danger small">{{ $message }}</span>
+                            @enderror
+                          </div>
+                          <div class="col-md-6 mb-3">
+                            {{-- <label>8.How much do you know about using AI tools?</label> --}}
+                            <label>୮. AI Tools ଆପଣ ବ୍ୟବହାର କରିବା କେତେ ଜାଣିଛନ୍ତି? </label>
+                            @php
+                              $value = old('pre_ai_known', $existingFeedback->pre_ai_known ?? '');
+                            @endphp
+                            <div class="star-rating">
+                              @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="pre_ai_known"
+                                  onclick="setRating('pre_ai_known', {{ $i }})"></i>
+                              @endfor
+                            </div>
+                            <input type="hidden" id="pre_ai_known_input" name="pre_ai_known" class="form-control"
+                              value="{{ $value }}" required>
+                            @error('pre_ai_known')
+                              <span class="text-danger small">{{ $message }}</span>
+                            @enderror
+                          </div>
+                          <div class="col-md-6 mb-3">
+                            {{-- <label>9.What do you expect to learn from this camp about the use and usefulness of emerging technologies?</label> --}}
+                            <label>୯. ଏହି ଶିବିରରୁ ଆପଣ Emerging Technology ର ବ୍ୟବହାର ଓ ଉପଯୋଗୀତା ବିଷୟରେ ଜାଣିବାକୁ ଆଶା କରୁଛନ୍ତି?  </label>
+                            @php
+                              $value = old('pre_et_use', $existingFeedback->pre_et_use ?? '');
+                            @endphp
+                            <div class="star-rating">
+                              @for ($i = 1; $i <= 5; $i++)
+                                <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="pre_et_use"
+                                  onclick="setRating('pre_et_use', {{ $i }})"></i>
+                              @endfor
+                            </div>
+                            <input type="hidden" id="pre_et_use_input" name="pre_et_use" class="form-control"
+                              value="{{ $value }}" required>
+                            @error('pre_et_use')
+                              <span class="text-danger small">{{ $message }}</span>
+                            @enderror
+                          </div>
                         </div>
 
-                        {{-- <label class="mt-2">7. What are your expectations from this camp?</label>
-                        <textarea name="pre_expectations" class="form-control" rows="2"
-                          required>{{ old('pre_expectations', $existingFeedback->pre_expectations ?? '') }}</textarea>
-                        --}}
                       </div>
 
                       <!-- Post Feedback -->
@@ -238,10 +307,32 @@
                         {{-- <label>1. Which course interests you most?</label><br> --}}
                         <label>୧. ଏହି ଶିବିରରେ ଆପଣ କେଉଁ ବିଷୟକୁ ସବୁଠାରୁ ଉପଯୋଗୀ କିମ୍ବା ଆନନ୍ଦଦାୟକ ମନେକଲେ?</label><br>
                         <div class="ms-2">
-                          <label><input type="radio" name="post_interested_course" value="AI" {{ old('post_interested_course', $existingFeedback->post_interested_course ?? '') == 'AI' ? 'checked' : '' }}> AI</label>
-                          <label class="ms-3"><input type="radio" name="post_interested_course" value="IoT & Robotics"
-                              {{ old('post_interested_course', $existingFeedback->post_interested_course ?? '') == 'IoT & Robotics' ? 'checked' : '' }}> IoT & Robotics</label>
-                          <label class="ms-3"><input type="radio" name="post_interested_course" value="Cybersecurity" {{ old('post_interested_course', $existingFeedback->post_interested_course ?? '') == 'Cybersecurity' ? 'checked' : '' }}> Cybersecurity</label>
+                          @php
+                            $selected = old(
+                                'post_interested_course',
+                                $existingFeedback->post_interested_course ?? []
+                            );
+                            // Ensure array
+                            if (!is_array($selected)) {
+                                $selected = json_decode($selected, true) ?? [];
+                            }
+                          @endphp
+                            <input type="checkbox" name="post_interested_course[]" value="AI"
+                                    {{ in_array('AI', $selected) ? 'checked' : '' }}>
+                                AI
+                            </label>
+
+                            <label class="ms-3">
+                                <input type="checkbox" name="post_interested_course[]" value="IoT & Robotics"
+                                    {{ in_array('IoT & Robotics', $selected) ? 'checked' : '' }}>
+                                IoT & Robotics
+                            </label>
+
+                            <label class="ms-3">
+                                <input type="checkbox" name="post_interested_course[]" value="Cybersecurity"
+                                    {{ in_array('Cybersecurity', $selected) ? 'checked' : '' }}>
+                                Cybersecurity
+                            </label>
                         </div>
 
                         </br>
@@ -258,24 +349,34 @@
                             'post_confidence_now' => '୩. ବର୍ତମାନ Technology ବ୍ୟବହାର କରିବାରେ ଆପଣ କେତେ ଆତ୍ମବିଶ୍ୱାସୀ?',
                             // 'post_engagement' => '4. How interesting and engaging were the sessions?',
                             'post_engagement' => '୪. ପ୍ରଶିକ୍ଷଣ କାର୍ଯ୍ୟକ୍ରମଗୁଡ଼ିକ କେତେ ରୁଚିକର ଓ ଆକର୍ଷଣୀୟ ଥିଲା?',
-                            // 'post_usefulness' => '5. How useful do you think this training will be for your studies or career?',
-                            'post_usefulness' => '୫. ଏହି ପ୍ରଶିକ୍ଷଣ ଆପଣଙ୍କ ପାଠପଢା କିମ୍ବା ଭବିଷ୍ୟତ Career ପାଇଁ କେତେ ଉପଯୋଗୀ?',
-                            // 'post_demo_helpfulness' => '6. How helpful were the demonstrations?',
-                            'post_demo_helpfulness' => '୬. ଶିବିର ସମୟରେ ଦେଖାଯାଇଥିବା Demonstration ଗୁଡ଼ିକ କେତେ ଉପକାରୀ ଥିଲା?',
-                            // 'post_topic_coverage' => '7. How well did the camp cover the main topics?',
-                            'post_topic_coverage' => '୭. ପ୍ରଶିକ୍ଷଣ ଶିବିରରେ  ପ୍ରମୁଖ  ବିଷୟଗୁଡିକ କେତେ ଭଲ ଭାବରେ ଉପସ୍ଥାପନ କରାଗଲା?',
-                            // 'post_hands_on_usefulness' => '8. How useful were the hands-on activities?',
-                            'post_hands_on_usefulness' => '୮. Hands-on activities କେତେ ଶିକ୍ଷଣୀୟ ଥିଲା?',
-                            // 'post_real_life_use' => '9. How likely are you to use what you learned in real life?',
-                            'post_real_life_use' => '୯. ଶିଖିଥିବା ଜ୍ଞାନ କୌଶଳକୁ ଆପଣ ବାସ୍ତବ ଜୀବନରେ ବ୍ୟବହାର କରିବାକୁ କେତେ ଇଚ୍ଛୁକ?',
-                            // 'post_trainer_rating' => '10. How would you rate the trainers’ teaching?'
-                            'post_trainer_rating' => '୧୦. ତାଲିମ ପ୍ରଦାନକାରୀଙ୍କର ଶିକ୍ଷାଦାନ କେତେ ଗ୍ରହଣୀୟ ଥିଲା?',
-                            // 'post_overall_satisfaction' => '11. How satisfied are you with the training overall?',
-                            'post_overall_satisfaction' => '୧୧. ସମଗ୍ର ପ୍ରଶିକ୍ଷଣ ପ୍ରତି ଆପଣ କେତେ ସନ୍ତୁଷ୍ଟ?',
-                            // 'post_interest_increase' => '12. How much has your interest in technology increased after this camp?',
-                            'post_interest_increase' => '୧୨. Technology ସମ୍ବନ୍ଧୀୟ କ୍ୟାରିୟର କରିବା ବିଷୟରେ ଆପଣଙ୍କ ଆଗ୍ରହ କେତେ ବଢ଼ିଲା?',
-                            // 'post_motivation_future' => '13. How motivated are you to learn more about technology in the future?',
-                            'post_motivation_future' => '୧୩. ଭବିଷ୍ୟତରେ ଆପଣ Emerging Technology ବିଷୟରେ ଅଧିକ ପ୍ରଶିକ୍ଷଣ ଚାହୁଁଛନ୍ତି?',
+                            // 'post_understanding' => '5. How much has your understanding increased about how AI, IoT & Robotics, and Cyber Security work?',
+                            'post_understanding' => '୫. AI, IoT&Robotics, Cyber Security କିପରି କାମ କରେ – ଏହା ବିଷୟରେ ଆପଣଙ୍କ ଧାରଣା କେତେ ବଢ়িଲା? ',
+                            // 'post_usefulness' => '6. How useful do you think this training will be for your studies or career?',
+                            'post_usefulness' => '୬. ଏହି ପ୍ରଶିକ୍ଷଣ ଆପଣଙ୍କ ପାଠପଢା କିମ୍ବା ଭବିଷ୍ୟତ Career ପାଇଁ କେତେ ଉପଯୋଗୀ?',
+                            // 'post_demo_helpfulness' => '7. How helpful were the demonstrations?',
+                            'post_demo_helpfulness' => '୭. ଶିବିର ସମୟରେ ଦେଖାଯାଇଥିବା Demonstration ଗୁଡ଼ିକ କେତେ ଉପକାରୀ ଥିଲା?',
+                            // 'post_topic_coverage' => '8. How well did the camp cover the main topics?',
+                            'post_topic_coverage' => '୮. ପ୍ରଶିକ୍ଷଣ ଶିବିରରେ  ପ୍ରମୁଖ  ବିଷୟଗୁଡିକ କେତେ ଭଲ ଭାବରେ ଉପସ୍ଥାପନ କରାଗଲା?',
+                            // 'post_hands_on_usefulness' => '9. How useful were the hands-on activities?',
+                            'post_hands_on_usefulness' => '୯. Hands-on activities କେତେ ଶିକ୍ଷଣୀୟ ଥିଲା?',
+                            // 'post_real_life_use' => '10. How likely are you to use what you learned in real life?',
+                            'post_real_life_use' => '୧୦. ଶିଖିଥିବା ଜ୍ଞାନ କୌଶଳକୁ ଆପଣ ବାସ୍ତବ ଜୀବନରେ ବ୍ୟବହାର କରିବାକୁ କେତେ ଇଚ୍ଛୁକ?',
+                            // 'post_cyber_use' => '11. How well are you now able to protect yourself from cyber threats?',
+                            'post_cyber_use' => '୧୧. ବର୍ତ୍ତମାନ ଆପଣ ସାଇବର୍ ବିପଦରୁ ନିଜକୁ କେତେ ସୁରକ୍ଷିତ ରଖି ପାରିବେ?',
+                            // 'post_ai_use' => '12. How much has your interest in Artificial Intelligence Tools increased?',
+                            'post_ai_use' => '୧୨. Artificial Intelligence Tools ପ୍ରତି ଆପଣଙ୍କର ଆଗ୍ରହ କେତେ ବଢ଼ିଲା?',
+                            // 'post_iot_use' => '13. How motivated are you to learn more about IoT and Robotics in the future?',
+                            'post_iot_use' => '୧୩. ଭବିଷ୍ୟତରେ IoT ଓ Robotics ବିଷୟରେ ଅଧିକ ଶିଖିବাকୁ ଆପણ କେଉଁ ସୁଆଡ়? ',
+                            // 'post_trainer_rating' => '14. How would you rate the trainers’ teaching?'
+                            'post_trainer_rating' => '୧୪. ତାଲିମ ପ୍ରଦାନକାରୀଙ୍କର ଶିକ୍ଷାଦାନ କେତେ ଗ୍ରହଣୀୟ ଥିଲା?',
+                            // 'post_overall_satisfaction' => '15. How satisfied are you with the training overall?',
+                            'post_overall_satisfaction' => '୧୫. ସମଗ୍ର ପ୍ରଶିକ୍ଷଣ ପ୍ରତି ଆପଣ କେତେ ସନ୍ତୁଷ୍ଟ?',
+                            // 'post_interest_increase' => '16. How much has your interest in technology increased after this camp?',
+                            'post_interest_increase' => '୧୬. Technology ସମ୍ବନ୍ଧୀୟ କ୍ୟାରିୟର କରିବା ବିଷୟରେ ଆପଣଙ୍କ ଆଗ୍ରହ କେତେ ବଢ଼ିଲା?',
+                            // 'post_innovation' => '17. How much has your interest in innovation increased after the training camp?',
+                            'post_innovation' => '୧୭. ପ୍ରଶିକ୍ଷଣ ଶିବିର ପରେ କିଛି ନୂତନ ଉଦ୍ଭାବନ ପାଇଁ ଭାବୁଛନ୍ତି କି?',
+                            // 'post_motivation_future' => '18. How motivated are you to learn more about technology in the future?',
+                            'post_motivation_future' => '୧୮. ଭବିଷ୍ୟତରେ ଆପଣ Emerging Technology ବିଷୟରେ ଅଧିକ ପ୍ରଶିକ୍ଷଣ ଚାହୁଁଛନ୍ତି?',
                           ];
                         @endphp
 

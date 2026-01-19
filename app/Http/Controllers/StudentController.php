@@ -502,23 +502,32 @@ class StudentController extends Controller
 
             'pre_know_tech' => 'required|integer|min:1|max:5',
             'pre_confidence' => 'required|integer|min:1|max:5',
+            'pre_career' => 'required|integer|min:1|max:5',
             'pre_interest' => 'required|integer|min:1|max:5',
             'pre_usefulness' => 'required|integer|min:1|max:5',
+            'pre_aware' => 'required|integer|min:1|max:5',
+            'pre_ai_known' => 'required|integer|min:1|max:5',
+            'pre_et_use' => 'required|integer|min:1|max:5',
 
-            // 🔹 Post Feedback Required Fields
+            //  Post Feedback Required Fields
             'post_interested_course' => 'required',
 
             'post_knowledge_improve' => 'required|integer|min:1|max:5',
             'post_confidence_now' => 'required|integer|min:1|max:5',
             'post_engagement' => 'required|integer|min:1|max:5',
+            'post_understanding' => 'required|integer|min:1|max:5',
             'post_usefulness' => 'required|integer|min:1|max:5',
             'post_demo_helpfulness' => 'required|integer|min:1|max:5',
             'post_topic_coverage' => 'required|integer|min:1|max:5',
             'post_hands_on_usefulness' => 'required|integer|min:1|max:5',
             'post_real_life_use' => 'required|integer|min:1|max:5',
+            'post_cyber_use' => 'required|integer|min:1|max:5',
+            'post_ai_use' => 'required|integer|min:1|max:5',
+            'post_iot_use' => 'required|integer|min:1|max:5',
             'post_trainer_rating' => 'required|integer|min:1|max:5',
             'post_overall_satisfaction' => 'required|integer|min:1|max:5',
             'post_interest_increase' => 'required|integer|min:1|max:5',
+            'post_innovation' => 'required|integer|min:1|max:5',
             'post_motivation_future' => 'required|integer|min:1|max:5',
         ]);
 
@@ -529,6 +538,10 @@ class StudentController extends Controller
 
         // Prepare the data for insert/update
         $data = $request->except(['_token']);
+        $data['school_id'] = $schoolId;
+
+        $data['post_interested_course'] = json_encode($request->post_interested_course);
+
         $data['school_id'] = $schoolId;
 
         // Save or update feedback record
