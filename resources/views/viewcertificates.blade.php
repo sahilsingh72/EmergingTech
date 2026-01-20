@@ -71,7 +71,7 @@
                                                     <p><strong>Uploaded By:</strong> {{ $cert->user->name ?? 'N/A' }}</p>
                                                     <p><strong>Date:</strong> {{ $cert->training_date ?? $cert->created_at }}
                                                     </p>
-                                                    <a href="{{ route('preview.file', ['path' => $cert->onedrive_path]) }}"
+                                                    <a href="{{ route('preview.files', ['path' => $cert->onedrive_path, 'filename' => $cert->school->scm_name . '_' . $cert->file_type]) }}"
                                                         target="_blank" class="btn btn-sm btn-primary w-full mt-2">
                                                         View Certificate
                                                     </a>

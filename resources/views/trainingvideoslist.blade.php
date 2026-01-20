@@ -80,7 +80,13 @@
                                                         <td>
                                                             @if($upload->onedrive_path)
                                                                 @foreach($upload->onedrive_path as $index => $path)
-                                                                    <a href="{{ route('preview.video', ['path' => $path]) }}"
+                                                                    @php
+                                                                        $cleanSchool = preg_replace('/[^A-Za-z0-9_\-]/', '_', $upload->school->scm_name);
+                                                                    @endphp
+                                                                    <a href="{{ route('preview.files', [
+                                                                            'path' => $path,
+                                                                            'filename' => $cleanSchool . '_' . $upload->file_type
+                                                                        ]) }}"
                                                                         target="_blank" class="btn btn-sm btn-success">
                                                                         Open
                                                                     </a>

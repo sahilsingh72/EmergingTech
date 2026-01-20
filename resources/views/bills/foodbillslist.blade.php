@@ -54,7 +54,7 @@
                                     </div>
                                     @endif --}}
                                     @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL' || auth()->user()->role->name == 'DLC')
-                                        <form method="GET" action="{{ route('camp.expense.list') }}"
+                                        <form method="GET" action="{{ route('foodbills.list') }}"
                                             class="mb-3 d-flex gap-2">
                                             @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL')
                                                 {{-- District Filter --}}
@@ -269,7 +269,7 @@
 
                                                             <td>
                                                                 @if($row->bill_path)
-                                                                    <a href="{{ route('camp.expense.preview', ['path' => $row->bill_path]) }}"
+                                                                    <a href="{{ route('preview.files', ['path' => $row->bill_path, 'filename' => $row->school->scm_name . '_' . $row->bill_type]) }}"
                                                                         target="_blank" class="btn btn-sm btn-primary"> View
                                                                     </a>
                                                                 @endif
@@ -425,7 +425,7 @@
         class="content-wrapper fixed inset-0 hidden z-50 bg-black bg-opacity-50 flex items-center justify-center px-2">
         <div class="bg-white rounded-lg shadow-lg max-w-5xl w-full max-h-[80vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold mb-4">Edit Expense Bill</h3>
+                <h3 class="text-xl font-bold mb-4">Edit Food Bill</h3>
             </div>
             <form id="editForm" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -678,13 +678,16 @@
                     }
 
                     files.forEach(file => {
+                        const filename = file.school.replace(/[^A-Za-z0-9_\-]/g, '_') + '_' + file.file_type;
+
                         list.innerHTML += `
-                <a href="/preview-files?path=${encodeURIComponent(file.file_path)}" target="_blank"
-                   class="list-group-item list-group-item-action">
-                    <i class="fas fa-eye mr-2 text-primary"></i>
-                    Uploaded on ${new Date(file.created_at).toLocaleDateString()}
-                </a>
-            `;
+                            <a href="/preview-files?path=${encodeURIComponent(file.file_path)}
+                            &filename=${filename}" target="_blank"
+                            class="list-group-item list-group-item-action">
+                                <i class="fas fa-eye mr-2 text-primary"></i>
+                                Uploaded on ${new Date(file.created_at).toLocaleDateString()}
+                            </a>
+                        `;
                     });
 
                     $('#uploadViewerModal').modal('show');

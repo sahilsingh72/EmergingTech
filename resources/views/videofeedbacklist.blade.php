@@ -85,7 +85,7 @@
                                                                     $names = is_array($upload->file_name) ? $upload->file_name : [$upload->file_name];
                                                                 @endphp
                                                                 @foreach($paths as $index => $path)
-                                                                    <a href="{{ route('preview.files', ['path' => $path]) }}"
+                                                                    <a href="{{ route('preview.files', ['path' => $path, 'filename' => $upload->school->scm_name . '_'. $upload->designation . '_' . $upload->file_type]) }}"
                                                                         target="_blank" class="btn btn-sm btn-success">
                                                                         Open
                                                                     </a>

@@ -317,7 +317,9 @@ class AttendanceController extends Controller
     public function previewFiles(Request $request)
     {
         $path = $request->query('path');
-
+        $filename = $request->query('filename', 'document');
+        $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filename);
+        
         $downloadUrl = Cache::remember("onedrive_download_" . md5($path), 300, function () use ($path) {
             $fileInfo = $this->oneDrive->getFileInfo($path);
             return $fileInfo['@microsoft.graph.downloadUrl'] ?? null;
@@ -332,11 +334,39 @@ class AttendanceController extends Controller
 
         // Stream based on type
         if (str_contains($contentType, 'pdf')) {
-            return response($response->body(), 200)->header('Content-Type', 'application/pdf');
+            return response($response->body(), 200)->header('Content-Type', 'application/pdf')->header(
+                'Content-Disposition',
+                'inline; filename="' . $filename . '.pdf"'
+            );
         } elseif (str_contains($contentType, 'image')) {
-            return response($response->body(), 200)->header('Content-Type', $contentType);
+            $extension = match (true) {
+                str_contains($contentType, 'jpeg') => 'jpg',
+                str_contains($contentType, 'png')  => 'png',
+                str_contains($contentType, 'webp') => 'webp',
+                default => 'jpg',
+            };
+
+            return response($response->body(), 200)
+                ->header('Content-Type', $contentType)
+                ->header(
+                    'Content-Disposition',
+                    'inline; filename="' . $filename . '.' . $extension . '"'
+                );
         } elseif (str_contains($contentType, 'video')) {
-            return response($response->body(), 200)->header('Content-Type', $contentType);
+            $extension = match (true) {
+                str_contains($contentType, 'mp4')  => 'mp4',
+                str_contains($contentType, 'webm') => 'webm',
+                str_contains($contentType, 'ogg')  => 'ogg',
+                str_contains($contentType, 'mov')  => 'mov',
+                default => 'mp4',
+            };
+
+            return response($response->body(), 200)
+                ->header('Content-Type', $contentType)
+                ->header(
+                    'Content-Disposition',
+                    'inline; filename="' . $filename . '.' . $extension . '"'
+                );
         } else {
             return response('Unsupported file type', 415);
         }

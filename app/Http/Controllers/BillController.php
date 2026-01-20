@@ -248,6 +248,8 @@ class BillController extends Controller
                 $files->push([
                     'file_url'   => $url,
                     'file_path'  => $paths[$index] ?? $paths[0] ?? null,
+                    'file_type'  => $upload->file_type,
+                    'school'     => $upload->school->scm_name,
                     'created_at' => $upload->created_at,
                 ]);
             }
@@ -300,9 +302,9 @@ class BillController extends Controller
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
 
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('campexpensebills', compact('schools'));
     }

@@ -79,7 +79,9 @@
                                                         <td>
                                                             @if($upload->onedrive_path)
                                                                 @foreach($upload->onedrive_path as $index => $path)
-                                                                    <a href="{{ route('preview.files', ['path' => $path]) }}"
+                                                                    <a href="{{ route('preview.files', ['path' => $path,
+                                                                        'filename' => $upload->school->scm_name . '_' . $upload->file_type
+                                                                        ]) }}"
                                                                         target="_blank" class="btn btn-sm btn-success">
                                                                         Open
                                                                     </a>
