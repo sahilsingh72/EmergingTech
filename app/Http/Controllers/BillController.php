@@ -215,6 +215,7 @@ class BillController extends Controller
                 'attendance' => $uploads->contains('attendance_sheet'), 
                 'photos' => $uploads->contains('training_photo'), 
                 'video' => $uploads->contains('training_video'), 
+                'institute_feedback' => $uploads->contains('institute_feedback'), 
                 'video_feedback' => $uploads->contains('video_feedback'), 
                 'certificate' => $uploads->contains('training_completion_certificate'),
             ];
