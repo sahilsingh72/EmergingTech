@@ -12,5 +12,6 @@ return [
     'school_food_bills'                => 8,
     'travel_bills'                     => 9,
     'expenses_bills'                   => 10,
+    'institute_feedback'               => 11,
 
 ];

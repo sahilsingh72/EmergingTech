@@ -54,8 +54,7 @@
                                     </div>
                                     @endif --}}
                                     @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL' || auth()->user()->role->name == 'DLC')
-                                        <form method="GET" action="{{ route('foodbills.list') }}"
-                                            class="mb-3 d-flex gap-2">
+                                        <form method="GET" action="{{ route('foodbills.list') }}" class="mb-3 d-flex gap-2">
                                             @if(auth()->user()->role->name == 'Accounts' || auth()->user()->role->name == 'OKCL')
                                                 {{-- District Filter --}}
                                                 <select name="district_id" class="form-control">
@@ -138,87 +137,88 @@
                                             @endphp
                                             <tbody>
                                                 @foreach($groupedRecords as $schoolId => $schoolRows)
-                                                                    @php
-                                                                        $school = $schoolRows->first()->school;
-                                                                        $schoolTotal = $schoolRows->sum('amount');
-                                                                        $collapseId = 'school_' . $schoolId;
-                                                                    @endphp
+                                                    @php
+                                                        $school = $schoolRows->first()->school;
+                                                        $schoolTotal = $schoolRows->sum('amount');
+                                                        $collapseId = 'school_' . $schoolId;
+                                                    @endphp
 
-                                                                    {{--SCHOOL HEADER ROW --}}
-                                                                    <tr class="school-row bg-gray-100 cursor-pointer font-semibold"
-                                                                        onclick="toggleSchool('{{ $collapseId }}')">
-                                                                        <td class="text-center">
-                                                                            <i class="fas fa-chevron-down" id="icon-{{ $collapseId }}"></i>
-                                                                        </td>
-                                                                        <td>{{ $school->scm_dist }}</td>
-                                                                        <td>{{ $school->scm_name }}</td>
-                                                                        <td>
-                                                                            {{ \Carbon\Carbon::parse($schoolRows->first()->training_date)->format('d-m-Y') }}
-                                                                        </td>
-                                                                        <td class="text-green-700">
-                                                                            ₹{{ number_format($schoolTotal, 2) }}
-                                                                        </td>
-                                                                        <td>
-                                                                            <span class="badge bg-info">
-                                                                                {{ $schoolRows->count() }} Bills
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            @php
-                                                                                $statuses = $schoolRows->pluck('status')->unique();
-                                                                            @endphp
-                                                                            @if($statuses->count() === 1)
-                                                                                @if($statuses->first() == 'Pending')
-                                                                                    <span class="badge bg-warning">All Pending</span>
-                                                                                @elseif($statuses->first() == 'Approved')
-                                                                                    <span class="badge bg-success">All Approved</span>
-                                                                                @else
-                                                                                    <span class="badge bg-danger">All Rejected</span>
-                                                                                @endif
-                                                                            @else
-                                                                                <span class="badge bg-secondary">Mixed Statuses</span>
-                                                                            @endif
-                                                                        </td>
-                                                                        @if(in_array(Auth::user()->role_id, [3, 8, 2]))
-                                                                            <td>
-                                                                                <i class="fas fa-print"></i>
-                                                                            </td>
-                                                                        @endif
-                                                                        @if(in_array(Auth::user()->role_id, [3, 8]))
-                                                                            <td><i class="fas fa-folder-open"></i></td>
-                                                                        @endif
-                                                                    </tr>
+                                                    {{--SCHOOL HEADER ROW --}}
+                                                    <tr class="school-row bg-gray-100 cursor-pointer font-semibold"
+                                                        onclick="toggleSchool('{{ $collapseId }}')">
+                                                        <td class="text-center">
+                                                            <i class="fas fa-chevron-down" id="icon-{{ $collapseId }}"></i>
+                                                        </td>
+                                                        <td>{{ $school->scm_dist }}</td>
+                                                        <td>{{ $school->scm_name }}</td>
+                                                        <td>
+                                                            {{ \Carbon\Carbon::parse($schoolRows->first()->training_date)->format('d-m-Y') }}
+                                                        </td>
+                                                        <td class="text-green-700">
+                                                            ₹{{ number_format($schoolTotal, 2) }}
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-info">
+                                                                {{ $schoolRows->count() }} Bills
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            @php
+                                                                $statuses = $schoolRows->pluck('status')->unique();
+                                                            @endphp
+                                                            @if($statuses->count() === 1)
+                                                                @if($statuses->first() == 'Pending')
+                                                                    <span class="badge bg-warning">All Pending</span>
+                                                                @elseif($statuses->first() == 'Approved')
+                                                                    <span class="badge bg-success">All Approved</span>
+                                                                @else
+                                                                    <span class="badge bg-danger">All Rejected</span>
+                                                                @endif
+                                                            @else
+                                                                <span class="badge bg-secondary">Mixed Statuses</span>
+                                                            @endif
+                                                        </td>
+                                                        @if(in_array(Auth::user()->role_id, [3, 8, 2]))
+                                                            <td>
+                                                                <i class="fas fa-print"></i>
+                                                            </td>
+                                                        @endif
+                                                        @if(in_array(Auth::user()->role_id, [3, 8]))
+                                                            <td><i class="fas fa-folder-open"></i></td>
+                                                        @endif
+                                                    </tr>
 
-                                                                    {{-- PROGRESS ROW --}}
-                                                                    <tr class="bg-white {{ $collapseId }} d-none">
-                                                                        <td></td>
-                                                                        <td colspan="100%">
-                                                                            @php
-                                                                                $progress = $schoolProgress[$schoolId] ?? [];
-                                                                                $steps = [
-                                                                                    'Attendance Uploaded' => $progress['attendance'] ?? false,
-                                                                                    'Training Photos Uploaded' => $progress['photos'] ?? false,
-                                                                                    'Training Video Uploaded' => $progress['video'] ?? false,
-                                                                                    'Video Feedback Submitted' => $progress['video_feedback'] ?? false,
-                                                                                    'Completion Certificate Uploaded' => $progress['certificate'] ?? false,
-                                                                                ];
+                                                    {{-- PROGRESS ROW --}}
+                                                    <tr class="bg-white {{ $collapseId }} d-none">
+                                                        <td></td>
+                                                        <td colspan="100%">
+                                                            @php
+                                                                $progress = $schoolProgress[$schoolId] ?? [];
+                                                                $steps = [
+                                                                    'Attendance Uploaded' => $progress['attendance'] ?? false,
+                                                                    'Training Photos Uploaded' => $progress['photos'] ?? false,
+                                                                    'Training Video Uploaded' => $progress['video'] ?? false,
+                                                                    'Institute Feedback Uploaded' => $progress['institute_feedback'] ?? false,
+                                                                    'Video Feedback Uploaded' => $progress['video_feedback'] ?? false,
+                                                                    'Completion Certificate Uploaded' => $progress['certificate'] ?? false,
+                                                                ];
 
-                                                                                $allCompleted = collect($steps)->every(fn($v) => $v === true);
-                                                                                $completed = collect($steps)->filter()->count();
-                                                                                $total = count($steps);
-                                                                                $percent = ($completed / $total) * 100;
-                                                                            @endphp
+                                                                $allCompleted = collect($steps)->every(fn($v) => $v === true);
+                                                                $completed = collect($steps)->filter()->count();
+                                                                $total = count($steps);
+                                                                $percent = ($completed / $total) * 100;
+                                                            @endphp
 
-                                                                            <!-- Progress Bar -->
+                                                            <!-- Progress Bar -->
 
-                                                                            <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
-                                                                                <div class="h-3 bg-green-600"
-                                                                                    style="width: {{ $percent }}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <small class="text-muted">
-                                                                                {{ $completed }} / {{ $total }} steps completed
-                                                                            </small>
+                                                            <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                                <div class="h-3 bg-green-600"
+                                                                    style="width: {{ $percent }}%">
+                                                                </div>
+                                                            </div>
+                                                            <small class="text-muted">
+                                                                {{ $completed }} / {{ $total }} steps completed
+                                                            </small>
                                                         </div>
                                                         <!-- Step Icons -->
                                                         <div class="flex justify-between text-sm mt-2">
@@ -228,7 +228,8 @@
                                                                         'Attendance Uploaded' => 'attendance_sheet',
                                                                         'Training Photos Uploaded' => 'training_photo',
                                                                         'Training Video Uploaded' => 'training_video',
-                                                                        'Video Feedback Submitted' => 'video_feedback',
+                                                                        'Institute Feedback Uploaded' => 'institute_feedback',
+                                                                        'Video Feedback Uploaded' => 'video_feedback',
                                                                         'Completion Certificate Uploaded' => 'training_completion_certificate',
                                                                     ];
                                                                     $type = $map[$label];
@@ -602,7 +603,7 @@
                 renderTable();
             });
 
-            // 🔽 Sorting click
+            //  Sorting click
             $(document).on("click", ".sort", function () {
                 let columnIndex = $(this).data("column");
                 sortDirection[columnIndex] = !sortDirection[columnIndex]; // toggle asc/desc

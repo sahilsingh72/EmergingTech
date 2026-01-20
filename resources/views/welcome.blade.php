@@ -1441,7 +1441,7 @@
             class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
           </div>
           <div class="relative z-10">
-            <div class="text-5xl font-bold text-blue-600 mb-2 stat-number" data-target="50" data-suffix="%">50%</div>
+            <div class="text-5xl font-bold text-blue-600 mb-2 stat-number" data-target="100" data-suffix="%">100%</div>
             <p class="text-gray-600 font-medium">Emerging Tech Gadget</p>
           </div>
           <div
@@ -2099,36 +2099,42 @@ window.addEventListener('load', function() {
     }
   }, 150);
 });
- // Counter Animation on Hover - Continuous Counting
-  document.querySelectorAll('.stat-card').forEach(card => {
-    const numberEl = card.querySelector('.stat-number');
-    const target = parseInt(numberEl.getAttribute('data-target'));
-    const suffix = numberEl.getAttribute('data-suffix');
-    let animationInterval = null;
-
-    card.addEventListener('mouseenter', () => {
-      if (animationInterval) return; // Already animating
-
+ document.addEventListener('DOMContentLoaded', function() {
+  const statCards = document.querySelectorAll('.stat-card');
+ 
+  statCards.forEach(card => {
+    const statNumber = card.querySelector('.stat-number');
+    const target = parseInt(statNumber.getAttribute('data-target'));
+    const suffix = statNumber.getAttribute('data-suffix');
+    let currentTimer = null;
+   
+    card.addEventListener('mouseenter', function() {
+      // Clear any existing animation
+      if (currentTimer) {
+        clearInterval(currentTimer);
+      }
+     
+      // Start counting animation
+      animateCounter(statNumber, target, suffix);
+    });
+   
+    function animateCounter(element, target, suffix) {
       let current = 0;
-      const increment = target / 60; // 60 steps for smooth animation
-      
-      animationInterval = setInterval(() => {
+      const duration = 1000; // 1 second
+      const increment = target / (duration / 16); // 60fps
+     
+      currentTimer = setInterval(() => {
         current += increment;
         if (current >= target) {
-          current = 0; // Reset to 0 and continue counting
+          current = target;
+          clearInterval(currentTimer);
+          currentTimer = null;
         }
-        numberEl.textContent = Math.floor(current) + suffix;
-      }, 25); // Update every 25ms
-    });
-
-    card.addEventListener('mouseleave', () => {
-      if (animationInterval) {
-        clearInterval(animationInterval);
-        animationInterval = null;
-        numberEl.textContent = target + suffix; // Return to original value
-      }
-    });
+        element.textContent = Math.floor(current) + suffix;
+      }, 16);
+    }
   });
+});
   </script>
 </body>
 
