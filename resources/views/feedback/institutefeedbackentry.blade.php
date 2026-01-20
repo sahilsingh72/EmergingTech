@@ -139,8 +139,8 @@
 
                     <div class="border rounded p-3 mb-4 bg-light">
                       <h1 class="">Camp Implementation Feedback</h1><br>
-                    <p class="fw-bold text-secondary mb-3">
-                      Please rate on a scale of 1–5 (★)
+                      <p class="fw-bold text-secondary mb-3">
+                        Please rate on a scale of 1–5 (★)
                       (1 = Poor | 2 = Fair | 3 = Good | 4 = Very Good | 5 = Excellent)
                     </p>
 
@@ -157,41 +157,42 @@
                         'equipment_quality' => 'Quality of equipment and learning materials',
                         'overall_impact' => 'Overall impact on students'
                       ];
-                    @endphp
+                      @endphp
 
                     <div class="row">
                       @foreach($ratingQuestions as $key => $label)
-                        <div class="col-md-6 mb-4">
+                      <div class="col-md-6 mb-4">
                           <label>{{ $loop->iteration }}. {{ $label }}</label>
 
                               @php
                                 $value = old($key, $existingFeedback->$key ?? 0);
-                              @endphp
+                                @endphp
                           <div class="star-rating">
                             @for ($i = 1; $i <= 5; $i++)
-                              <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="{{ $key }}"
-                                onclick="setRating('{{ $key }}', {{ $i }})"></i>
-                            @endfor
+                            <i class="fa fa-star {{ $value >= $i ? 'selected' : '' }}" data-question="{{ $key }}"
+                              onclick="setRating('{{ $key }}', {{ $i }})"></i>
+                              @endfor
+                            </div>
+                            
+                            <input type="hidden" id="{{ $key }}_input" name="{{ $key }}" value="{{ $value }}" required>
                           </div>
-
-                          <input type="hidden" id="{{ $key }}_input" name="{{ $key }}" value="{{ $value }}" required>
+                          @endforeach
                         </div>
-                      @endforeach
-                    </div>
-
-                  </div>  
+                        
+                      </div>  
                   <div class="border rounded p-3 mb-4 bg-light">
-
+                    
+                    <h1 class="">Outcome & Impact</h1><br>
                     <div class="mb-3">
                       <label class="fw-semibold">
-                        11. Did the camp increase students’ awareness about emerging technology?
+                        1. Did the camp increase students’ awareness about emerging technology?
                       </label><br>
                       <label>
                         <input type="radio" name="awareness_increased" value="1" 
-                          {{ old('awareness_increased', $existingFeedback->awareness_increased ?? '') == 1 ? 'checked' : '' }} required> 
+                        {{ old('awareness_increased', $existingFeedback->awareness_increased ?? '') == 1 ? 'checked' : '' }} required> 
                           Yes
-                      </label>
-                      <label class="ms-3">
+                        </label>
+                        <label class="ms-3">
                         <input type="radio" name="awareness_increased" value="0"  
                           {{ old('awareness_increased', $existingFeedback->awareness_increased ?? '') === 0 ? 'checked' : '' }}>
                           No
@@ -200,7 +201,7 @@
 
                     <div class="mb-3">
                       <label class="fw-semibold">
-                        12. Did students show enthusiasm and interest during sessions?
+                        2. Did students show enthusiasm and interest during sessions?
                       </label><br>
                       <label><input type="radio" name="student_enthusiasm" value="High" required {{ old('student_enthusiasm', $existingFeedback->student_enthusiasm ?? '') == 'High' ? 'checked' : '' }}> High</label>
                       <label class="ms-3"><input type="radio" name="student_enthusiasm" value="Moderate" {{ old('student_enthusiasm', $existingFeedback->student_enthusiasm ?? '') == 'Moderate' ? 'checked' : '' }}> Moderate</label>
@@ -209,7 +210,7 @@
 
                     <div class="mb-3">
                       <label class="fw-semibold">
-                        13. Do you feel such programs are beneficial for school/college students?
+                        3. Do you feel such programs are beneficial for school/college students?
                       </label><br>
                       <label><input type="radio" name="program_beneficial" value="Strongly Agree" {{ old('program_beneficial', $existingFeedback->program_beneficial ?? '') == 'Strongly Agree' ? 'checked' : '' }} required> Strongly
                         Agree</label>
@@ -226,7 +227,7 @@
                         );
                       @endphp
                       <label class="fw-semibold">
-                        14. Would you like similar advanced level programs in the future?
+                        4. Would you like similar advanced level programs in the future?
                       </label><br>
                       <label><input type="checkbox" name="future_program_interest[]" value="AI" {{ in_array('AI', $future) ? 'checked' : '' }} > AI</label>
                       <label class="ms-3"><input type="checkbox" name="future_program_interest[]" value="IoT & Robotics" {{ in_array('IoT & Robotics', $future) ? 'checked' : '' }}> IoT &Robotics</label>
@@ -235,11 +236,16 @@
                     </div>
                   </div>
 
+                  @php
+                    use Illuminate\Support\Facades\Auth;
+                    $user = Auth::user();
+                  @endphp
+                  @if($user->role_id == 3 || $user->role_id == 6)
                     <button class="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded text-lg">
                       Submit Feedback
                     </button>
+                  @endif
                   </form>
-
 
                 </div>
               </div>

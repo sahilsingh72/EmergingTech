@@ -113,6 +113,7 @@
                                                     <th class="border px-3 py-2 sort" data-column="1">School Name</th>
                                                     <th class="border px-3 py-2 sort" data-column="2">UDISE</th>
                                                     <th class="border px-3 py-2">Attendance</th>
+                                                    <th class="border px-3 py-2">Training Photo</th>
                                                     <th class="border px-3 py-2">Training Video</th>
                                                     <th class="border px-3 py-2">Video Feedback</th>
                                                     <th class="border px-3 py-2">Student Feedback</th>
@@ -136,6 +137,9 @@
                                                         $hasAttendance = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'attendance_sheet')->exists();
 
+                                                        $hasPhoto = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
+                                                            ->where('file_type', 'training_photo')->exists();
+
                                                         $hasVideo = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'training_video')->exists();
 
@@ -157,6 +161,11 @@
                                                         {{-- Attendance --}}
                                                         <td class="border px-3 py-2 text-center">
                                                             {!! $hasAttendance ? '✅' : '❌' !!}
+                                                        </td>
+
+                                                        {{-- Training Photo --}}
+                                                        <td class="border px-3 py-2 text-center">
+                                                            {!! $hasPhoto ? '✅' : '❌' !!}
                                                         </td>
 
                                                         {{-- Training Video --}}

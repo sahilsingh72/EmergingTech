@@ -93,7 +93,7 @@
                                             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md
                                                 flex items-center justify-center gap-2 transition">
                                             <i class="fas fa-star"></i>
-                                            Fill Feedback Online
+                                            Feedback Entry
                                         </button>
                                     </a>
 
