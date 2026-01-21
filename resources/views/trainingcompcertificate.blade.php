@@ -80,8 +80,9 @@
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Upload Training Completion Certificate</h2>
 
-                                    <!-- Download Button -->
-                                    <div class="flex justify-end mb-6">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+
+                                        <!-- Download file -->
                                         <button id="downloadBtn"
                                             class="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition flex items-center space-x-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
@@ -91,7 +92,31 @@
                                             </svg>
                                             <span>Download Training Completion Certificate</span>
                                         </button>
+
+                                        <!-- View List -->
+                                        <a href="{{ route('trainingcompcertificate.list') }}"
+                                        class="w-full sm:w-auto">
+                                            <button
+                                                class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md
+                                                    flex items-center justify-center gap-2 transition">
+                                                <i class="fas fa-list"></i>
+                                                View Certificate List
+                                            </button>
+                                        </a>
+
                                     </div>
+                                    <!-- Download Button -->
+                                    {{-- <div class="flex justify-end mb-6">
+                                        <button id="downloadBtn"
+                                            class="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition flex items-center space-x-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                                            </svg>
+                                            <span>Download Training Completion Certificate</span>
+                                        </button>
+                                    </div> --}}
 
                                     <form id="certificateUploadForm" method="POST"
                                         action="{{ route('upload.certificate') }}" enctype="multipart/form-data">
@@ -208,17 +233,17 @@
                                                     ({{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded)
                                                 </div>
                                             @endif --}}
-                                            @if($selectedSchoolId && $totalStudents < 120)
+                                            {{-- @if($selectedSchoolId && $totalStudents < 120)
                                                 <div class="text-red-600 mt-2 font-semibold">
                                                     ⚠️ Minimum 120 students are required to complete training.
                                                     (Currently {{ $totalStudents }} students)
                                                 </div>
-                                            @endif
+                                            @endif --}}
                                         @endif
 
                                         @if(!$canUploadCertificate)
                                             <p class="text-red-600 mt-2">
-                                                ⚠️ You must upload all previous training evidence files (pages 1 to 4) before
+                                                ⚠️ You must upload all previous training evidence files (pages 1 to 6) before
                                                 uploading the Training Completion Certificate.
                                             </p>
                                         @endif
@@ -238,6 +263,8 @@
                                                         'attendance_sheet' => 'attendance',
                                                         'training_photo' => 'trainingphotos',
                                                         'training_video' => 'trainingvideos',
+                                                        'written_feedback' => 'writtenfeedback',
+                                                        'institute_feedback' => 'institute.feedback',
                                                         'video_feedback' => 'uploadfeedback',
                                                         default => null,
                                                     };
@@ -308,7 +335,7 @@
                                                     Completion Certificate
                                                 </span>
                                             </div>
-                                            @if($selectedSchoolId)
+                                            {{-- @if($selectedSchoolId)
                                                 @php
                                                     $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
                                                         ->where('attendance', 1)->count();
@@ -335,7 +362,7 @@
                                                         {{ $studentsWithFeedback }} / {{ $totalStudents }} uploaded
                                                     </span>
                                                 </div>
-                                            @endif
+                                            @endif --}}
                                             {{-- ✅ FINAL STEP: Training Completed --}}
                                             <div class="flex flex-col items-center">
                                                 <div class="w-14 h-14 flex items-center justify-center rounded-full border-4 transition-all duration-300

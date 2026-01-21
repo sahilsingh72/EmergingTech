@@ -10,12 +10,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 text-dark">Institute Feedback List</h1>
+                            <h1 class="m-0 text-dark">Training Completion Certificate List</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Institute Feedback List</a></li>
-                                <li class="breadcrumb-item active">Feedback</li>
+                                <li class="breadcrumb-item"><a href="#">Training Completion Certificate List</a></li>
+                                <li class="breadcrumb-item active">Training Completion</li>
                             </ol>
                         </div>
                     </div>
@@ -27,7 +27,7 @@
                     <div class="max-w-8xl mx-auto space-y-6">
                         <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                             <div class="bg-white rounded-lg w-full">
-                                <h2 class="text-2xl font-semibold text-center mb-6">Institute Feedback List</h2>
+                                <h2 class="text-2xl font-semibold text-center mb-6">Training Completion Certificate List</h2>
 
                                 @if(session('info'))
                                     <div class="alert alert-info">{{ session('info') }}</div>
@@ -70,7 +70,7 @@
                                         <tbody>
                                             @php $sno = 1; @endphp
                                             @forelse($uploads as $upload)
-                                                @if(in_array($upload->file_type, ['institute_feedback']))
+                                                @if(in_array($upload->file_type, ['training_completion_certificate']))
                                                     <tr>
                                                         <td>{{ $sno++ }}</td>
                                                         <td>{{$upload->school->scm_name}} -
@@ -126,9 +126,9 @@
                                                 </div>
 
                                                 <div class="modal-body">
-                                                    <div class="mb-3" id="institutefeedbackFilegroup" style="display:none;">
-                                                        <label>Replace Institute Feedback File</label>
-                                                        <input type="file" name="new_institute_feedback" class="form-control"
+                                                    <div class="mb-3" id="trainingcompletionFilegroup" style="display:none;">
+                                                        <label>Replace Completion Certificate File</label>
+                                                        <input type="file" name="new_training_completion_certificate" class="form-control"
                                                             accept="application/pdf,image/*">
                                                     </div>
                                                 </div>
@@ -246,8 +246,8 @@
             const editModal = new bootstrap.Modal(document.getElementById('editModal'));
 
             // Show only the relevant file input
-            if (fileType === 'institute_feedback') {
-                document.getElementById('institutefeedbackFilegroup').style.display = 'block';
+            if (fileType === 'training_completion_certificate') {
+                document.getElementById('trainingcompletionFilegroup').style.display = 'block';
             }
 
             // Set form action

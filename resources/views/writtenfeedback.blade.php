@@ -40,12 +40,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 text-dark">Written Feedback</h1>
+                            <h1 class="m-0 text-dark">Student Feedback</h1>
                         </div><!-- /.col -->
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="#">Feedback</a></li>
-                                <li class="breadcrumb-item active">Written Feedback</li>
+                                <li class="breadcrumb-item active">Student Feedback</li>
                             </ol>
                         </div><!-- /.col -->
                     </div><!-- /.row -->
@@ -62,18 +62,35 @@
                </div>
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                        <div class="max-w-8xl mx-auto space-y-6">
                             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                                <div class="bg-white rounded-lg w-full">
 
-                                    <h2 class="text-2xl font-semibold text-center mb-6">Upload Feedback</h2>
-                                    
-                                    <!-- list button -->
-                                    <div class="mb-4 flex justify-end">
-                                        <a href="#"><button
-                                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2">
-                                            <i class="fas fa-list"></i>  View uploaded Feedback
-                                        </button></a>
+                                    <h2 class="text-2xl font-semibold text-center mb-6">Upload Student Feedback</h2>
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+
+                                        <!-- Download PDF -->
+                                        <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" target="_blank"
+                                        class="w-full sm:w-auto">
+                                            <button
+                                                class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md
+                                                    flex items-center justify-center gap-2 transition">
+                                                <i class="fas fa-file-pdf"></i>
+                                                Student Feedback Form
+                                            </button>
+                                        </a>
+
+                                        <!-- View List -->
+                                        <a href="{{ route('upload.writtenfeedback.list') }}"
+                                        class="w-full sm:w-auto">
+                                            <button
+                                                class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-md
+                                                    flex items-center justify-center gap-2 transition">
+                                                <i class="fas fa-list"></i>
+                                                View Feedback List
+                                            </button>
+                                        </a>
+
                                     </div>
                                     <form id="feedbackUploadForm" method="POST" action="{{ route('upload.writtenfeedback') }}"
                                         enctype="multipart/form-data">
@@ -84,7 +101,8 @@
                                                 <select name="school_id" id="school_id" class="form-control shadow-sm">
                                                     <option value="">-- Select School --</option>
                                                     @foreach($schools as $school)
-                                                        <option value="{{ $school->scm_id }}">
+                                                        <option value="{{ $school->scm_id }}"
+                                                            data-training-date="{{ $school->training_date }}">
                                                             {{ $school->scm_name }} - {{ $school->scm_udise_code }},
                                                             {{ $school->scm_dist }}
                                                         </option>
@@ -99,16 +117,14 @@
                                                         class="block text-sm font-medium text-gray-700 mb-1">Date of
                                                         Training</label>
                                                     <input type="date" id="training_date" name="training_date"
-                                                        class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm">
+                                                        class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-green-300 shadow-sm" readonly>
                                                 </div>
-
-                                                <!-- Time From - To -->
 
                                             </div>
                                             </br>
                                             <!-- Upload Instruction -->
                                             <label class="block text-sm font-medium text-gray-700 mb-1 mt-3">Upload
-                                                Feedback Pdf (all feedback should be in one pdf file)</label>
+                                                Feedback Pdf (all 120 student's feedback should be in one pdf file)</label>
                                             <!-- Upload File (pdf) -->
                                             <div id="dropZone"
                                                 class="border-2 border-dashed border-gray-400 rounded-md p-8 text-center cursor-pointer hover:border-green-500 transition mb-6">
@@ -156,11 +172,6 @@
                                             Submit Feedback
                                         </button>
                                     </form>
-                                    <div class="mt-6">
-                                        <i class="fas fa-download"></i>
-                                        <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
-                                        class="text-blue-600 hover:underline" target="_blank">Download Training Feedback Form</a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -170,6 +181,14 @@
         </div>
     </div>
     </div>
+        <script>
+        document.getElementById('school_id').addEventListener('change', function () {
+            const option = this.options[this.selectedIndex];
+            const trainingDate = option.dataset.trainingDate || '';
+
+            document.getElementById('training_date').value = trainingDate;
+        });
+    </script>
     <script>
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('feedbackUploadForm');
@@ -310,9 +329,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (!(file.type.startsWith("image/") || file.type === "application/pdf")) {
-                alert("Only images and PDF files are allowed!");
+                alert("Only PDF files are allowed!");
                 return;
             }
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
 
             uploadedFile = file;
             fileList.innerHTML = ""; // clear previous preview
@@ -325,10 +348,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (file.type.startsWith("image/")) {
                     // Image preview
                     fileDiv.innerHTML = `
-                <img src="${reader.result}" class="w-full h-full object-cover cursor-pointer">
-                <button type="button" 
-                    class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded">X</button>
-            `;
+                        <img src="${reader.result}" class="w-full h-full object-cover cursor-pointer">
+                        <button type="button" 
+                            class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded">X</button>
+                    `;
 
                     // Open modal on click
                     fileDiv.querySelector("img").addEventListener("click", () => {
@@ -363,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 fileDiv.querySelector("button").addEventListener("click", () => {
                     fileList.removeChild(fileDiv);
                     uploadedFile = null;
+                    fileInput.value = "";
                 });
 
                 fileList.appendChild(fileDiv);
@@ -391,12 +415,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 modal.classList.remove("flex");
             }
         });
-
-        // Auto fetch Date
-        document.addEventListener("DOMContentLoaded", function () {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById("training_date").value = today;
-        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @if (session('success'))
@@ -406,7 +424,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 text: "{{ session('success') }}",
                 icon: 'success',
                 confirmButtonText: 'OK'
-            })
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to another page
+                    window.location.href = "{{ route('upload.writtenfeedback.list') }}";
+
+                }
+            });
         </script>
     @endif
 </body>

@@ -42,6 +42,8 @@
                                 'attendance_sheet' => 'Attendance Sheet',
                                 'training_photo' => 'Training Photo',
                                 'training_video' => 'Training Video',
+                                'written_feedback' => 'Student Feedback',
+                                'institute_feedback' => 'Institute Feedback',
                                 'video_feedback' => 'Video Feedback',
                                 'training_completion_certificate' => 'Completion Certificate',
                             ];
@@ -66,13 +68,13 @@
                             @endforeach
 
                             <!-- STUDENT FEEDBACK -->
-                        <div class="border rounded p-4 text-center">
+                        {{-- <div class="border rounded p-4 text-center">
                             <p class="font-medium text-gray-700">Student Feedbacks</p>
                             <p class="mt-1 font-semibold
                                 {{ $studentsWithFeedback >= 120 ? 'text-green-700' : 'text-yellow-600' }}">
                                 {{ $studentsWithFeedback }} / {{ $totalStudents }}
                             </p>
-                        </div>
+                        </div> --}}
 
                         <!-- TRAINING COMPLETED -->
                         <div class="border rounded p-4 text-center sm:col-span-2 lg:col-span-3">
@@ -95,23 +97,34 @@
                                 class="w-full border rounded p-2 mb-4"
                                 placeholder="Enter audit comment"></textarea>
 
-                            @if($studentsWithFeedback < 120)
+                            @if($school->training_completed)
+                                <div class="mb-3 text-green-600 font-semibold text-sm">
+                                    ✅ Approval: Training completed
+                                </div>
+                            @else
+                                <div class="mb-3 text-red-600 font-semibold text-sm">
+                                    ⚠️ Approval: Necessary training files not uploaded
+                                </div>
+                            @endif
+                            {{-- @if($studentsWithFeedback < 120)
                                 <div class="mb-3 text-red-600 font-semibold text-sm">
                                     ⚠️ Approval: Minimum 120 student feedbacks required
                                     ({{ $studentsWithFeedback }}/120 uploaded)
                                 </div>
-                            @endif
+                            @endif --}}
                             <div class="flex flex-col sm:flex-row gap-3">
                                 {{-- <button name="action" value="approve"
-                                    class="bg-green-600 text-white px-4 py-2 rounded">
-                                    Approve
-                                </button> --}}
+                                class="px-4 py-2 rounded text-white
+                                {{ $studentsWithFeedback < 120
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700' }}"
+                                {{ $studentsWithFeedback < 120 ? 'disabled' : '' }}>
+                                Approve
+                            </button> --}}
                                 <button name="action" value="approve"
-                                    class="px-4 py-2 rounded text-white
-                                        {{ $studentsWithFeedback < 120
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-green-600 hover:bg-green-700' }}"
-                                    {{ $studentsWithFeedback < 120 ? 'disabled' : '' }}>
+                                    class="bg-green-600 text-white px-4 py-2 rounded 
+                                    {{ $school->training_completed ? '' : 'opacity-50 cursor-not-allowed' }}"
+                                    {{ $school->training_completed ? '' : 'disabled' }}>
                                     Approve
                                 </button>
 

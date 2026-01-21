@@ -29,9 +29,9 @@ class FeedbackController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('writtenfeedback', compact('schools'));
     }
@@ -41,17 +41,20 @@ class FeedbackController extends Controller
         $request->validate([
             'school_id'        => 'required|integer',
             'training_date'    => 'required|date',
-            'written_feedback' => 'required|mimes:pdf|max:10240',
+            'written_feedback' => 'required|mimes:pdf|max:51200',
         ]);
 
         $userId   = Auth::id();
         $schoolId = $request->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
 
         $fileTypeMap = config('filetypes');
 
         $file = $request->file('written_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $folder   = "School_{$schoolId}/User_{$userId}/written_feedback";
+        $folder   = "EmergingTech/{$districtName}/{$schoolName}/Student_feedback";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -59,7 +62,6 @@ class FeedbackController extends Controller
 
         TrainingUpload::create([
             'school_id'      => $schoolId,
-            'coordinator_id' => $userId,
             'file_type'      => 'written_feedback',
             'filetype_id'    => $fileTypeMap['written_feedback'] ?? null,
             'file_name'      => $file->getClientOriginalName(),
@@ -67,10 +69,98 @@ class FeedbackController extends Controller
             'onedrive_url'   => $result['url'] ?? null,
             'uploaded_by'    => $userId,
             'training_date'  => $request->training_date,
-            'description'    => $request->description,
         ]);
 
         return back()->with('success', 'Feedback uploaded successfully!');
+    }
+
+    public function writtenfeedbacklist()
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        if ($roleId == 1 || $roleId == 2) {
+            $uploads = TrainingUpload::latest()->get();
+        } else {
+            $visibleUserIds = collect([$userId]); // Always include self
+
+            if ($roleId == 3) {
+                // DLC: see uploads by themselves + coordinators + trainers under them
+                $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
+                $visibleUserIds = $visibleUserIds->merge($subUsers);
+            } elseif ($roleId == 6 || $roleId == 5) {
+
+                // Coordinator: see own uploads + DLC + trainers under same DLC
+                $dlcId = $user->assignUnder_id; // DLC user_id
+                $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
+                $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
+            }
+            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+        }
+
+        return view('writtenfeedbacklist', compact('uploads', 'schools'));
+    }
+    public function editwrittenFeedback($id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        if ($upload->file_type !== 'written_feedback') {
+            abort(403, 'Invalid file type');
+        }
+
+        return response()->json([
+            'upload_id'     => $upload->upload_id,
+            'file_name'     => $upload->file_name,
+            'onedrive_path' => $upload->onedrive_path,
+            'onedrive_url'  => $upload->onedrive_url,
+            'file_type'     => $upload->file_type,
+        ]);
+    }
+
+    public function updatewrittenfeedback(Request $request, $id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        $request->validate([
+            'new_written_feedback' => 'nullable|mimes:pdf,jpeg,png,jpg|max:51200',
+        ]);
+
+        if ($request->hasFile('new_written_feedback')) {
+
+            $existingPath = $upload->onedrive_path;
+            if (is_array($existingPath)) {
+                $existingPath = $existingPath[0] ?? null;
+            }
+
+            if (!empty($existingPath)) {
+                try {
+                    $this->oneDrive->deleteFile($existingPath);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to delete old written feedback from OneDrive: " . $e->getMessage());
+                }
+            }
+
+            $file = $request->file('new_written_feedback');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $schoolId = $upload->school_id;
+            $school = School::find($schoolId);
+            $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/Student_feedback";
+
+            $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
+
+            $upload->file_name = $file->getClientOriginalName();
+            $upload->onedrive_path = $result['path'];
+            $upload->onedrive_url = $result['url'] ?? null;
+            $upload->save();
+        }
+
+        return back()->with('success', 'Student Feedback updated successfully!');
     }
 
     public function instituteFeedback()

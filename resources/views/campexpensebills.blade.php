@@ -56,7 +56,8 @@
                                             <select name="school_id" id="school_id" class="form-control" required>
                                                 <option value="">-- Select School --</option>
                                                 @foreach($schools as $school)
-                                                    <option value="{{ $school->scm_id }}">
+                                                    <option value="{{ $school->scm_id }}"
+                                                        data-training-date="{{ $school->training_date }}">
                                                         {{ $school->scm_name }} - {{ $school->scm_udise_code }},
                                                         {{ $school->scm_dist }}
                                                     </option>
@@ -76,9 +77,7 @@
                                             Submit All Bills
                                         </button>
                                     </form>
-
-
-
+                                    
                                 </div>
                             </div>
                         </div>
@@ -90,7 +89,7 @@
     </div>
     <script>
         // let billOptions = ["Inauguration", "Generator", "Camp Fooding", "Misc"];
-        let billOptions = ["Inauguration", "Generator", "Misc"];
+        let billOptions = ["Generator", "Misc"];
         let usedOptions = [];
 
         const container = document.getElementById("expenseContainer");
@@ -122,6 +121,8 @@
             usedOptions = usedOptions.filter(v => v !== removedValue);
         }
 
+        let selectedTrainingDate = null;
+
         function renderRow() {
             let available = billOptions.filter(opt => !usedOptions.includes(opt));
 
@@ -149,7 +150,11 @@
                 <label class="font-semibold block mb-1">Date of Training</label>
                 <input type="date" 
                     name="training_date[]"
-                    class="border p-2 rounded w-full" required/>
+                    class="border p-2 rounded w-full bg-gray-100"
+                    value="${selectedTrainingDate ?? ''}"
+                    readonly
+                    required/>
+
             </div>
 
             <div>
@@ -231,6 +236,17 @@
 
         addBtn.disabled = true;
         addBtn.classList.add("bg-gray-400");
+
+        document.getElementById('school_id').addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            selectedTrainingDate = selectedOption.dataset.trainingDate || null;
+
+            // Update all existing rows
+            document.querySelectorAll("input[name='training_date[]']").forEach(input => {
+                input.value = selectedTrainingDate ?? '';
+            });
+        });
+
     </script>
 
 

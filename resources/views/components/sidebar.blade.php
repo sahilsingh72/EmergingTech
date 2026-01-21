@@ -227,7 +227,6 @@
                 </li>
               </ul>
             @endif
-
           </li>
 
         @endif
@@ -236,9 +235,9 @@
         @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'active' : '' }}">
               <i class="nav-icon fas fa-edit "></i>
               <p>
                 Feedback
@@ -249,25 +248,45 @@
             <ul class="nav nav-treeview">
               @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
                 <li class="nav-item">
+                  @if($user->role_id == 3 || $user->role_id == 6)
+                    <a href="{{route('writtenfeedback')}}"
+                      class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list') ? 'active' : '' }}">
+                      <i class="fas fa-clipboard-check  nav-icon"></i>
+                      <p>Student Feedback Upload</p>
+                    </a>
+                  @elseif($user->role_id == 2)
+                    <a href="{{route('upload.writtenfeedback.list')}}"
+                      class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list') ? 'active' : '' }}">
+                      <i class="fas fa-clipboard-check  nav-icon"></i>
+                      <p>Student Feedback List</p>
+                    </a>
+                  @endif
+                </li>
+              @endif
+              @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+                <li class="nav-item">
                   <a href="{{route('student.feedback')}}"
                     class="nav-link {{ request()->routeIs('student.feedback') ? 'active' : '' }}">
-                    <i class="fas fa-pen  nav-icon"></i>
-                    <p>Student Feedback</p>
+                    <i class="fas fa-star-half-alt  nav-icon"></i>
+                    <p>Student Feedback Entry</p>
                   </a>
                 </li>
               @endif
               @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
                 <li class="nav-item">
-                  <a 
-                    @if($user->role_id == 3 || $user->role_id == 6)
-                      href="{{route('institute.feedback')}}"
-                    @elseif($user->role_id == 2)
-                      href="{{route('institute.feedback.list')}}"
-                    @endif
-                    class="nav-link {{ request()->routeIs('institute.feedback', 'institute.feedback.list') ? 'active' : '' }}">
-                    <i class="fas fa-school-circle-check  nav-icon"></i>
-                    <p>Institute Feedback</p>
-                  </a>
+                  @if($user->role_id == 3 || $user->role_id == 6)
+                    <a href="{{route('institute.feedback')}}"
+                      class="nav-link {{ request()->routeIs('institute.feedback', 'institute.feedback.list') ? 'active' : '' }}">
+                      <i class="fas fa-school-circle-check  nav-icon"></i>
+                      <p>Institute Feedback Uplaod</p>
+                    </a>
+                  @elseif($user->role_id == 2)
+                    <a href="{{route('institute.feedback.list')}}"
+                     class="nav-link {{ request()->routeIs('institute.feedback', 'institute.feedback.list') ? 'active' : '' }}">
+                      <i class="fas fa-school-circle-check  nav-icon"></i>
+                      <p>Institute Feedback List</p>
+                    </a>
+                  @endif
                 </li>
               @endif
               @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)

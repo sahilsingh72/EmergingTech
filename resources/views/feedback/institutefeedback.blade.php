@@ -362,7 +362,7 @@
             }
 
             if (!(file.type.startsWith("image/") || file.type === "application/pdf")) {
-                alert("Only images and PDF files are allowed!");
+                alert("Only PDF files are allowed!");
                 return;
             }
 
@@ -419,7 +419,7 @@
                 fileDiv.querySelector("button").addEventListener("click", () => {
                     fileList.innerHTML = "";
                     uploadedFile = null;
-                    fileInput.value = ""; // VERY IMPORTANT
+                    fileInput.value = "";
                 });
 
                 fileList.appendChild(fileDiv);

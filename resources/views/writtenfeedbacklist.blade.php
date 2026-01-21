@@ -10,11 +10,11 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0 text-dark">Institute Feedback List</h1>
+                            <h1 class="m-0 text-dark">Student Feedback List</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="#">Institute Feedback List</a></li>
+                                <li class="breadcrumb-item"><a href="#">Student Feedback List</a></li>
                                 <li class="breadcrumb-item active">Feedback</li>
                             </ol>
                         </div>
@@ -27,7 +27,7 @@
                     <div class="max-w-8xl mx-auto space-y-6">
                         <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                             <div class="bg-white rounded-lg w-full">
-                                <h2 class="text-2xl font-semibold text-center mb-6">Institute Feedback List</h2>
+                                <h2 class="text-2xl font-semibold text-center mb-6">Student Feedback List</h2>
 
                                 @if(session('info'))
                                     <div class="alert alert-info">{{ session('info') }}</div>
@@ -70,7 +70,7 @@
                                         <tbody>
                                             @php $sno = 1; @endphp
                                             @forelse($uploads as $upload)
-                                                @if(in_array($upload->file_type, ['institute_feedback']))
+                                                @if(in_array($upload->file_type, ['written_feedback']))
                                                     <tr>
                                                         <td>{{ $sno++ }}</td>
                                                         <td>{{$upload->school->scm_name}} -
@@ -126,10 +126,10 @@
                                                 </div>
 
                                                 <div class="modal-body">
-                                                    <div class="mb-3" id="institutefeedbackFilegroup" style="display:none;">
-                                                        <label>Replace Institute Feedback File</label>
-                                                        <input type="file" name="new_institute_feedback" class="form-control"
-                                                            accept="application/pdf,image/*">
+                                                    <div class="mb-3" id="studentfeedbackFilegroup" style="display:none;">
+                                                        <label>Replace Student Feedback File</label>
+                                                        <input type="file" name="new_written_feedback" class="form-control"
+                                                            accept="application/pdf">
                                                     </div>
                                                 </div>
 
@@ -142,8 +142,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -246,13 +244,12 @@
             const editModal = new bootstrap.Modal(document.getElementById('editModal'));
 
             // Show only the relevant file input
-            if (fileType === 'institute_feedback') {
-                document.getElementById('institutefeedbackFilegroup').style.display = 'block';
+            if (fileType === 'written_feedback') {
+                document.getElementById('studentfeedbackFilegroup').style.display = 'block';
             }
 
             // Set form action
-            document.getElementById('editForm').action = `/institute-feedback-list/${id}`;
-
+            document.getElementById('editForm').action = `/student-feedback-list/${id}`;
             editModal.show();
         }
     </script>

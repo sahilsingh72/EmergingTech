@@ -434,6 +434,8 @@ class TrainingEvidenceController extends Controller
             'attendance_sheet'  => 'Attendance Sheet',
             'training_photo'    => 'Training Photo',
             'training_video'    => 'Training Video',
+            'written_feedback'  => 'Student Feedback',
+            'institute_feedback' => 'Institute Feedback',
             'video_feedback'    => 'Video Feedback',
         ];
 
@@ -507,7 +509,10 @@ class TrainingEvidenceController extends Controller
         //  Re-check training completion after certificate upload
         $this->evaluateTrainingCompletion($schoolId);
 
-        return back()->with('success', 'training completion certificate uploaded successfully!');
+        return redirect()
+            ->route('trainingcompcertificate.list')
+            ->with('success', 'training completion certificate uploaded successfully!');
+        // return back()->with('success', 'training completion certificate uploaded successfully!');
     }
 
     private function evaluateTrainingCompletion(int $schoolId): void
@@ -517,6 +522,8 @@ class TrainingEvidenceController extends Controller
             'attendance_sheet',
             'training_photo',
             'training_video',
+            'written_feedback',
+            'institute_feedback',
             'video_feedback',
             'training_completion_certificate'
         ];
@@ -542,13 +549,80 @@ class TrainingEvidenceController extends Controller
         $meetsStudentRule =
             ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
 
-        if ($allTrainingFilesUploaded && $meetsStudentRule) {
+        // if ($allTrainingFilesUploaded && $meetsStudentRule) {
+        if ($allTrainingFilesUploaded) {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 1]);
         } else {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 0]);
         }
+    }
+    public function trainingcompcertificatelist()
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        if ($roleId == 1 || $roleId == 2) {
+            $uploads = TrainingUpload::latest()->get();
+        } else {
+            $visibleUserIds = collect([$userId]); // Always include self
+
+            if ($roleId == 3) {
+                // DLC: see uploads by themselves + coordinators + trainers under them
+                $subUsers = User::where('assignUnder_id', $userId)->pluck('id');
+                $visibleUserIds = $visibleUserIds->merge($subUsers);
+            } elseif ($roleId == 6 || $roleId == 5) {
+
+                // Coordinator: see own uploads + DLC + trainers under same DLC
+                $dlcId = $user->assignUnder_id; // DLC user_id
+                $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
+                $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
+            }
+            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+        }
+
+        return view('trainingcompcertificatelist', compact('uploads', 'schools'));
+    }
+    public function editTrainingCompletionCertificate($id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        if ($upload->file_type !== 'training_completion_certificate') {
+            abort(403, 'Invalid file type');
+        }
+
+        return response()->json($upload); // we’ll load it dynamically in modal via JS
+    }
+    public function updateTrainingCompletionCertificate(Request $request, $id)
+    {
+        $upload = TrainingUpload::findOrFail($id);
+
+        $schoolId = $upload->school_id;
+        $school = School::find($schoolId);
+        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+
+        // Upload new file
+        if ($request->hasFile('new_training_completion_certificate')) {
+            $file = $request->file('new_training_completion_certificate');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $folder = "EmergingTech/{$districtName}/{$schoolName}/training_completion_certificate";
+            $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
+
+            // Update record
+            $upload->update([
+                'file_name'     => $file->getClientOriginalName(),
+                'onedrive_path' => $result['path'],
+                'onedrive_url'  => $result['url'] ?? null,
+            ]);
+        }
+
+        return back()->with('success', 'Training Completion Certificate updated successfully!');
     }
     public function viewUploadedCertificates(Request $request)
     {

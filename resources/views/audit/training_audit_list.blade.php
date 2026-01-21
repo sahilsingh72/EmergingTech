@@ -115,8 +115,10 @@
                                                     <th class="border px-3 py-2">Attendance</th>
                                                     <th class="border px-3 py-2">Training Photo</th>
                                                     <th class="border px-3 py-2">Training Video</th>
-                                                    <th class="border px-3 py-2">Video Feedback</th>
                                                     <th class="border px-3 py-2">Student Feedback</th>
+                                                    <th class="border px-3 py-2">Institute Feedback</th>
+                                                    <th class="border px-3 py-2">Video Feedback</th>
+                                                    {{-- <th class="border px-3 py-2">Student Feedback</th> --}}
                                                     <th class="border px-3 py-2">Certificate</th>
                                                     <th class="border px-3 py-2">Training</th>
                                                     <th class="border px-3 py-2">Audit Status</th>
@@ -139,6 +141,12 @@
 
                                                         $hasPhoto = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'training_photo')->exists();
+                                                        
+                                                        $hasStudent = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
+                                                            ->where('file_type', 'written_feedback')->exists();
+
+                                                        $hasInstitute = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
+                                                            ->where('file_type', 'institute_feedback')->exists();
 
                                                         $hasVideo = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'training_video')->exists();
@@ -173,15 +181,25 @@
                                                             {!! $hasVideo ? '✅' : '❌' !!}
                                                         </td>
 
+                                                        {{-- Student Feedback --}}
+                                                        <td class="border px-3 py-2 text-center">
+                                                            {!! $hasStudent ? '✅' : '❌' !!}
+                                                        </td>
+
+                                                        {{-- Institute Feedback --}}
+                                                        <td class="border px-3 py-2 text-center">
+                                                            {!! $hasInstitute ? '✅' : '❌' !!}
+                                                        </td>
+                                                        
                                                         {{-- Video Feedback --}}
                                                         <td class="border px-3 py-2 text-center">
                                                             {!! $hasVideoFeedback ? '✅' : '❌' !!}
                                                         </td>
 
                                                         {{-- Student Feedback --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        {{-- <td class="border px-3 py-2 text-center">
                                                             {{ $studentsWithFeedback }} / {{ $totalStudents }}
-                                                        </td>
+                                                        </td> --}}
 
                                                         {{-- Certificate --}}
                                                         <td class="border px-3 py-2 text-center">
