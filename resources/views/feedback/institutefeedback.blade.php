@@ -147,7 +147,7 @@
                                     </label>
 
                                     <div id="dropZone"
-                                        class="border-2 border-dashed border-gray-400 rounded-md p-8 text-center cursor-pointer hover:border-green-500 transition mb-6">
+                                        class="border-2 border-dashed border-gray-400 rounded-md p-8 text-center cursor-pointer hover:border-green-500 transition mb-1">
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="mx-auto h-10 w-10 text-gray-500 mb-2" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
@@ -158,9 +158,13 @@
 
                                         <input type="file" name="institute_feedback" id="fileUpload" class="hidden"
                                             accept="application/pdf,image/*,.heic,.heif" required>
-                                        <!-- File Preview Section -->
-                                        <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
-                                        </div>
+                                            <p class="text-xs text-gray-500 mt-0">
+                                                Maximum file size: <strong>10 MB</strong> (PDF/Image)
+                                            </p>
+                                            <div id="fileList" class="mt-3 text-sm text-gray-700 space-y-3"></div>
+                                    </div>
+                                    <!-- File Preview Section -->
+                                    <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                     </div>
 
                                     <!-- Modal for preview -->
@@ -212,9 +216,19 @@
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
 
+                const MAX_SIZE = 10 * 1024 * 1024;
                 const file = feedbackInput.files[0];
                 if (!file) {
                     Swal.fire('Error', 'Please select a file before uploading.', 'error');
+                    return;
+                }
+        
+                if (file.size > MAX_SIZE) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File too large',
+                        text: 'Maximum allowed file size is 10 MB.',
+                    });
                     return;
                 }
 

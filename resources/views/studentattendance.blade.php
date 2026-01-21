@@ -91,7 +91,8 @@
                                         <select name="school_id" id="school_id" class="form-control">
                                             <option value="">-- Select School --</option>
                                             @foreach($schools as $school)
-                                                <option value="{{ $school->scm_id }}">
+                                                <option value="{{ $school->scm_id }}"
+                                                    data-training-date="{{ $school->training_date }}">
                                                     {{ $school->scm_name }} - {{ $school->scm_udise_code }},
                                                     {{ $school->scm_dist }}
                                                 </option>
@@ -130,6 +131,10 @@
 
                                         <input type="file" name="attendance_files[]" id="fileUpload" class="hidden"
                                             multiple accept="application/pdf,image/*,.heic,.heif" required>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Maximum file size: <strong>10 MB</strong> (PDF/Image)
+                                        </p>
+
                                         <!-- File Preview Section -->
                                         <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                         </div>
@@ -163,6 +168,9 @@
                                         <p class="text-gray-500">Drag and drop trainer image, or click to select</p>
                                         <input type="file" name="trainer_image" id="trainerUpload" class="hidden"
                                             accept="image/*" required>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Maximum file size: <strong>10 MB</strong> (Image only)
+                                        </p>
                                         <div id="trainerPreview"
                                             class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3"></div>
                                     </div>
@@ -214,12 +222,23 @@
 
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-
+                const MAX_SIZE = 10 * 1024 * 1024;
+                
                 const file = attendanceInput.files[0];
                 if (!file) {
                     Swal.fire('Error', 'Please select a file before uploading.', 'error');
                     return;
                 }
+
+                if (file.size > MAX_SIZE) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File too large',
+                        text: 'Maximum allowed file size is 10 MB.',
+                    });
+                    return;
+                }
+
 
                 const formData = new FormData(form);
                 progressContainer.classList.remove('hidden');
@@ -309,11 +328,12 @@
             });
         </script>
     @endif
-    <script>
-        // Auto-set today's date
-        document.addEventListener('DOMContentLoaded', function () {
-            let today = new Date().toISOString().split('T')[0];
-            document.getElementById('training_date').value = today;
+     <script>
+        document.getElementById('school_id').addEventListener('change', function () {
+            const option = this.options[this.selectedIndex];
+            const trainingDate = option.dataset.trainingDate || '';
+
+            document.getElementById('training_date').value = trainingDate;
         });
     </script>
     <script>

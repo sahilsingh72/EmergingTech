@@ -128,8 +128,9 @@
                                                 <div class="modal-body">
                                                     <div class="mb-3" id="institutefeedbackFilegroup" style="display:none;">
                                                         <label>Replace Institute Feedback File</label>
-                                                        <input type="file" name="new_institute_feedback" class="form-control"
+                                                        <input type="file" name="new_institute_feedback" id="editFileInput" class="form-control"
                                                             accept="application/pdf,image/*">
+                                                        <small class="text-muted">PDF/Image • Max size 10 MB</small>
                                                     </div>
                                                 </div>
 
@@ -142,8 +143,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -256,5 +255,25 @@
             editModal.show();
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+        const fileInput = document.getElementById('editFileInput');
+        const file = fileInput.files[0];
+
+        const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+        if (file.size > MAX_SIZE) {
+            e.preventDefault();
+            Swal.fire(
+                'File Too Large',
+                'Maximum allowed file size is 10 MB.',
+                'error'
+            );
+            fileInput.value = '';
+            return;
+        }
+    });
+</script>
 </body>
 @include('components.footer')
