@@ -132,14 +132,17 @@
                                                     class="mx-auto h-10 w-10 text-gray-500 mb-2" fill="none"
                                                     viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12V4m0 8l-3-3m3 3l3-3" />
+                                                    stroke-width="2"
+                                                    d="M4 16v1a1 1 0 001 1h14a1 1 0 001-1v-1M12 12V4m0 8l-3-3m3 3l3-3" />
                                                 </svg>
                                                 <p class="text-gray-500">Drag and drop PDF file, or click to select</p>
                                                 <input type="file" name="written_feedback" id="fileUpload"
-                                                    class="hidden" accept="application/pdf">
+                                                class="hidden" accept="application/pdf">
                                                 <div id="fileList" class="mt-3 text-sm text-gray-700 space-y-3"></div>
                                             </div>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Maximum file size: <strong>50 MB</strong> (PDF only)
+                                            </p>
                                             <!-- File Preview Section -->
                                             <div id="fileList" class="mt-3 text-sm text-gray-700 flex flex-wrap gap-3">
                                             </div>
@@ -202,8 +205,18 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const file = feedbackInput.files[0];
+        const MAX_SIZE = 50 * 1024 * 1024;
         if (!file) {
             Swal.fire('Error', 'Please select a file before uploading.', 'error');
+            return;
+        }
+        
+        if (file.size > MAX_SIZE) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File too large',
+                text: 'Maximum allowed file size is 50 MB.',
+            });
             return;
         }
 

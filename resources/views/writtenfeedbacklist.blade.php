@@ -129,7 +129,9 @@
                                                     <div class="mb-3" id="studentfeedbackFilegroup" style="display:none;">
                                                         <label>Replace Student Feedback File</label>
                                                         <input type="file" name="new_written_feedback" class="form-control"
+                                                            id="editFileInput"
                                                             accept="application/pdf">
+                                                            <small class="text-muted">PDF only • Max size 50 MB</small>
                                                     </div>
                                                 </div>
 
@@ -149,6 +151,7 @@
             </section>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function () {
@@ -253,5 +256,38 @@
             editModal.show();
         }
     </script>
+    <script>
+document.getElementById('editForm').addEventListener('submit', function (e) {
+    const fileInput = document.getElementById('editFileInput');
+    const file = fileInput.files[0];
+
+    const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+
+    if (!file) {
+        e.preventDefault();
+        Swal.fire('Error', 'Please select a PDF file to update.', 'error');
+        return;
+    }
+
+    if (file.type !== 'application/pdf') {
+        e.preventDefault();
+        Swal.fire('Invalid File', 'Only PDF files are allowed.', 'error');
+        fileInput.value = '';
+        return;
+    }
+
+    if (file.size > MAX_SIZE) {
+        e.preventDefault();
+        Swal.fire(
+            'File Too Large',
+            'Maximum allowed file size is 50 MB.',
+            'error'
+        );
+        fileInput.value = '';
+        return;
+    }
+});
+</script>
+
 </body>
 @include('components.footer')
