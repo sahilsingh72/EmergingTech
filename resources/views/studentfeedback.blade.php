@@ -134,7 +134,7 @@
                                                         data-column="8">UDISE Code</th>
                                                     {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="10">Address</th> --}}
-                                                    <th class="border px-4 py-2 text-center">Upload Feedback</th>
+                                                    {{-- <th class="border px-4 py-2 text-center">Upload Feedback</th> --}}
                                                     @php
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
@@ -157,9 +157,8 @@
                                                         <td class="border px-4 py-2">{{ $student->stu_schoolname }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
                                                         {{-- <td class="border px-4 py-2">{{ $student->stu_address}}</td> --}}
-                                                        <td class="border px-4 py-2 text-center">
+                                                        {{-- <td class="border px-4 py-2 text-center">
                                                             @if($student->feedback_file_url)
-                                                                {{-- ✅ If already uploaded, show only the PDF icon --}}
                                                                 <a href="{{ route('student.feedback.preview', ['path' => $student->feedback_file_path]) }}" target="_blank"
                                                                 class="text-blue-600 hover:text-blue-800 mx-1" title="View PDF">
                                                                     <i class="fas fa-file-pdf"></i>
@@ -168,7 +167,6 @@
                                                                     <i class="fas fa-check-circle"></i>
                                                                 </span>
                                                             @else
-                                                                {{-- ⬆️ Otherwise show upload button --}}
                                                                 @php
                                                                     $roleId = Auth::user()->role_id;
                                                                 @endphp
@@ -182,7 +180,7 @@
                                                                     <i class="fas fa-times-circle"></i>
                                                                 </span>
                                                             @endif
-                                                        </td>
+                                                        </td> --}}
                                                         <td class="border px-4 py-2 text-center">
                                                             @php
                                                                 $roleId = Auth::user()->role_id;

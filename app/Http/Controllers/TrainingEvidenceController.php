@@ -434,7 +434,7 @@ class TrainingEvidenceController extends Controller
             'attendance_sheet'  => 'Attendance Sheet',
             'training_photo'    => 'Training Photo',
             'training_video'    => 'Training Video',
-            'written_feedback'  => 'Student Feedback',
+            // 'written_feedback'  => 'Student Feedback',
             'institute_feedback' => 'Institute Feedback',
             'video_feedback'    => 'Video Feedback',
         ];

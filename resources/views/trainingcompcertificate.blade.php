@@ -222,10 +222,16 @@
                                         @if($selectedSchoolId)
                                             @php
                                                 $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)->where('attendance', 1)->count();
-                                                $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)
-                                                    ->where('attendance', 1)
-                                                    ->whereNotNull('feedback_file_url')
-                                                    ->count();
+                                                $studentsWithFeedback = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId);
+                                                $studentsWithFeedbackEntry = \App\Models\StudentFeedback::where('school_id', $selectedSchoolId)
+                                                    ->whereIn('stu_id', function ($q) use ($selectedSchoolId) {
+                                                        $q->select('stu_id')
+                                                        ->from('student_mst')
+                                                        ->where('stu_scm_id', $selectedSchoolId)
+                                                        ->where('attendance', 1);
+                                                    })
+                                                    ->distinct('stu_id')
+                                                    ->count('stu_id');
                                             @endphp
                                             {{-- @if($studentsWithFeedback < $totalStudents)
                                                 <div class="text-red-600 mt-2">
@@ -239,11 +245,27 @@
                                                     (Currently {{ $totalStudents }} students)
                                                 </div>
                                             @endif --}}
+                                                <div class="mt-2 text-sm font-semibold
+        {{ $studentsWithFeedbackEntry === $totalStudents && $totalStudents >= 120
+            ? 'text-green-600'
+            : 'text-red-600' }}">
+        📊 Student Feedback Entry:
+        <span class="font-bold">
+            {{ $studentsWithFeedbackEntry }} / {{ $totalStudents }}
+        </span>
+    </div>
+
+    @if($totalStudents < 120)
+        <div class="text-red-600 text-sm mt-1">
+            ⚠️ Minimum 120 students required (currently {{ $totalStudents }})
+        </div>
+    @endif
+
                                         @endif
 
                                         @if(!$canUploadCertificate)
                                             <p class="text-red-600 mt-2">
-                                                ⚠️ You must upload all previous training evidence files (pages 1 to 6) before
+                                                ⚠️ You must upload all previous training evidence files (pages 1 to 5) before
                                                 uploading the Training Completion Certificate.
                                             </p>
                                         @endif
@@ -335,6 +357,28 @@
                                                     Completion Certificate
                                                 </span>
                                             </div>
+                                            {{-- ✅ OPTIONAL STEP: Student Feedbacks --}}
+                                            @php
+                                                $studentFeedbackupload = \App\Models\TrainingUpload::where('school_id', $selectedSchoolId)
+                                                    ->where('file_type', 'written_feedback')
+                                                    ->whereNotNull('onedrive_path')
+                                                    ->exists();
+                                            @endphp
+                                            {{-- <div class="flex flex-col items-center"> --}}
+                                                <a class="flex flex-col items-center hover:scale-110 transition" href="{{ route('upload.writtenfeedback') }}">
+                                                    <div class="w-12 h-12 flex items-center justify-center rounded-full border-4
+                                                        {{ $studentFeedbackupload
+                                                            ? 'border-green-500 bg-green-100 text-green-600'
+                                                            : 'border-gray-300 bg-gray-100 text-gray-400' }}">
+                                                        <i class="fas {{ $studentFeedbackupload ? 'fa-check' : 'fa-times' }} text-xl"></i>
+                                                    </div>
+
+                                                    <span class="mt-2 text-sm font-medium
+                                                        {{ $studentFeedbackupload ? 'text-green-600' : 'text-gray-400' }}">
+                                                        Student Feedbacks
+                                                    </span>
+                                                </a>
+                                            {{-- </div> --}}
                                             {{-- @if($selectedSchoolId)
                                                 @php
                                                     $totalStudents = \App\Models\StudentMst::where('stu_scm_id', $selectedSchoolId)

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\InstituteFeedback;
 use App\Models\School;
+use App\Models\StudentFeedback;
+use App\Models\StudentMst;
 use App\Models\TrainingUpload;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -71,7 +73,68 @@ class FeedbackController extends Controller
             'training_date'  => $request->training_date,
         ]);
 
+        $this->evaluateTrainingCompletion($schoolId);
+
         return back()->with('success', 'Feedback uploaded successfully!');
+    }
+
+    private function evaluateTrainingCompletion(int $schoolId): void
+    {
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->count();
+
+        if ($totalStudents < 120) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 0]);
+            return;
+        }
+
+        //  All students STAR feedback entry check
+        $studentsWithFeedback = StudentFeedback::where('school_id', $schoolId)
+            ->distinct('stu_id')
+            ->count('stu_id');
+
+        $allStudentsFeedbackCompleted =
+            ($studentsWithFeedback === $totalStudents);
+
+        // Bulk feedback PDF uploaded
+        $bulkFeedbackUploaded = TrainingUpload::where('school_id', $schoolId)
+            ->where('file_type', 'written_feedback')
+            ->exists();
+
+        //  Required training files uploaded
+        $requiredFiles = [
+            'attendance_sheet',
+            'training_photo',
+            'training_video',
+            'institute_feedback',
+            'video_feedback',
+            'training_completion_certificate'
+        ];
+
+        $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
+            ->whereIn('file_type', $requiredFiles)
+            ->pluck('file_type')
+            ->unique()
+            ->toArray();
+
+        $allTrainingFilesUploaded =
+            empty(array_diff($requiredFiles, $uploadedFiles));
+
+        // Default → NOT completed
+        School::where('scm_id', $schoolId)
+            ->update(['training_completed' => 0]);
+
+        // FINAL DECISION
+        if (
+            $allStudentsFeedbackCompleted &&
+            $bulkFeedbackUploaded &&
+            $allTrainingFilesUploaded
+        ) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 1]);
+        }
     }
 
     public function writtenfeedbacklist()

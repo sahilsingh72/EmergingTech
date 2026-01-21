@@ -330,7 +330,7 @@ class StudentController extends Controller
             ]);
             
             // IMPORTANT: re-check training completion
-            $this->evaluateTrainingCompletion($schoolId);
+            // $this->evaluateTrainingCompletion($schoolId);
 
             return response()->json([
                 'success' => true,
@@ -346,47 +346,48 @@ class StudentController extends Controller
             ], 500);
         }
     }
-    private function evaluateTrainingCompletion(int $schoolId): void
-    {
-        // Required training files
-        $requiredFiles = [
-            'attendance_sheet',
-            'training_photo',
-            'training_video',
-            'video_feedback',
-            'training_completion_certificate'
-        ];
 
-        $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
-            ->whereIn('file_type', $requiredFiles)
-            ->pluck('file_type')
-            ->unique()
-            ->toArray();
+    // private function evaluateTrainingCompletion(int $schoolId): void
+    // {
+    //     // Required training files
+    //     $requiredFiles = [
+    //         'attendance_sheet',
+    //         'training_photo',
+    //         'training_video',
+    //         'video_feedback',
+    //         'training_completion_certificate'
+    //     ];
 
-        $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
+    //     $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
+    //         ->whereIn('file_type', $requiredFiles)
+    //         ->pluck('file_type')
+    //         ->unique()
+    //         ->toArray();
 
-        // Student feedback check
-        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->count();
+    //     $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
 
-        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->whereNotNull('feedback_file_url')
-            ->count();
+    //     // Student feedback check
+    //     $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+    //         ->where('attendance', 1)
+    //         ->count();
 
-        $meetsStudentRule  =
-            ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
+    //     $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+    //         ->where('attendance', 1)
+    //         ->whereNotNull('feedback_file_url')
+    //         ->count();
 
-        School::where('scm_id', $schoolId)
-            ->update(['training_completed' => 0]);
+    //     $meetsStudentRule  =
+    //         ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
 
-        // Final decision
-        if ($allTrainingFilesUploaded && $meetsStudentRule) {
-            School::where('scm_id', $schoolId)
-                ->update(['training_completed' => 1]);
-        }
-    }
+    //     School::where('scm_id', $schoolId)
+    //         ->update(['training_completed' => 0]);
+
+    //     // Final decision
+    //     if ($allTrainingFilesUploaded && $meetsStudentRule) {
+    //         School::where('scm_id', $schoolId)
+    //             ->update(['training_completed' => 1]);
+    //     }
+    // }
     public function updateFeedback(Request $request, OneDriveService $oneDriveService)
     {
         $request->validate([
@@ -550,11 +551,72 @@ class StudentController extends Controller
             $data
         );
 
+        // Re-evaluate training completion status
+        $this->evaluateTrainingCompletion($schoolId);
+
         return redirect()
             ->route('student.feedback', ['school_id' => $request->school_id])
             ->with('success', 'Feedback saved successfully!');
     }
 
+    private function evaluateTrainingCompletion(int $schoolId): void
+    {
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->count();
+
+        if ($totalStudents < 120) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 0]);
+            return;
+        }
+
+        //  All students STAR feedback entry check
+        $studentsWithFeedback = StudentFeedback::where('school_id', $schoolId)
+            ->distinct('stu_id')
+            ->count('stu_id');
+
+        $allStudentsFeedbackCompleted =
+            ($studentsWithFeedback === $totalStudents);
+
+        // Bulk feedback PDF uploaded
+        $bulkFeedbackUploaded = TrainingUpload::where('school_id', $schoolId)
+            ->where('file_type', 'written_feedback')
+            ->exists();
+
+        //  Required training files uploaded
+        $requiredFiles = [
+            'attendance_sheet',
+            'training_photo',
+            'training_video',
+            'institute_feedback',
+            'video_feedback',
+            'training_completion_certificate'
+        ];
+
+        $uploadedFiles = TrainingUpload::where('school_id', $schoolId)
+            ->whereIn('file_type', $requiredFiles)
+            ->pluck('file_type')
+            ->unique()
+            ->toArray();
+
+        $allTrainingFilesUploaded =
+            empty(array_diff($requiredFiles, $uploadedFiles));
+
+        // Default → NOT completed
+        School::where('scm_id', $schoolId)
+            ->update(['training_completed' => 0]);
+
+        // FINAL DECISION
+        if (
+            $allStudentsFeedbackCompleted &&
+            $bulkFeedbackUploaded &&
+            $allTrainingFilesUploaded
+        ) {
+            School::where('scm_id', $schoolId)
+                ->update(['training_completed' => 1]);
+        }
+    }
     public function index(Request $request)
     {
         $districtId = $request->get('district_id');
