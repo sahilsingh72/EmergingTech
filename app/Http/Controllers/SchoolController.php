@@ -65,7 +65,7 @@ class SchoolController extends Controller
         $school = School::where('scm_id', $id)->firstOrFail();
 
         $students = StudentMst::where('stu_scm_id', $id)
-            ->select('stu_id', 'stu_name', 'stu_roll_number', 'stu_class', 'stu_fathername')
+            ->select('stu_id', 'stu_name', 'stu_roll_number', 'stu_class', 'stu_fathername', 'stu_gender')
             ->orderBy('stu_name', 'asc')
             ->get();
 

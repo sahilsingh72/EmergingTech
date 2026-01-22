@@ -49,9 +49,10 @@
                                                             <tr>
                                                                 <th>Sno</th>
                                                                 <th>Name</th>
-                                                                {{-- <th>Roll No</th> --}}
                                                                 <th>Father Name</th>
+                                                                {{-- <th>Roll No</th> --}}
                                                                 <th>Class</th>
+                                                                <th>Gender</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -59,9 +60,10 @@
                                                                 <tr>
                                                                     <td>{{ $loop->iteration }}</td>
                                                                     <td>{{ $stu->stu_name }}</td>
-                                                                    {{-- <td>{{ $stu->stu_roll_number }}</td> --}}
                                                                     <td>{{ $stu->stu_fathername }}</td>
+                                                                    {{-- <td>{{ $stu->stu_roll_number }}</td> --}}
                                                                     <td>{{ $stu->stu_class }}</td>
+                                                                    <td>{{ $stu->stu_gender }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>

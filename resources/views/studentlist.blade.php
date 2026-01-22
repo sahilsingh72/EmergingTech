@@ -129,16 +129,18 @@
                                                         data-column="0">S.No</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="1">Student Name</th>
-                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="2">Roll Number</th> --}}
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="3">Class</th>
-                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="5">Gender</th>
-                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="6">DOB</th> --}}
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="7">Father's Name</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="6">DOB</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="5">Gender</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="5">Mobile number</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="2">Roll Number</th>
+                                                    <th class="border px-4 py-2 text-left cursor-pointer sort"
+                                                        data-column="3">Class</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="8">UDISE Code</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
@@ -162,17 +164,14 @@
                                                         <td class="border px-4 py-2 text-center">{{ $index + 1 }}
                                                         </td>
                                                         <td class="border px-4 py-2">{{ $student->stu_name }}</td>
-                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_roll_number }} --}}
-                                                        </td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_class }}</td>
-                                                        
+                                                        <td class="border px-4 py-2">{{ $student->stu_fathername }}</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_dob }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_gender }}</td>
-                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_dob }}</td> --}}
-                                                        <td class="border px-4 py-2">{{ $student->stu_fathername }}
-                                                        </td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_mobile }}</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_roll_number }}</td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_class }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_scm_udise }}</td>
-                                                        <td class="border px-4 py-2">{{ $student->stu_schoolname }}
-                                                        </td>
+                                                        <td class="border px-4 py-2">{{ $student->stu_schoolname }}</td>
                                                         {{-- <td class="border px-4 py-2">{{ $student->stu_address}}</td> --}}
                                                         @php
                                                             $roleId = Auth::user()->role_id;
