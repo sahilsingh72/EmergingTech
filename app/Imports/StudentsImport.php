@@ -6,6 +6,8 @@ use App\Models\StudentMst;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use Carbon\Carbon;
 
 class StudentsImport implements ToCollection
 {
@@ -69,53 +71,86 @@ class StudentsImport implements ToCollection
             $rowNumber = $index + 2; // Excel row number
 
             try {
-                $name   = trim($row[0] ?? '');
-                $gender = strtoupper(trim($row[1] ?? ''));
-                $father = trim($row[2] ?? '');
-                $class  = trim($row[3] ?? '');
+                $name   = ucwords(strtolower(trim($row[0] ?? '')));
+                $father = ucwords(strtolower(trim($row[1] ?? '')));
+                $dobRaw   = trim($row[2] ?? '');
+                $gender   = strtoupper(trim($row[3] ?? ''));
+                $mobile   = trim($row[4] ?? '');
+                $roll     = trim($row[5] ?? '');
+                $class    = trim($row[6] ?? '');
                 
-                 if ($name === '') {
+                if ($name === '') {
                     throw new \Exception("Row $rowNumber: Student Name is missing.");
                 }
 
-                if ($gender === '') {
-                    throw new \Exception("Row $rowNumber: Gender is missing.");
+                if ($father === '') {
+                    throw new \Exception("Row {$rowNumber}: Father's Name is required.");
                 }
+
+                if (is_numeric($dobRaw)) {
+                    // Excel numeric date
+                    $dob = ExcelDate::excelToDateTimeObject($dobRaw)->format('Y-m-d');
+                } else {
+                    // Replace / with -
+                    $dobRaw = str_replace('/', '-', $dobRaw);
+
+                    try {
+                        $dob = Carbon::createFromFormat('d-m-Y', $dobRaw)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        throw new \Exception("Row {$rowNumber}: Invalid DOB format. Use DD/MM/YYYY.");
+                    }
+                }               
 
                 // VALID GENDER VALUES
                 $allowedGender = ['M', 'MALE', 'F', 'FEMALE', 'O', 'OTHER'];
 
                 if (!in_array($gender, $allowedGender)) {
-                    throw new \Exception("Row $rowNumber: Invalid Gender '$gender'. Allowed: Male, Female, Other.");
+                    throw new \Exception("Row {$rowNumber}: Invalid Gender '$gender'. Allowed: Male, Female, Other.");
                 }
 
-                if ($father === '') {
-                    throw new \Exception("Row $rowNumber: Father's Name is missing.");
+                if (!preg_match('/^[0-9]{10}$/', $mobile)) {
+                    throw new \Exception("Row {$rowNumber}: Mobile number must be 10 digits.");
                 }
-
+                if ($roll === '') {
+                    throw new \Exception("Row {$rowNumber}: Roll Number is required.");
+                }
                 if (!isset($classMap[$class])) {
                     throw new \Exception("Row $rowNumber: Invalid Class '$class'. Allowed: 8, 9, 10, 11, 12.");
                 }
 
-                if (in_array($gender, ['M', 'MALE']))  $gender = 'M';
-                if (in_array($gender, ['F', 'FEMALE'])) $gender = 'F';
-                if (in_array($gender, ['O', 'OTHER']))  $gender = 'O';
+                if (in_array($gender, ['M', 'MALE'])) {
+                    $gender = 'Male';
+                } elseif (in_array($gender, ['F', 'FEMALE'])) {
+                    $gender = 'Female';
+                } elseif (in_array($gender, ['O', 'OTHER'])) {
+                    $gender = 'Other';
+                }
+
+                $exists = StudentMst::where('stu_scm_id', $this->school->scm_id)
+                    ->where('stu_name', $name)
+                    ->where('stu_fathername', $father)
+                    ->exists();
+
+                if ($exists) {
+                    throw new \Exception(
+                        "Row {$rowNumber}: Duplicate student already exists (Name, Father)."
+                    );
+                }
 
                 StudentMst::create([
                     'stu_name'         => $name,
-                    // 'stu_roll_number'  => $row[1],
-                    'stu_gender'       => $gender,
-                    // 'stu_dob'          => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[3])->format('Y-m-d'),
                     'stu_fathername'   => $father,
+                    'stu_dob'          => $dob,
+                    'stu_gender'       => $gender,
+                    'stu_mobile'       => $mobile,
+                    'stu_roll_number'  => $roll,
                     'stu_classid'      => $classMap[$class],
                     'stu_class'        => $class,
-                    // 'stu_sectionid'    => $sectionId,
-                    // 'stu_section'      => $sectionLetter,
                     'stu_scm_id'       => $this->school->scm_id,
                     'stu_scm_udise'    => $this->school->scm_udise_code,
                     'stu_schoolname'   => $this->school->scm_name,
                     'stu_distid'       => $this->districtId,
-                    // 'stu_address'      => $row[7] ?? '',
+                    
                 ]);
             } catch (\Exception $e) {
                 // THROW CLEAN MESSAGE – NOT SQL ERROR

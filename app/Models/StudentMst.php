@@ -18,6 +18,7 @@ class StudentMst extends Model
         'stu_gender',
         'stu_dob',
         'stu_fathername',
+        'stu_mobile',
         'stu_classid',
         'stu_class',
         'stu_sectionid',

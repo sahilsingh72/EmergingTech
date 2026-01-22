@@ -48,9 +48,9 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="py-12">
-                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <div class="bg-white p-8 rounded-lg w-full">
+                        <div class="max-w-8xl mx-auto space-y-6">
+                            <div class=" sm:p-8 bg-white shadow sm:rounded-lg">
+                                <div class="bg-white p-3 rounded-lg w-full">
                                     <!-- Title -->
                                     <h2 class="text-2xl font-semibold text-center mb-6">Add Student</h2>
                                     <!-- Flash Messages -->
@@ -91,19 +91,65 @@
                                             </div>
                                             <!-- Name -->
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                                <label class="block text-sm font-medium text-gray-700">Student Name</label>
                                                 <input type="text" name="stu_name" value="{{ old('stu_name') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter student name"
                                                     required>
                                             </div>
 
+                                            <!-- Father's Name -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Father's
+                                                    Name</label>
+                                                <input type="text" name="stu_fathername"
+                                                    value="{{ old('stu_fathername') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter father's name"
+                                                    required>
+                                            </div>
+
+                                            <!-- Date of Birth -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Date of
+                                                    Birth</label>
+                                                <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500">
+                                            </div>
+
+                                            <!-- Gender -->
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Gender</label>
+                                                <select name="stu_gender"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required>
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male" {{ old('stu_gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                                    <option value="Female" {{ old('stu_gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                                    <option value="Other" {{ old('stu_gender') == 'Other' ? 'selected' : '' }}>Other</option>
+                                                </select>
+                                            </div>
+
+                                            {{-- mobile --}}
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                                                <input
+                                                    type="text"
+                                                    name="stu_mobile"
+                                                    value="{{ old('stu_mobile') }}"
+                                                    maxlength="10"
+                                                    pattern="[0-9]{10}"
+                                                    placeholder="Enter 10-digit mobile number"
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
+                                                    required
+                                                >
+                                            </div>
+                                            
                                             <!-- Roll Number -->
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700">Roll
                                                     Number</label>
                                                 <input type="text" name="stu_roll_number"
                                                     value="{{ old('stu_roll_number') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500">
+                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500" placeholder="Enter roll number">
                                             </div>
 
                                             <!-- Class -->
@@ -122,7 +168,7 @@
                                             <input type="hidden" name="stu_class" id="stu_class">
 
                                             <!-- Section -->
-                                            <div>
+                                            {{-- <div>
                                                 <label class="block text-sm font-medium text-gray-700">Section</label>
                                                 <select name="stu_sectionid" id="stu_sectionid"
                                                     class="w-full border rounded px-3 py-2">
@@ -134,47 +180,20 @@
                                                     <option value="5" data-name="E">E</option>
                                                     <option value="6" data-name="F">F</option>
                                                 </select>
-                                            </div>
+                                            </div> --}}
                                             <input type="hidden" name="stu_section" id="stu_section">
 
-                                            <!-- Gender -->
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700">Gender</label>
-                                                <select name="stu_gender"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    required>
-                                                    <option value="">Select Gender</option>
-                                                    <option value="Male" {{ old('stu_gender') == 'Male' ? 'selected' : '' }}>Male</option>
-                                                    <option value="Female" {{ old('stu_gender') == 'Female' ? 'selected' : '' }}>Female</option>
-                                                    <option value="Other" {{ old('stu_gender') == 'Other' ? 'selected' : '' }}>Other</option>
-                                                </select>
-                                            </div>
 
-                                            <!-- Date of Birth -->
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700">Date of
-                                                    Birth</label>
-                                                <input type="date" name="stu_dob" value="{{ old('stu_dob') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500">
-                                            </div>
 
-                                            <!-- Father's Name -->
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700">Father's
-                                                    Name</label>
-                                                <input type="text" name="stu_fathername"
-                                                    value="{{ old('stu_fathername') }}"
-                                                    class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
-                                                    required>
-                                            </div>
+                                            
 
                                             <!-- Address -->
-                                            <div>
+                                            {{-- <div>
                                                 <label class="block text-sm font-medium text-gray-700">Address</label>
                                                 <textarea name="stu_address"
                                                     class="mt-1 block w-full border rounded-lg px-3 py-2 focus:ring-green-500 focus:border-green-500"
                                                     rows="2"></textarea>
-                                            </div>
+                                            </div> --}}
 
 
                                         </div>

@@ -55,17 +55,24 @@ class StudentController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
 
             // Read first row (header)
-            $header = $sheet->rangeToArray('A1:D1')[0];
+            $header = $sheet->rangeToArray('A1:G1')[0];
 
-            // Trim spaces
-            $header = array_map('trim', $header);
+            // Normalize headers
+            $header = array_map(function ($h) {
+                return strtolower(
+                    preg_replace('/\s+/', '', trim($h))
+                );
+            }, $header);
 
             // Expected Excel columns
             $expected = [
-                'Student Name',
-                'Gender',
-                "Student's Father Name",
-                'Class'
+                'studentname',
+                'father\'sname',
+                'dateofbirth(dd/mm/yyyy)',
+                'gender',
+                'mobileno.',
+                'rollno',
+                'class'
             ];
 
             // Validate header
@@ -195,6 +202,7 @@ class StudentController extends Controller
             'stu_gender' => 'required',
             'stu_dob' => 'nullable|date',
             'stu_fathername' => 'required',
+            'stu_mobile'  => 'required|digits:10',
             'stu_schoolname' => 'required',
             'stu_address' => 'nullable',
         ]);
@@ -204,6 +212,21 @@ class StudentController extends Controller
         $validated['stu_distid'] = $districtID;
         $validated['stu_scm_id'] = $request->stu_schoolname;
 
+        $name   = ucwords(strtolower(trim($request->stu_name)));
+        $father = ucwords(strtolower(trim($request->stu_fathername)));
+
+        $duplicate = StudentMst::where('stu_scm_id', $request->stu_schoolname)
+            ->where('stu_name', $name)
+            ->where('stu_fathername', $father)
+            ->exists();
+
+        if ($duplicate) {
+            return back()
+                ->withErrors([
+                    'duplicate' => "This student already exists (same Name and Father's Name)."
+                ])
+                ->withInput();
+        }
         StudentMst::create($validated);
 
         return redirect()->route('studentlist')->with('success', 'Student added successfully!');
@@ -573,7 +596,7 @@ class StudentController extends Controller
 
         //  All students STAR feedback entry check
         $studentsWithFeedback = StudentFeedback::where('school_id', $schoolId)
-             ->whereIn('stu_id', function ($q) use ($schoolId) {
+            ->whereIn('stu_id', function ($q) use ($schoolId) {
                 $q->select('stu_id')
                 ->from('student_mst')
                 ->where('stu_scm_id', $schoolId)
