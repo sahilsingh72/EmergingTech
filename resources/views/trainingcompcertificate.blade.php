@@ -374,7 +374,7 @@
                                                     </div>
 
                                                     <span class="mt-2 text-sm font-medium
-                                                        {{ $studentFeedbackupload ? 'text-green-600' : 'text-gray-400' }}">
+                                                        {{ $studentFeedbackupload ? 'text-green-600' : 'text-gray-500' }}">
                                                         Student Feedbacks
                                                     </span>
                                                 </a>
