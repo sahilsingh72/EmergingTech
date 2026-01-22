@@ -139,9 +139,9 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                         <th class="border px-4 py-2 text-center">Feedback Entry</th>
-                                                    @if($roleId == 3 || $roleId == 6)
+                                                    {{-- @if($roleId == 3 || $roleId == 6)
                                                         <th class="border px-4 py-2 text-center">Actions</th>
-                                                    @endif
+                                                    @endif --}}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -201,7 +201,7 @@
                                                             </span>
                                                             @endif
                                                         </td>
-                                                        @php
+                                                        {{-- @php
                                                             $roleId = Auth::user()->role_id;
                                                         @endphp
                                                         @if($roleId == 3 || $roleId == 6)
@@ -213,7 +213,7 @@
                                                                     <i class="fas fa-edit"></i> Edit
                                                                 </button>
                                                             </td>
-                                                        @endif
+                                                        @endif --}}
                                                     </tr>
                                                 @empty
                                                     <tr>

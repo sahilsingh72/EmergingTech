@@ -92,11 +92,16 @@ class FeedbackController extends Controller
 
         //  All students STAR feedback entry check
         $studentsWithFeedback = StudentFeedback::where('school_id', $schoolId)
+             ->whereIn('stu_id', function ($q) use ($schoolId) {
+                $q->select('stu_id')
+                ->from('student_mst')
+                ->where('stu_scm_id', $schoolId)
+                ->where('attendance', 1);
+            })
             ->distinct('stu_id')
             ->count('stu_id');
 
-        $allStudentsFeedbackCompleted =
-            ($studentsWithFeedback === $totalStudents);
+        $minimumFeedbackCompleted = ($studentsWithFeedback >= 120);
 
         // Bulk feedback PDF uploaded
         $bulkFeedbackUploaded = TrainingUpload::where('school_id', $schoolId)
@@ -128,7 +133,7 @@ class FeedbackController extends Controller
 
         // FINAL DECISION
         if (
-            $allStudentsFeedbackCompleted &&
+            $minimumFeedbackCompleted &&
             $bulkFeedbackUploaded &&
             $allTrainingFilesUploaded
         ) {
