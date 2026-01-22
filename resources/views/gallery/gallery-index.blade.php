@@ -81,7 +81,7 @@
                                     @if($districtId && $schoolId)
                                         <div>
                                             <div class="min-h-[250px]">
-                                                <div class="tabContent hidden" id="trainingPhotoTab">
+                                                <div class="tabContent" id="trainingPhotoTab">
                                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                         @php
                                                             $photo = $media->whereIn('filetype_id', [2, 3]);
