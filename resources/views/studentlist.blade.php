@@ -252,50 +252,6 @@
                                                 @method('PUT')
                                                 <input type="hidden" id="editStuId" name="stu_id">
                                                 <div>
-                                                    <label class="block text-sm">Name</label>
-                                                    <input type="text" id="editName" name="stu_name"
-                                                        class="w-full border rounded p-2">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-sm">Roll Number</label>
-                                                    <input type="text" id="editRoll" name="stu_roll_number"
-                                                        class="w-full border rounded p-2">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-sm font-medium">Class</label>
-                                                    <input type="text" id="editClass" name="stu_class"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium">Section</label>
-                                                    <input type="text" id="editSection" name="stu_section"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium">Gender</label>
-                                                    <select id="editGender" name="stu_gender"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                        <option value="Male">Male</option>
-                                                        <option value="Female">Female</option>
-                                                        <option value="Other">Other</option>
-                                                    </select>
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium">Date of Birth</label>
-                                                    <input type="date" id="editDOB" name="stu_dob"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
-
-                                                <div>
-                                                    <label class="block text-sm font-medium">Father's Name</label>
-                                                    <input type="text" id="editFather" name="stu_fathername"
-                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
-                                                </div>
-
-                                                <div>
                                                     <label class="block text-sm font-medium">School Name</label>
                                                     <select name="stu_schoolname" id="editSchool" class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
                                                         <option value="">-- Select School --</option>
@@ -306,12 +262,57 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
-
                                                 <div>
+                                                    <label class="block text-sm">Name</label>
+                                                    <input type="text" id="editName" name="stu_name"
+                                                        class="w-full border rounded p-2" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium">Father's Name</label>
+                                                    <input type="text" id="editFather" name="stu_fathername"
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium">Date of Birth</label>
+                                                    <input type="date" id="editDOB" name="stu_dob"
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium">Gender</label>
+                                                    <select id="editGender" name="stu_gender"
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm">Mobile Number</label>
+                                                    <input type="text" id="editMobile" name="stu_mobile"
+                                                        class="w-full border rounded p-2" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm">Roll Number</label>
+                                                    <input type="text" id="editRoll" name="stu_roll_number"
+                                                        class="w-full border rounded p-2" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium">Class</label>
+                                                    <input type="text" id="editClass" name="stu_class" required
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                </div>
+
+                                                {{-- <div>
+                                                    <label class="block text-sm font-medium">Section</label>
+                                                    <input type="text" id="editSection" name="stu_section"
+                                                        class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200">
+                                                </div> --}}
+
+                                                {{-- <div>
                                                     <label class="block text-sm font-medium">Address</label>
                                                     <textarea id="editAddress" name="stu_address"
                                                         class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-200"></textarea>
-                                                </div>
+                                                </div> --}}
 
                                                 <div class="text-right">
                                                     <button type="button" onclick="closeModal('editStudentModal')"
@@ -460,13 +461,12 @@
                     <p><strong>School:</strong> ${data.stu_schoolname}</p>
                     <p><strong>UDISE:</strong> ${data.stu_scm_udise}</p>
                     <p><strong>Name:</strong> ${data.stu_name}</p>
+                    <p><strong>Father:</strong> ${data.stu_fathername}</p>
+                    <p><strong>DOB:</strong> ${data.stu_dob}</p>
+                    <p><strong>Gender:</strong> ${data.stu_gender}</p>
+                    <p><strong>Mobile:</strong> ${data.stu_mobile}</p>
                     <p><strong>Roll No:</strong> ${data.stu_roll_number}</p>
                     <p><strong>Class:</strong> ${data.stu_class}</p>
-                    <p><strong>Section:</strong> ${data.stu_section}</p>
-                    <p><strong>Gender:</strong> ${data.stu_gender}</p>
-                    <p><strong>DOB:</strong> ${data.stu_dob}</p>
-                    <p><strong>Father:</strong> ${data.stu_fathername}</p>
-                    <p><strong>Address:</strong> ${data.stu_address}</p>
                 `;
                 $("#studentDetails").html(details);
                 openModal("viewStudentModal");
@@ -481,15 +481,16 @@
                 $("#editStuId").val(data.stu_id);
                 $("#editName").val(data.stu_name);
                 $("#editRoll").val(data.stu_roll_number);
+                $("#editMobile").val(data.stu_mobile);
                 $("#editClass").val(data.stu_class);
-                $("#editSection").val(data.stu_section);
+                // $("#editSection").val(data.stu_section);
                 $("#editGender").val(data.stu_gender);
                 $("#editDOB").val(data.stu_dob);
                 $("#editFather").val(data.stu_fathername);
                 $("#editSchool").val(data.stu_scm_id);
-                $("#editUDISE").val(data.stu_scm_udise);
-                $("#editAddress").val(data.stu_address);
-                $("#editDist").val(data.stu_dist);
+                // $("#editUDISE").val(data.stu_scm_udise);
+                // $("#editAddress").val(data.stu_address);
+                // $("#editDist").val(data.stu_dist);
                 openModal("editStudentModal");
             });
         });
@@ -505,9 +506,13 @@
                 method: "PUT",
                 data: formData,
                 success: function(res) {
-                    //alert(res.message);
                     closeModal("editStudentModal");
-                    location.reload(); // refresh table
+                    let schoolId = $("#filterSchool").val();
+                    if (schoolId) {
+                        window.location.href = "{{ route('studentlist') }}" + "?school_id=" + schoolId;
+                    } else {
+                        window.location.href = "{{ route('studentlist') }}";
+                    }
                 },
                 error: function(xhr) {
                     alert("Something went wrong!");

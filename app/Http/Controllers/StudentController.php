@@ -184,13 +184,13 @@ class StudentController extends Controller
         $school = School::select('scm_name', 'scm_udise_code')->where('scm_id', $request->stu_schoolname)->first();
 
         //CHECK STUDENT LIMIT (130 max)
-        $currentCount = StudentMst::where('stu_scm_id', $request->stu_schoolname)->count();
+            // $currentCount = StudentMst::where('stu_scm_id', $request->stu_schoolname)->count();
 
-        if ($currentCount >= 130) {
-            return back()
-                ->withErrors(["limit" => "Maximum 130 students (120 students for camp and 10 students for backup) allowed per school. You already have $currentCount students."])
-                ->withInput();
-        }
+            // if ($currentCount >= 130) {
+            //     return back()
+            //         ->withErrors(["limit" => "Maximum 130 students (120 students for camp and 10 students for backup) allowed per school. You already have $currentCount students."])
+            //         ->withInput();
+            // }
 
         $validated = $request->validate([
             'stu_name' => 'required',
@@ -259,6 +259,7 @@ class StudentController extends Controller
             'stu_section' => 'nullable',
             'stu_gender' => 'required',
             'stu_dob' => 'nullable|date',
+            'stu_mobile' => 'required|digits:10',
             'stu_fathername' => 'required',
             'stu_schoolname' => 'required',
             'stu_address' => 'nullable',
@@ -268,6 +269,21 @@ class StudentController extends Controller
         $validated['stu_scm_udise'] = $school->scm_udise_code;
 
         $validated['stu_scm_id'] = $request->stu_schoolname;
+        $validated['stu_name'] = ucwords(strtolower(trim($validated['stu_name'])));
+        $validated['stu_fathername'] = ucwords(strtolower(trim($validated['stu_fathername'])));
+
+        $duplicate = StudentMst::where('stu_scm_id', $request->stu_schoolname)
+            ->where('stu_name', $validated['stu_name'])
+            ->where('stu_fathername', $validated['stu_fathername'])
+            ->where('stu_id', '!=', $id)
+            ->exists();
+
+        if ($duplicate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Duplicate student exists with same Name and Father.'
+            ], 422);
+        }
 
         $student->update($validated);
 
@@ -279,7 +295,7 @@ class StudentController extends Controller
         $student = StudentMst::findOrFail($id);
         $student->delete();
         return redirect()->route('studentlist')->with('success', 'Student deleted successfully.');
-    }
+    } 
 
     public function studentFeedback(Request $request)
     {

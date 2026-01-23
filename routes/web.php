@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Services\OneDriveService;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BillController;
@@ -35,6 +36,9 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 
     Route::get('/calendar-events', [DashboardController::class, 'calendarEvents']);
     Route::post('/update-training-date', [DashboardController::class, 'updateTrainingDate']);
+
+    Route::get('/youtube-live-status', [YouTubeLiveController::class, 'status']);
+    Route::get('/youtube-live-status/zones', [YouTubeLiveController::class, 'multiZoneStatus']);
 
     Route::get('/gallery', [GalleryController::class, 'gallery'])->name('gallery');
     Route::get('/get-schools-by-district-{districtId}', [GalleryController::class, 'getSchoolsByDistrict']);
@@ -76,6 +80,9 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 
     Route::get('/trainingcompcertificate',[TrainingEvidenceController::class,'trainingcompcertificate'])->name('trainingcompcertificate');
     Route::post('/trainingcompcertificate',[TrainingEvidenceController::class,'uploadcertificate'])->name('upload.certificate');
+    Route::get('/trainingcompcertificate-list',[TrainingEvidenceController::class,'trainingcompcertificatelist'])->name('trainingcompcertificate.list');
+    Route::get('/trainingcompcertificate-list/{id}/edit', [TrainingEvidenceController::class, 'editTrainingCompCertificate'])->name('training.comp.certificate.edit');
+    Route::put('/trainingcompcertificate-list/{id}', [TrainingEvidenceController::class, 'updateTrainingCompCertificate'])->name('training.comp.certificate.update');
     Route::get('/uploaded-certificates', [TrainingEvidenceController::class, 'viewUploadedCertificates'])->name('uploaded.certificates');
 
     Route::get('/addstudent',[StudentController::class,'addstudent'])->name('addstudent');
@@ -85,6 +92,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
 
     Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
     Route::get('/student',[StudentController::class,'studentlist'])->name('studentlist');
+    Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])->name('students.bulkDelete');
     
     // View student details
     Route::get('/students/{id}', [StudentController::class, 'show'])->name('student.view');
@@ -104,10 +112,22 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::post('/student-feedback-update', [StudentController::class, 'updateFeedback'])->name('student.feedback.update');
     Route::get('/feedback-report', [StudentController::class, 'index'])->name('feedback.report');
 
+    Route::get('/institute-feedback',[FeedbackController::class,'instituteFeedback'])->name('institute.feedback');
+    Route::post('/institute-feedback/store',[FeedbackController::class,'instituteFeedbackStore'])->name('institute.feedback.store');
+    Route::get('/institute-feedback-list',[FeedbackController::class,'instituteFeedbackList'])->name('institute.feedback.list');
+    Route::get('/institute-feedback-list/{id}/edit', [FeedbackController::class, 'instituteFeedbackEdit'])->name('institute.feedback.list.edit');
+    Route::put('/institute-feedback-list/{id}', [FeedbackController::class, 'instituteFeedbackUpdate'])->name('institute.feedback.list.update');
+    Route::get('/institute-feedback-entry', [FeedbackController::class, 'instituteFeedbackEntry'])->name('institute.feedback.entry');
+    Route::post('/institute-feedback-entry-store', [FeedbackController::class, 'instituteFeedbackEntryStore'])->name('institute.feedback.entry.store');
+
     Route::get('/get-schools-by-district-{districtId}', [StudentController::class, 'getSchoolsByDistrict']);
 
     Route::get('/feedback',[FeedbackController::class,'writtenfeedback'])->name('writtenfeedback');
     Route::post('/feedback',[FeedbackController::class,'uploadwrittenfeedback'])->name('upload.writtenfeedback');
+    Route::get('/student-feedback-list',[FeedbackController::class,'writtenfeedbacklist'])->name('upload.writtenfeedback.list');
+    Route::get('/student-feedback-list/{id}/edit', [FeedbackController::class, 'editwrittenFeedback'])->name('writtenfeedback.edit');
+    Route::put('/student-feedback-list/{id}', [FeedbackController::class, 'updatewrittenfeedback'])->name('writtenfeedback.update');
+    Route::get('/feedback-view', [FeedbackController::class, 'feedbackView'])->name('studentfeedback.view');
 
     Route::get('/uploadfeedback',[FeedbackController::class,'videofeedback'])->name('uploadfeedback');
     Route::post('/uploadfeedback',[FeedbackController::class,'uploadvideofeedback'])->name('upload.videofeedback');
@@ -150,6 +170,14 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::post('/foodexpense/store',[BillController::class,'foodExpenseStore'])->name('foodbills.store');
     Route::get('/foodexpense-list',[BillController::class,'foodExpenseList'])->name('foodbills.list');
     Route::get('/food-bill-slip-{id}',[BillController::class, 'foodBillSlip'])->name('foodbill.slip');
+
+    Route::get(
+        'school_{schoolId}-uploads-{type}',
+        [BillController::class, 'getTrainingUploads'])
+                    ->where(['schoolId' => '[0-9]+','type' => '[A-Za-z0-9_]+'
+                ])->name('school.uploads.byType');
+    Route::get('/training-upload-preview', [BillController::class, 'previewfiles'])->name('training.upload.preview');
+
     
     Route::get('/schools', [SchoolController::class, 'index'])->name('student.school');
     Route::get('/district-{id}-schools', [SchoolController::class, 'getSchools']);
@@ -172,6 +200,12 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     // School details
     Route::get('/dist-school-{id}', [SchoolController::class, 'schoolDetails'])->name('dlc.school.details');
     Route::post('/dlc-school-update-{id}', [SchoolController::class, 'updateSchool'])->name('dlc.school.update');
+    
+    Route::get('/training_completion_verify', [AuditController::class, 'trainingAudit'])->name('accounts.audit');
+    Route::post('/training-audit/action', [AuditController::class, 'auditAction'])->name('audit.action');
+    Route::get('/training-audit-list', [AuditController::class, 'auditList'])->name('audit.list');
+    Route::get('/training-audit-{school}', [AuditController::class, 'show'])->name('audit.show');
+
 });
 Route::middleware([RoleMiddleware::class . ':OCAC,OKCL,Accounts,Social Media'])->group(function () {
     Route::get('/gallery', [GalleryController::class, 'gallery'])->name('gallery');

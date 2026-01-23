@@ -31,19 +31,19 @@ class StudentsImport implements ToCollection
         });
 
         // Count existing students in DB for this school
-        $existingCount = StudentMst::where('stu_scm_id', $this->school->scm_id)->count();
+        // $existingCount = StudentMst::where('stu_scm_id', $this->school->scm_id)->count();
 
         // Total after upload
-        $totalAfterUpload = $existingCount + $filteredRows->count();
+        // $totalAfterUpload = $existingCount + $filteredRows->count();
 
-        if ($totalAfterUpload > 130) {
-            throw ValidationException::withMessages([
-                'excel' => "A school can have a maximum of 130 students. 
-                            Already you added {$existingCount} students.  
-                            In your Excel {$filteredRows->count()} students.  
-                            Total would be {$totalAfterUpload}, which exceeds the limit."
-            ]);
-        }
+        // if ($totalAfterUpload > 130) {
+        //     throw ValidationException::withMessages([
+        //         'excel' => "A school can have a maximum of 130 students. 
+        //                     Already you added {$existingCount} students.  
+        //                     In your Excel {$filteredRows->count()} students.  
+        //                     Total would be {$totalAfterUpload}, which exceeds the limit."
+        //     ]);
+        // }
 
         $classMap = [
             8  => 1,

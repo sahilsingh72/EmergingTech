@@ -314,10 +314,10 @@
         });
 
         // Prevent marking more than 120 present
-        if (newStatus === 1 && currentPresentCount >= 120) {
-            showLimitPopup(); 
-            return;
-        }
+        // if (newStatus === 1 && currentPresentCount >= 120) {
+        //     showLimitPopup(); 
+        //     return;
+        // }
 
         // UI update
         if (newStatus === 1) {
@@ -435,7 +435,7 @@
         });
 
         // Update text
-        $("#presentCounter").html(`<span id="presentIcon" class="mr-1">✔</span> Present: ${count} / 120`);
+        $("#presentCounter").html(`<span id="presentIcon" class="mr-1">✔</span> Present: ${count}`);
 
         // Add animation
         $("#presentCounter").addClass("updated");
@@ -473,29 +473,29 @@ $(document).on("click", "#saveAttendance", function () {
     });
 
     if (presentCount < 120) {
-    Swal.fire({
-        icon: "warning",
-        title: "Not Enough Present Students",
-        html: `
-            <b>You marked only ${presentCount} students as Present.</b><br><br>
-            You must mark <span style="color:red; font-weight:bold;">exactly 120</span> students Present before saving.
-        `,
-        confirmButtonText: "OK",
-        confirmButtonColor: "#d33"
-    });
-    return;
-}
-
-
-    if (presentCount > 120) {
         Swal.fire({
             icon: "warning",
-            title: "ERROR: More than 120 students cannot be marked Present.",
+            title: "Not Enough Present Students",
+            html: `
+                <b>You marked only ${presentCount} students as Present.</b><br><br>
+                You must mark <span style="color:red; font-weight:bold;">more than 120</span> students <span style="color:green; font-weight:bold;">Present</span> before saving.
+            `,
             confirmButtonText: "OK",
             confirmButtonColor: "#d33"
         });
         return;
     }
+
+
+    // if (presentCount > 120) {
+    //     Swal.fire({
+    //         icon: "warning",
+    //         title: "Warning: More than 120 students cannot be marked Present.",
+    //         confirmButtonText: "OK",
+    //         confirmButtonColor: "#d33"
+    //     });
+    //     return;
+    // }
 
     $.ajax({
         url: "{{ route('attendance.saveAll') }}",   
