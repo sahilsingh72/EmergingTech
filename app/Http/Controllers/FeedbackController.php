@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\District;
 use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentFeedback;
@@ -229,6 +230,38 @@ class FeedbackController extends Controller
         }
 
         return back()->with('success', 'Student Feedback updated successfully!');
+    }
+
+    public function FeedbackView(Request $request){
+
+        $districtId = $request->get('district_id');
+        $schoolId   = $request->get('school_id');
+
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')
+            ->orderBy('DSM_DSNM')
+            ->get();
+
+        $schools = collect();
+        if ($districtId) {
+            $schools = School::where('scm_dist_id', $districtId)
+                ->select('scm_id', 'scm_name')
+                ->orderBy('scm_name')
+                ->get();
+        }
+
+        // Attendance files
+        $studentFeedbackFiles = TrainingUpload::where('file_type', 'written_feedback')
+            ->when($schoolId, fn ($q) => $q->where('school_id', $schoolId))
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Institute feedback files
+        $institutefeedbackFiles = TrainingUpload::where('file_type', 'institute_feedback')
+            ->when($schoolId, fn ($q) => $q->where('school_id', $schoolId))
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('feedback.studentfeedbackview',compact('districts', 'schools', 'districtId', 'schoolId', 'studentFeedbackFiles', 'institutefeedbackFiles'));
     }
 
     public function instituteFeedback()

@@ -232,12 +232,12 @@
         @endif
 
         {{-- Feedback --}}
-        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry', 'studentfeedback.view') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list', 'uploadfeedback', 'feedback.report', 'student.feedback', 'institute.feedback', 'institute.feedback.list', 'videofeedback.list', 'institute.feedback.entry', 'studentfeedback.view') ? 'active' : '' }}">
               <i class="nav-icon fas fa-edit "></i>
               <p>
                 Feedback
@@ -246,7 +246,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+              @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8)
                 <li class="nav-item">
                   @if($user->role_id == 3 || $user->role_id == 6)
                     <a href="{{route('writtenfeedback')}}"
@@ -254,11 +254,17 @@
                       <i class="fas fa-clipboard-check  nav-icon"></i>
                       <p>Student Feedback Upload</p>
                     </a>
-                  @elseif($user->role_id == 2)
+                  {{-- @elseif($user->role_id == 2)
                     <a href="{{route('upload.writtenfeedback.list')}}"
                       class="nav-link {{ request()->routeIs('writtenfeedback', 'upload.writtenfeedback.list') ? 'active' : '' }}">
                       <i class="fas fa-clipboard-check  nav-icon"></i>
                       <p>Student Feedback List</p>
+                    </a> --}}
+                  @elseif($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 8)
+                    <a href="{{route('studentfeedback.view')}}"
+                      class="nav-link {{ request()->routeIs('studentfeedback.view') ? 'active' : '' }}">
+                      <i class="fas fa-clipboard-check  nav-icon"></i>
+                      <p>Feedback View</p>
                     </a>
                   @endif
                 </li>
@@ -280,12 +286,12 @@
                       <i class="fas fa-school-circle-check  nav-icon"></i>
                       <p>Institute Feedback Uplaod</p>
                     </a>
-                  @elseif($user->role_id == 2)
+                  {{-- @elseif($user->role_id == 2)
                     <a href="{{route('institute.feedback.list')}}"
                      class="nav-link {{ request()->routeIs('institute.feedback', 'institute.feedback.list') ? 'active' : '' }}">
                       <i class="fas fa-school-circle-check  nav-icon"></i>
                       <p>Institute Feedback List</p>
-                    </a>
+                    </a> --}}
                   @endif
                 </li>
               @endif
