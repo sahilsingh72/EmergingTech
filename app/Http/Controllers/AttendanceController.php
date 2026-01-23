@@ -66,10 +66,10 @@ class AttendanceController extends Controller
             }
         }
 
-        //  BLOCK SAVE if present != 120
-        if ($presentCount != 120) {
+        //  BLOCK SAVE if present < 120
+        if ($presentCount < 120) {
             return response()->json([
-                'error' => "Exactly 120 students must be marked Present. You marked $presentCount."
+                'error' => "More than 120 students must be marked Present. You marked $presentCount."
             ], 422);
         }
 
