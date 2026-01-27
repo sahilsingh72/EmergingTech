@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 use App\Models\District;
+use App\Models\InstituteFeedback;
 use App\Models\School;
+use App\Models\StudentFeedback;
 use App\Models\StudentMst;
 use App\Models\TrainingUpload;
 use Illuminate\Support\Facades\Auth;
@@ -66,6 +68,7 @@ class AuditController extends Controller
             'selectedSchoolId'
         ));
     }
+
     public function auditAction(Request $request)
     {
         $user = Auth::user();
@@ -81,20 +84,46 @@ class AuditController extends Controller
         ]);
 
         //  CHECK STUDENT FEEDBACK COUNT
-        $totalStudents = StudentMst::where('stu_scm_id', $request->school_id)
-            ->where('attendance', 1)
-            ->count();
+        // $totalStudents = StudentMst::where('stu_scm_id', $request->school_id)
+        //     ->where('attendance', 1)
+        //     ->count();
 
-        $studentsWithFeedback = StudentMst::where('stu_scm_id', $request->school_id)
-            ->where('attendance', 1)
-            ->whereNotNull('feedback_file_url')
-            ->count();
+        // $studentsWithFeedback = StudentMst::where('stu_scm_id', $request->school_id)
+        //     ->where('attendance', 1)
+        //     ->whereNotNull('feedback_file_url')
+        //     ->count();
+
+        $studentRatingCount = StudentFeedback::where('school_id', $request->school_id)
+            ->whereIn('stu_id', function ($q) use ($request) {
+                $q->select('stu_id')
+                ->from('student_mst')
+                ->where('stu_scm_id', $request->school_id)
+                ->where('attendance', 1);
+            })->count();
+
+        $instituteRatingCount = InstituteFeedback::where('school_id', $request->school_id)->count();
+
+        $hasCertificate = TrainingUpload::where('school_id', $request->school_id)
+            ->where('file_type', 'training_completion_certificate')
+            ->exists();
 
         //  BLOCK APPROVAL IF FEEDBACK < 120
-        if ($request->action === 'approve' && $studentsWithFeedback < 120) {
-            return back()->withErrors([
-                'approve' => 'Minimum 120 student feedbacks are required for approval.',
-            ]);
+        if ($request->action === 'approve') {
+            if (!$hasCertificate) {
+                return back()->withErrors([
+                    'approve' => 'Training completion certificate is required.',
+                ]);
+            }
+            if ($studentRatingCount < 120) {
+                return back()->withErrors([
+                    'approve' => 'Minimum 120 student feedback ratings are required.',
+                ]);
+            }
+            if ($instituteRatingCount < 1) {
+                return back()->withErrors([
+                    'approve' => 'Institute feedback rating entry is required.',
+                ]);
+            }
         }
 
         $statusMap = [
@@ -155,15 +184,26 @@ class AuditController extends Controller
             ->where('attendance', 1)
             ->count();
 
-        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->whereNotNull('feedback_file_url')
-            ->count();
+        // $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+        //     ->where('attendance', 1)
+        //     ->whereNotNull('feedback_file_url')
+        //     ->count();
+
+        $instituteFeedbackEntrys = InstituteFeedback::where('school_id', $schoolId)->get();
+
+        $studentsWithFeedbackEntrys =StudentFeedback::where('school_id', $schoolId)
+            ->whereIn('stu_id', function ($q) use ($schoolId) {
+                $q->select('stu_id')
+                    ->from('student_mst')
+                    ->where('stu_scm_id', $schoolId)
+                    ->where('attendance', 1);
+            })->get();
 
         return view('audit.show', compact(
             'school',
             'totalStudents',
-            'studentsWithFeedback'
+            'studentsWithFeedbackEntrys',
+            'instituteFeedbackEntrys'
         ));
     }
 

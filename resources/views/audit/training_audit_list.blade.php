@@ -112,15 +112,16 @@
                                                     <th class="border px-3 py-2 sort" data-column="0">District</th>
                                                     <th class="border px-3 py-2 sort" data-column="1">School Name</th>
                                                     <th class="border px-3 py-2 sort" data-column="2">UDISE</th>
-                                                    <th class="border px-3 py-2">Attendance</th>
+                                                    <th class="border px-3 py-2">Attendance File</th>
                                                     <th class="border px-3 py-2">Training Photo</th>
                                                     <th class="border px-3 py-2">Training Video</th>
                                                     <th class="border px-3 py-2">Student Feedback</th>
+                                                    <th class="border px-3 py-2">Student Feedback Rating</th>
                                                     <th class="border px-3 py-2">Institute Feedback</th>
+                                                    <th class="border px-3 py-2">Institute Feedback Rating</th>
                                                     <th class="border px-3 py-2">Video Feedback</th>
-                                                    {{-- <th class="border px-3 py-2">Student Feedback</th> --}}
-                                                    <th class="border px-3 py-2">Certificate</th>
-                                                    <th class="border px-3 py-2">Training</th>
+                                                    <th class="border px-3 py-2">Training Completion Certificate</th>
+                                                    <th class="border px-3 py-2">Training Completed</th>
                                                     <th class="border px-3 py-2">Audit Status</th>
                                                     <th class="border px-3 py-2">Action</th>
                                                 </tr>
@@ -145,8 +146,19 @@
                                                         $hasStudent = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'written_feedback')->exists();
 
+                                                        $hasStudentRating = \App\Models\StudentFeedback::where('school_id', $school->scm_id)
+                                                            ->whereIn('stu_id', function ($q) use ($school) {
+                                                                $q->select('stu_id')
+                                                                    ->from('student_mst')
+                                                                    ->where('stu_scm_id', $school->scm_id)
+                                                                    ->where('attendance', 1);
+                                                            })->exists();
+
                                                         $hasInstitute = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'institute_feedback')->exists();
+
+                                                        $hasInstituteRating = \App\Models\InstituteFeedback::where('school_id', $school->scm_id)
+                                                            ->whereIn('school_id', [$school->scm_id])->exists();
 
                                                         $hasVideo = \App\Models\TrainingUpload::where('school_id', $school->scm_id)
                                                             ->where('file_type', 'training_video')->exists();
@@ -167,32 +179,75 @@
                                                         <td class="border px-3 py-2">{{ $school->scm_udise_code }}</td>
 
                                                         {{-- Attendance --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'attendance_sheet', 'Attendance Sheet')">
                                                             {!! $hasAttendance ? '✅' : '❌' !!}
                                                         </td>
 
                                                         {{-- Training Photo --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'training_photo', 'Training Photos')">
                                                             {!! $hasPhoto ? '✅' : '❌' !!}
                                                         </td>
 
                                                         {{-- Training Video --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'training_video', 'Training Video')">
                                                             {!! $hasVideo ? '✅' : '❌' !!}
                                                         </td>
 
                                                         {{-- Student Feedback --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'written_feedback', 'Student Feedback')">
                                                             {!! $hasStudent ? '✅' : '❌' !!}
                                                         </td>
 
+                                                        {{-- Student Feedback Rating --}}
+                                                        @php
+                                                            $studentRatingCount = \App\Models\StudentFeedback::where('school_id', $school->scm_id)
+                                                                ->whereIn('stu_id', function ($q) use ($school) {
+                                                                    $q->select('stu_id')
+                                                                        ->from('student_mst')
+                                                                        ->where('stu_scm_id', $school->scm_id)
+                                                                        ->where('attendance', 1);
+                                                                })->count();
+
+                                                            if ($studentRatingCount == 0) {
+                                                                $color = 'text-red-600';
+                                                                $icon  = '❌';
+                                                            } elseif ($studentRatingCount < $totalStudents) {
+                                                                $color = 'text-yellow-600';
+                                                                $icon  = '❌';
+                                                            } else {
+                                                                $color = 'text-green-600';
+                                                                $icon  = '✅';
+                                                            }
+                                                        @endphp
+
+                                                        <td class="border px-3 py-2 text-center font-semibold {{ $color }} cursor-pointer"
+                                                            onclick="openStudentFeedback({{ $school->scm_id }})"
+                                                            title="Open Student Feedback List">
+                                                            <span>{{ $studentRatingCount }} / {{ $totalStudents }}</span>
+                                                            <span class="ml-1">{{ $icon }}</span>
+                                                        </td>
+
                                                         {{-- Institute Feedback --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'institute_feedback', 'Institute Feedback')">
                                                             {!! $hasInstitute ? '✅' : '❌' !!}
                                                         </td>
                                                         
+                                                        {{-- Institute Feedback Rating --}}
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="openInstituteFeedback({{ $school->scm_id }})"
+                                                            title="Open Institute Feedback Rating">
+                                                            
+                                                            {!! $hasInstituteRating ? '✅' : '❌' !!}
+                                                        </td>
+                                                        
                                                         {{-- Video Feedback --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'video_feedback', 'Feedback Video')">
                                                             {!! $hasVideoFeedback ? '✅' : '❌' !!}
                                                         </td>
 
@@ -202,7 +257,8 @@
                                                         </td> --}}
 
                                                         {{-- Certificate --}}
-                                                        <td class="border px-3 py-2 text-center">
+                                                        <td class="border px-3 py-2 text-center cursor-pointer"
+                                                            onclick="loadUploads({{ $school->scm_id }}, 'training_completion_certificate', 'Training Completion Certificate')">
                                                             {!! $hasCertificate ? '✅' : '❌' !!}
                                                         </td>
 
@@ -248,6 +304,21 @@
             </div>
         </section>
     </div>
+    <div class="modal fade" id="uploadViewerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadViewerTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="uploadList" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
 document.getElementById('exportExcel').addEventListener('click', function () {
@@ -422,6 +493,58 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+function loadUploads(schoolId, type, title) {
+
+    let url = "{{ route('school.uploads.byType', ['schoolId' => '__ID__', 'type' => '__TYPE__']) }}"
+        .replace('__ID__', schoolId)
+        .replace('__TYPE__', type);
+
+    fetch(url)
+        .then(res => res.json())
+        .then(files => {
+
+            document.getElementById('uploadViewerTitle').innerText = title;
+            const list = document.getElementById('uploadList');
+            list.innerHTML = '';
+
+            if (!files.length) {
+                list.innerHTML = `<div class="text-muted">No files uploaded</div>`;
+                $('#uploadViewerModal').modal('show');
+                return;
+            }
+
+            files.forEach(file => {
+                const filename =
+                    file.school.replace(/[^A-Za-z0-9_\-]/g, '_') +
+                    '_' + file.file_type;
+
+                list.innerHTML += `
+                    <a href="/preview-files?path=${encodeURIComponent(file.file_path)}
+                        &filename=${filename}"
+                       target="_blank"
+                       class="list-group-item list-group-item-action">
+                        <i class="fas fa-eye mr-2 text-primary"></i>
+                        Uploaded on ${new Date(file.created_at).toLocaleDateString()}
+                    </a>
+                `;
+            });
+
+            $('#uploadViewerModal').modal('show');
+        })
+        .catch(() => alert('Unable to load uploads'));
+}
+</script>
+<script>
+    function openInstituteFeedback(schoolId) {
+        const url = "{{ route('institute.feedback.entry') }}?school_id=" + schoolId;
+        window.location.href = url;
+    }
+    function openStudentFeedback(schoolId) {
+        const url = "{{ route('student.feedback') }}?school_id=" + schoolId;
+        window.location.href = url;
+    }
+</script>
 
 
 </body>

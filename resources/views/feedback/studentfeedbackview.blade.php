@@ -111,7 +111,7 @@
                                         <!-- Tabs -->
                                         <div class="flex flex-wrap gap-3 mb-6 bg-gray-100 p-2 rounded-xl">
                                             <button class="tab-btn activeTab" data-tab="studentFeedbackTab">
-                                                School Feedback
+                                                Student Feedback
                                             </button>
 
                                             <button class="tab-btn" data-tab="InstituteFeedbackTab">

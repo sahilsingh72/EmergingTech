@@ -67,14 +67,24 @@
                                 </div>
                             @endforeach
 
-                            <!-- STUDENT FEEDBACK -->
-                        {{-- <div class="border rounded p-4 text-center">
-                            <p class="font-medium text-gray-700">Student Feedbacks</p>
-                            <p class="mt-1 font-semibold
-                                {{ $studentsWithFeedback >= 120 ? 'text-green-700' : 'text-yellow-600' }}">
-                                {{ $studentsWithFeedback }} / {{ $totalStudents }}
-                            </p>
-                        </div> --}}
+                            <!-- INSTITUTE FEEDBACK RATING-->
+                            <div class="border rounded p-4 text-center">
+                                <p class="font-medium text-gray-700">Institute Feedback Rating</p>
+                                <p class="mt-1 font-semibold
+                                    {{ $instituteFeedbackEntrys->count() >= 1 ? 'text-green-700' : 'text-red-600' }}">
+                                    {{ $instituteFeedbackEntrys->count() ? 'Done' : 'Not Done' }}
+                                </p>
+                            </div>
+
+                            <!-- STUDENT FEEDBACK RATING-->
+                            <div class="border rounded p-4 text-center">
+                                <p class="font-medium text-gray-700">Student Feedback Rating</p>
+                                <p class="mt-1 font-semibold
+                                    {{ $studentsWithFeedbackEntrys->count() >= 120 ? 'text-green-700' : 'text-yellow-600' }}">
+                                    {{ $studentsWithFeedbackEntrys->count() }} / {{ $totalStudents }}
+                                    <span class="text-sm font-normal text-gray-600">(Minimum 120 required)</span>
+                                </p>
+                            </div>
 
                         <!-- TRAINING COMPLETED -->
                         <div class="border rounded p-4 text-center sm:col-span-2 lg:col-span-3">
@@ -88,6 +98,18 @@
                     <!-- AUDIT ACTION (ACCOUNTS ONLY) -->
                     @if(auth()->user()->role->name === 'Accounts')
                     <div class="border-t pt-6">
+                        @php
+                            $hasCertificate = in_array(
+                                'training_completion_certificate',
+                                $school->trainingUploads->pluck('file_type')->toArray()
+                            );
+
+                            $hasStudentRating = $studentsWithFeedbackEntrys->count() >= 120;
+                            $hasInstituteRating = $instituteFeedbackEntrys->count() >= 1;
+
+                            $canApprove = $hasStudentRating && $hasCertificate && $hasInstituteRating;
+                        @endphp
+
                         <form method="POST" action="{{ route('audit.action') }}">
                             @csrf
                             <input type="hidden" name="school_id" value="{{ $school->scm_id }}">
@@ -99,19 +121,23 @@
 
                             @if($school->training_completed)
                                 <div class="mb-3 text-green-600 font-semibold text-sm">
-                                    ✅ Approval: Training completed
+                                
                                 </div>
                             @else
                                 <div class="mb-3 text-red-600 font-semibold text-sm">
                                     ⚠️ Approval: Necessary training files not uploaded
                                 </div>
                             @endif
-                            {{-- @if($studentsWithFeedback < 120)
+                            @if($studentsWithFeedbackEntrys->count() < 120)
                                 <div class="mb-3 text-red-600 font-semibold text-sm">
-                                    ⚠️ Approval: Minimum 120 student feedbacks required
-                                    ({{ $studentsWithFeedback }}/120 uploaded)
+                                    ⚠️ Approval: Minimum 120 student feedback ratings required
                                 </div>
-                            @endif --}}
+                            @endif
+                            @if(!$hasInstituteRating)
+                                <div class="mb-3 text-red-600 font-semibold text-sm">
+                                    ⚠️ Approval: Institute feedback rating entry required
+                                </div>
+                            @endif
                             <div class="flex flex-col sm:flex-row gap-3">
                                 {{-- <button name="action" value="approve"
                                 class="px-4 py-2 rounded text-white
@@ -122,9 +148,9 @@
                                 Approve
                             </button> --}}
                                 <button name="action" value="approve"
-                                    class="bg-green-600 text-white px-4 py-2 rounded 
-                                    {{ $school->training_completed ? '' : 'opacity-50 cursor-not-allowed' }}"
-                                    {{ $school->training_completed ? '' : 'disabled' }}>
+                                    class="px-4 py-2 rounded text-white
+                                    {{ $canApprove ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed' }}"
+                                    {{ $canApprove ? '' : 'disabled' }}>
                                     Approve
                                 </button>
 
