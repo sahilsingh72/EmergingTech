@@ -179,7 +179,7 @@
                                                             @php
                                                                 $roleId = Auth::user()->role_id;
                                                             @endphp
-                                                            @if($roleId == 2 || $roleId == 3 || $roleId == 6)
+                                                            @if($roleId == 2 || $roleId == 3 || $roleId == 6 || $roleId == 8)
                                                                 <a href="{{ route('student.feedback.entryPage', $student->stu_id) }}"
                                                                     class="btn btn-sm btn-primary">
                                                                     <i class="fas fa-pen"></i> Feedback Entry
