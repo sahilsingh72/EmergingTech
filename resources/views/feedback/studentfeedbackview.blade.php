@@ -124,14 +124,14 @@
                                         <div id="studentFeedbackTab" class="tabContent">
                                             @if($studentFeedbackFiles->isEmpty())
                                                 <div class="text-center py-12 bg-gray-50 rounded-lg border">
-                                                    <p class="text-gray-500 font-medium">No school feedback uploaded.</p>
+                                                    <p class="text-gray-500 font-medium">No student feedback uploaded.</p>
                                                 </div>
                                             @else
                                                 <div class="space-y-3">
                                                     @foreach($studentFeedbackFiles as $file)
                                                         <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 p-4 border rounded-lg hover:shadow transition">
                                                             <div class="flex items-center gap-3">
-                                                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                                                <i class="fas fa-file-alt text-red-500 text-xl"></i>
                                                                 <span class="font-medium text-gray-700">
                                                                     {{ $file->file_name }}
                                                                 </span>
@@ -139,11 +139,16 @@
 
                                                             <div class="flex gap-2 flex-wrap">
                                                                 <a target="_blank"
-                                                                    href="{{ route('preview.files', ['path' => $file->onedrive_path]) }}"
+                                                                    href="{{ route('preview.files', [
+                                                                            'path' => $file->onedrive_path,
+                                                                            'filename' => $file->school->scm_name . '_' . $file->file_type
+                                                                    ]) }}"
                                                                     class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700">
                                                                     Preview
                                                                 </a>
-                                                                <a href="{{ route('download.file', ['path' => $file->onedrive_path]) }}"
+                                                                <a href="{{ route('download.file', ['path' => $file->onedrive_path,
+                                                                    'filename' => $file->school->scm_name . '_' . $file->file_type
+                                                                    ]) }}"
                                                                     class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
                                                                     Download
                                                                 </a>
@@ -166,7 +171,7 @@
                                                         <div
                                                             class="flex justify-between items-center p-4 border rounded-lg hover:shadow transition">
                                                             <div class="flex items-center gap-3">
-                                                                <i class="fas fa-file-pdf text-red-500 text-xl"></i>
+                                                                <i class="fas fa-file-alt text-red-500 text-xl"></i>
                                                                 <span class="font-medium text-gray-700">
                                                                     {{ $file->file_name }}
                                                                 </span>
@@ -174,11 +179,14 @@
 
                                                             <div class="flex gap-2">
                                                                 <a target="_blank"
-                                                                    href="{{ route('preview.files', ['path' => $file->onedrive_path]) }}"
+                                                                    href="{{ route('preview.files', ['path' => $file->onedrive_path,
+                                                                    'filename' => $file->school->scm_name . '_' . $file->file_type
+                                                                    ]) }}"
                                                                     class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700">
                                                                     Preview
                                                                 </a>
-                                                                <a href="{{ route('download.file', ['path' => $file->onedrive_path]) }}"
+                                                                <a href="{{ route('download.file', ['path' => $file->onedrive_path,
+                                                                    'filename' => $file->school->scm_name . '_' . $file->file_type]) }}"
                                                                     class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">
                                                                     Download
                                                                 </a>

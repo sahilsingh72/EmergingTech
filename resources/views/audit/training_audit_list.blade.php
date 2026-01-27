@@ -212,10 +212,10 @@
                                                                         ->where('attendance', 1);
                                                                 })->count();
 
-                                                            if ($studentRatingCount == 0) {
+                                                            if ($studentRatingCount < 120) {
                                                                 $color = 'text-red-600';
                                                                 $icon  = '❌';
-                                                            } elseif ($studentRatingCount < $totalStudents) {
+                                                            } elseif ($studentRatingCount !== $totalStudents) {
                                                                 $color = 'text-yellow-600';
                                                                 $icon  = '❌';
                                                             } else {
@@ -227,8 +227,13 @@
                                                         <td class="border px-3 py-2 text-center font-semibold {{ $color }} cursor-pointer"
                                                             onclick="openStudentFeedback({{ $school->scm_id }})"
                                                             title="Open Student Feedback List">
-                                                            <span>{{ $studentRatingCount }} / {{ $totalStudents }}</span>
-                                                            <span class="ml-1">{{ $icon }}</span>
+                                                            <div>
+                                                                <span>{{ $studentRatingCount }} / {{ $totalStudents }}</span>
+                                                                <span class="ml-1">{{ $icon }}</span>
+                                                            </div>
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                (120 required)
+                                                            </div>
                                                         </td>
 
                                                         {{-- Institute Feedback --}}

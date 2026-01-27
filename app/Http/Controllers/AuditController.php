@@ -84,9 +84,9 @@ class AuditController extends Controller
         ]);
 
         //  CHECK STUDENT FEEDBACK COUNT
-        // $totalStudents = StudentMst::where('stu_scm_id', $request->school_id)
-        //     ->where('attendance', 1)
-        //     ->count();
+        $totalStudents = StudentMst::where('stu_scm_id', $request->school_id)
+            ->where('attendance', 1)
+            ->count();
 
         // $studentsWithFeedback = StudentMst::where('stu_scm_id', $request->school_id)
         //     ->where('attendance', 1)
@@ -117,6 +117,12 @@ class AuditController extends Controller
             if ($studentRatingCount < 120) {
                 return back()->withErrors([
                     'approve' => 'Minimum 120 student feedback ratings are required.',
+                ]);
+            }
+
+            if ($studentRatingCount !== $totalStudents) {
+                return back()->withErrors([
+                    'approve' => 'Student feedback rating must be submitted for all attended students.',
                 ]);
             }
             if ($instituteRatingCount < 1) {

@@ -109,6 +109,7 @@ class GalleryController extends Controller
     public function downloadFile(Request $request)
     {
         $path = $request->query('path');
+        $customFilename = $request->query('filename');
 
         if (!$path) {
             return response('Missing file path', 400);
@@ -123,13 +124,19 @@ class GalleryController extends Controller
 
             $downloadUrl = $fileInfo['@microsoft.graph.downloadUrl'];
 
-            // Set a proper file name
-            $fileName = $fileInfo['name'] ?? 'file';
+            if ($customFilename) {
+                // Ensure .pdf extension
+                $fileName = str_ends_with($customFilename, '.pdf')
+                    ? $customFilename
+                    : $customFilename . '.pdf';
+            } else {
+                // Fallback to OneDrive name
+                $fileName = $fileInfo['name'] ?? 'file.pdf';
+            }
 
-            // Stream file and force download
+            // ✅ Stream file and force download with correct filename
             return response()->streamDownload(function () use ($downloadUrl) {
-                $response = Http::get($downloadUrl);
-                echo $response->body();
+                echo Http::get($downloadUrl)->body();
             }, $fileName);
         } catch (\Exception $e) {
             return response('Error downloading file: ' . $e->getMessage(), 500);
