@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\District;
 use App\Models\InstituteFeedback;
 use App\Models\School;
+use App\Models\StudentFeedback;
 use App\Models\StudentMst;
 use App\Models\TrainingUpload;
 use App\Models\User;
@@ -560,20 +561,31 @@ class TrainingEvidenceController extends Controller
         $allTrainingFilesUploaded = empty(array_diff($requiredFiles, $uploadedFiles));
 
         // Student attendance count
-        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->count();
+        // $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+        //     ->where('attendance', 1)
+        //     ->count();
 
-        $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
-            ->where('attendance', 1)
-            ->whereNotNull('feedback_file_url')
-            ->count();
+        // $studentsWithFeedback = StudentMst::where('stu_scm_id', $schoolId)
+        //     ->where('attendance', 1)
+        //     ->whereNotNull('feedback_file_url')
+        //     ->count();
 
-        $meetsStudentRule =
-            ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
+        $instituteFeedbackSubmitted = InstituteFeedback::where('school_id', $schoolId)->exists();
 
-        // if ($allTrainingFilesUploaded && $meetsStudentRule) {
-        if ($allTrainingFilesUploaded && $meetsStudentRule) {
+        //  All students STAR feedback entry check
+        $studentsWithFeedback = StudentFeedback::where('school_id', $schoolId)
+             ->whereIn('stu_id', function ($q) use ($schoolId) {
+                $q->select('stu_id')
+                ->from('student_mst')
+                ->where('stu_scm_id', $schoolId)
+                ->where('attendance', 1);
+            })
+            ->distinct('stu_id')
+            ->count('stu_id');
+
+        $minimumFeedbackCompleted = ($studentsWithFeedback >= 120);
+
+        if ($allTrainingFilesUploaded && $instituteFeedbackSubmitted && $minimumFeedbackCompleted) {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 1]);
         } else {
