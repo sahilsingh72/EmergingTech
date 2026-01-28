@@ -100,7 +100,7 @@
                                         <tbody  id="attendanceTableBody">
                                             @php $sno = 1; @endphp
                                             @forelse($uploads as $upload)
-                                                @if(in_array($upload->file_type, ['attendance_sheet', 'trainer_photo']))
+                                                @if(in_array($upload->file_type, ['attendance_sheet']))
                                                     <tr>
                                                         <td>{{ $sno++ }}</td>
                                                         <td>{{$upload->school->scm_name}} -
@@ -116,7 +116,8 @@
                                                                         Open
                                                                     </a>
                                                                     @if(isset($upload->file_name[$index]))
-                                                                        {{ $upload->file_name[$index] }} ({{ ucwords(str_replace('_', ' ', $upload->file_type)) }})
+                                                                        {{-- {{ $upload->file_name[$index] }} ({{ ucwords(str_replace('_', ' ', $upload->file_type)) }}) --}}
+                                                                        {{ $upload->file_name[$index] }} 
                                                                     @endif
                                                                     <br>
                                                                 @endforeach

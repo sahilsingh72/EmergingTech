@@ -98,7 +98,7 @@
                                         <tbody id="trainingTableBody">
                                             @php $sno = 1; @endphp
                                             @forelse($uploads as $upload)
-                                                @if(in_array($upload->file_type, ['training_photo']))
+                                                @if(in_array($upload->file_type, ['training_photo', 'trainer_photo']))
                                                     <tr>
                                                         <td>{{ $sno++ }}</td>
                                                         <td>
@@ -109,17 +109,17 @@
                                                         <td>
                                                             @if($upload->onedrive_path)
                                                                 @foreach($upload->onedrive_path as $index => $path)
-                                                                    <a href="{{ route('preview.files', [
-                                                                            'path' => $path, 
-                                                                            'filename' => $upload->school->scm_name . '_' . $upload->file_type
-                                                                        ]) }}"
-                                                                        target="_blank" class="btn btn-sm btn-success">
-                                                                        Open
-                                                                    </a>
-                                                                    @if(isset($upload->file_name[$index]))
-                                                                        {{ $upload->file_name[$index] }}
-                                                                    @endif
-                                                                    <br>
+                                                                                                        <a href="{{ route('preview.files', [
+                                                                        'path' => $path,
+                                                                        'filename' => $upload->school->scm_name . '_' . $upload->file_type
+                                                                    ]) }}" target="_blank"
+                                                                                                            class="btn btn-sm btn-success">
+                                                                                                            Open
+                                                                                                        </a>
+                                                                                                        @if(isset($upload->file_name[$index]))
+                                                                                                            {{ $upload->file_name[$index] }}
+                                                                                                        @endif
+                                                                                                        <br>
                                                                 @endforeach
                                                             @endif
                                                         </td>
@@ -330,57 +330,57 @@
         });
     </script>
     <script>
-$(document).on("change", "#filterDistrict", function () {
-    let districtId = $(this).val();
+        $(document).on("change", "#filterDistrict", function () {
+            let districtId = $(this).val();
 
-    $("#filterSchool").html('<option value="">Loading...</option>');
+            $("#filterSchool").html('<option value="">Loading...</option>');
 
-    if (!districtId) {
-        $("#filterSchool").html('<option value="">-- Select School --</option>');
-        return;
-    }
+            if (!districtId) {
+                $("#filterSchool").html('<option value="">-- Select School --</option>');
+                return;
+            }
 
-    $.ajax({
-        url: "{{ route('schools.byDistrict') }}",
-        method: "GET",
-        data: { district_id: districtId },
-        success: function (schools) {
-            let options = '<option value="">-- Select School --</option>';
-            schools.forEach(school => {
-                options += `
+            $.ajax({
+                url: "{{ route('schools.byDistrict') }}",
+                method: "GET",
+                data: { district_id: districtId },
+                success: function (schools) {
+                    let options = '<option value="">-- Select School --</option>';
+                    schools.forEach(school => {
+                        options += `
                     <option value="${school.scm_id}">
                         ${school.scm_name} (${school.scm_udise_code})
                     </option>`;
+                    });
+                    $("#filterSchool").html(options);
+                }
             });
-            $("#filterSchool").html(options);
-        }
-    });
-});
-</script>
-<script>
-$(document).on("change", "#filterSchool", function () {
+        });
+    </script>
+    <script>
+        $(document).on("change", "#filterSchool", function () {
 
-    let schoolId = $(this).val();
+            let schoolId = $(this).val();
 
-    if (!schoolId) return;
+            if (!schoolId) return;
 
-    $.ajax({
-        url: "{{ route('trainingvideos.list') }}",
-        method: "GET",
-        data: { school_id: schoolId },
-        success: function (response) {
-            let html = $(response).find("#trainingTableBody").html();
-            $("#trainingTableBody").html(html);
+            $.ajax({
+                url: "{{ route('trainingphotos.list') }}",
+                method: "GET",
+                data: { school_id: schoolId },
+                success: function (response) {
+                    let html = $(response).find("#trainingTableBody").html();
+                    $("#trainingTableBody").html(html);
 
-            // reset pagination
-            $("#pagination").empty();
-        },
-        error: function () {
-            alert("Failed to load attendance records");
-        }
-    });
-});
-</script>
+                    // reset pagination
+                    $("#pagination").empty();
+                },
+                error: function () {
+                    alert("Failed to load records");
+                }
+            });
+        });
+    </script>
 
 </body>
 @include('components.footer')

@@ -100,7 +100,7 @@
         @endif
 
         {{-- Students --}}
-        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+        @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
           <li
             class="nav-item has-treeview {{ request()->routeIs('addstudent', 'studentlist', 'single.addstudent', 'student.school', 'school.students', 'district.school.list') ? 'menu-open' : '' }}">
             <a href="#"
@@ -122,7 +122,7 @@
               @endif
               <li class="nav-item">
                 <a 
-                @if($user->role_id == 1 || $user->role_id == 2) 
+                @if($user->role_id == 2) 
                   href="{{route('student.school')}}" 
                 @else
                   href="{{ route('studentlist') }}" 
@@ -139,7 +139,7 @@
 
         
         {{-- Training Evidences --}}
-        @if($user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6)
 
           <li
             class="nav-item has-treeview {{ request()->routeIs('attendance', 'trainingphotos', 'trainingvideos', 'attendance.list', 'trainingphotos.list', 'trainingvideos.list', 'student.attendance.sheet') ? 'menu-open' : '' }}">
@@ -473,6 +473,7 @@
         @endif
 
         {{-- Help Guide --}}
+        @if($user->role_id != 1)
         <li class="nav-item has-treeview">
           <a href="https://odishaknowledge-my.sharepoint.com/personal/jayeshm_okcl_org/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fjayeshm%5Fokcl%5Forg%2FDocuments%2FOCAC%2FEmerging%20Technologies%20Camps%2FEmerging%20Technologies%20Product%20Videos&ga=1" class="nav-link" target="_blank">
             <i class="nav-icon fas fa-book"></i>
@@ -481,6 +482,7 @@
             </p>
           </a>
         </li>
+        @endif
 
         {{-- User Management --}}
         @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 4 || $user->role_id == 5 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
