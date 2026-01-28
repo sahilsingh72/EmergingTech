@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Imports\StudentsImport;
 use App\Models\District;
+use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentFeedback;
 use App\Models\StudentMst;
@@ -632,6 +633,8 @@ class StudentController extends Controller
             ->where('file_type', 'written_feedback')
             ->exists();
 
+        $instituteFeedbackSubmitted = InstituteFeedback::where('school_id', $schoolId)->exists();
+
         //  Required training files uploaded
         $requiredFiles = [
             'attendance_sheet',
@@ -659,6 +662,7 @@ class StudentController extends Controller
         if (
             $minimumFeedbackCompleted &&
             $bulkFeedbackUploaded &&
+            $instituteFeedbackSubmitted &&
             $allTrainingFilesUploaded
         ) {
             School::where('scm_id', $schoolId)

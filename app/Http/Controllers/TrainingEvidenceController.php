@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\District;
+use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentMst;
 use App\Models\TrainingUpload;
@@ -481,7 +482,13 @@ class TrainingEvidenceController extends Controller
                 ->exists();
         }
 
-        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'progress', 'canUploadCertificate', 'selectedSchoolId', 'trainingCompleted'));
+        $instituteFeedbackSubmitted = false;
+        if ($selectedSchoolId) {
+            $instituteFeedbackSubmitted = InstituteFeedback::where('school_id',$selectedSchoolId
+            )->exists();
+        }
+
+        return view('trainingcompcertificate', compact('schools', 'requiredFiles', 'uploadedFiles', 'progress', 'canUploadCertificate', 'selectedSchoolId', 'trainingCompleted', 'instituteFeedbackSubmitted'));
     }
 
     public function uploadcertificate(Request $request)
@@ -566,7 +573,7 @@ class TrainingEvidenceController extends Controller
             ($totalStudents >= 120 && $studentsWithFeedback === $totalStudents);
 
         // if ($allTrainingFilesUploaded && $meetsStudentRule) {
-        if ($allTrainingFilesUploaded) {
+        if ($allTrainingFilesUploaded && $meetsStudentRule) {
             School::where('scm_id', $schoolId)
                 ->update(['training_completed' => 1]);
         } else {

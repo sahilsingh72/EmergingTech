@@ -109,6 +109,8 @@ class FeedbackController extends Controller
             ->where('file_type', 'written_feedback')
             ->exists();
 
+        $instituteFeedbackSubmitted = InstituteFeedback::where('school_id', $schoolId)->exists();
+
         //  Required training files uploaded
         $requiredFiles = [
             'attendance_sheet',
@@ -136,6 +138,7 @@ class FeedbackController extends Controller
         if (
             $minimumFeedbackCompleted &&
             $bulkFeedbackUploaded &&
+            $instituteFeedbackSubmitted &&
             $allTrainingFilesUploaded
         ) {
             School::where('scm_id', $schoolId)
@@ -500,6 +503,8 @@ class FeedbackController extends Controller
                 'submitted_by' => Auth::id(),
             ]
         );
+
+        $this->evaluateTrainingCompletion($request->school_id);
 
         return redirect()->route('institute.feedback.entry', ['school_id' => $request->school_id])
             ->with('success', 'feedback saved successfully!');

@@ -246,20 +246,26 @@
                                                 </div>
                                             @endif --}}
                                                 <div class="mt-2 text-sm font-semibold
-        {{ $studentsWithFeedbackEntry === $totalStudents && $totalStudents >= 120
-            ? 'text-green-600'
-            : 'text-red-600' }}">
-        📊 Student Feedback Entry:
-        <span class="font-bold">
-            {{ $studentsWithFeedbackEntry }} / {{ $totalStudents }}
-        </span>
-    </div>
+                                                    {{ $studentsWithFeedbackEntry === $totalStudents && $totalStudents >= 120
+                                                        ? 'text-green-600'
+                                                        : 'text-red-600' }}">
+                                                    📊 Student Feedback Entry:
+                                                    <span class="font-bold">
+                                                        {{ $studentsWithFeedbackEntry }} / {{ $totalStudents }}
+                                                    </span>
+                                                </div>
 
-    @if($totalStudents < 120)
-        <div class="text-red-600 text-sm mt-1">
-            ⚠️ Minimum 120 students required (currently {{ $totalStudents }})
-        </div>
-    @endif
+                                                @if($totalStudents < 120)
+                                                    <div class="text-red-600 text-sm mt-1">
+                                                        ⚠️ Minimum 120 students required (currently {{ $totalStudents }})
+                                                    </div>
+                                                @endif
+                                                @if(!$instituteFeedbackSubmitted)
+                                                    <p class="text-red-600 text-sm mt-2">
+                                                        ⚠️ Institute Feedback entry is required before completing training.
+                                                    </p>
+                                                @endif
+
 
                                         @endif
 
