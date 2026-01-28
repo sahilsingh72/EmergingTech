@@ -71,9 +71,56 @@
                                             </ul>
                                         </div>
                                     @endif
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
+                                        @php
+                                            $roleId = Auth::user()->role_id;
+                                        @endphp
+                                        @if($roleId == 1 || $roleId == 2 || $roleId == 8)
+                                        
+                                            <div class="flex flex-col sm:flex-row gap-3 w-full">
+                                                {{-- District --}}
+                                                <div class="flex items-center gap-2 w-full">
+                                                    <label>District</label>
+                                                    <select id="filterDistrict" class="form-control">
+                                                        <option value="">-- Select District --</option>
+                                                        @foreach($districts as $district)
+                                                            <option value="{{ $district->DSM_DSCD }}">
+                                                                {{ $district->DSM_DSNM }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                {{-- School --}}
+                                                <div class="flex items-center gap-2 w-full">
+                                                    <label>School</label>
+                                                    <select id="filterSchool" class="form-control">
+                                                        <option value="">-- Select School --</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                                <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
+                                                <select id="filterSchool" class="border rounded p-2 w-full">
+                                                    <option value="">-- Select School --</option>
+                                                    @foreach ($schools as $school)
+                                                        <option value="{{ $school->scm_id }}" 
+                                                            {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                                                            {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
+                                        <div class="w-full sm:w-auto">
+                                            <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
+                                            class="btn btn-success w-full sm:w-40 text-center" target="_blank"><i class="fas fa-download"></i> Feedback Form</a>
+                                        </div>
+                                    </div>
 
                                     <!-- Student Table -->
-                                    <div class="flex justify-between items-center mb-2">
+                                    <div class="flex justify-between items-center mb-1">
                                         <!-- Rows per page -->
                                         <div>
                                             <label for="rowsPerPage" class="mr-2">Shows:</label>
@@ -90,24 +137,6 @@
                                         <div>
                                             <input type="text" id="searchInput" placeholder="Search..."
                                                 class="border rounded p-2 w-40">
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
-                                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                                            <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
-                                            <select id="filterSchool" class="border rounded p-2 w-full">
-                                                <option value="">-- Select School --</option>
-                                                @foreach ($schools as $school)
-                                                    <option value="{{ $school->scm_id }}" 
-                                                        {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
-                                                        {{ $school->scm_name }} ({{ $school->scm_udise_code }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="w-full sm:w-auto">
-                                            <a href="{{ asset('feedbackform/training_camp_feedback_form_image.pdf') }}" 
-                                            class="btn btn-success w-full sm:w-40 text-center" target="_blank"><i class="fas fa-download"></i> Feedback Form</a>
                                         </div>
                                     </div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
@@ -140,7 +169,7 @@
                                                     @endif --}}
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody id="feedbackTableBody">
                                                 @forelse($students as $index => $student)
                                                     <tr class="hover:bg-gray-50">
                                                         <td class="border px-4 py-2 text-center">{{ $index + 1 }}</td>
@@ -536,6 +565,58 @@ $(document).ready(function() {
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+$(document).on("change", "#filterDistrict", function () {
+    let districtId = $(this).val();
+
+    $("#filterSchool").html('<option value="">Loading...</option>');
+
+    if (!districtId) {
+        $("#filterSchool").html('<option value="">-- Select School --</option>');
+        return;
+    }
+
+    $.ajax({
+        url: "{{ route('schools.byDistrict') }}",
+        method: "GET",
+        data: { district_id: districtId },
+        success: function (schools) {
+            let options = '<option value="">-- Select School --</option>';
+            schools.forEach(school => {
+                options += `
+                    <option value="${school.scm_id}">
+                        ${school.scm_name} (${school.scm_udise_code})
+                    </option>`;
+            });
+            $("#filterSchool").html(options);
+        }
+    });
+});
+</script>
+<script>
+$(document).on("change", "#filterSchool", function () {
+
+    let schoolId = $(this).val();
+
+    if (!schoolId) return;
+
+    $.ajax({
+        url: "{{ route('student.feedback') }}",
+        method: "GET",
+        data: { school_id: schoolId },
+        success: function (response) {
+            let html = $(response).find("#feedbackTableBody").html();
+            $("#feedbackTableBody").html(html);
+
+            // reset pagination
+            $("#pagination").empty();
+        },
+        error: function () {
+            alert("Failed to load attendance records");
+        }
+    });
+});
+</script>
 
 
 </body>

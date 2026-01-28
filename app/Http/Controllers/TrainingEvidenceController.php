@@ -94,15 +94,18 @@ class TrainingEvidenceController extends Controller
         return  redirect()->route('trainingphotos.list')->with('success', 'training photo uploaded successfully!');
     }
 
-    public function trainingphotoslist()
+    public function trainingphotoslist(Request $request)
     {
         $user = Auth::user();
         $userId = $user->id;
-        $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
+        $roleId = $user->role_id;
+        $schoolId = $request->school_id;
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
+        $uploadsQuery = TrainingUpload::with('school')->latest();
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
         } else {
@@ -119,12 +122,16 @@ class TrainingEvidenceController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
+        }
+        if ($schoolId) {
+            $uploadsQuery->where('school_id', $schoolId);
         }
 
-        return view('trainingphotoslist', compact('uploads', 'schools'));
-    }
+        $uploads = $uploadsQuery->get();
 
+        return view('trainingphotoslist', compact('uploads', 'schools', 'districts'));
+    }
     public function editTrainingPhoto($id)
     {
         $upload = TrainingUpload::findOrFail($id);
@@ -315,14 +322,18 @@ class TrainingEvidenceController extends Controller
         ]);
     }
 
-    public function trainingvideoslist()
+    public function trainingvideoslist(Request $request)
     {
         $user = Auth::user();
         $userId = $user->id;
-        $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
+        $roleId = $user->role_id;
+        $schoolId = $request->school_id;
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')->latest();
 
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
@@ -340,10 +351,15 @@ class TrainingEvidenceController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
+        }
+        if ($schoolId) {
+            $uploadsQuery->where('school_id', $schoolId);
         }
 
-        return view('trainingvideoslist', compact('uploads', 'schools'));
+        $uploads = $uploadsQuery->get();
+
+        return view('trainingvideoslist', compact('uploads', 'schools', 'districts'));
     }
 
     public function editTrainingVideo($id)

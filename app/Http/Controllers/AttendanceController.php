@@ -53,7 +53,18 @@ class AttendanceController extends Controller
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
-        return view('attendancesheet', compact('students', 'schools', 'schoolId'));
+        return view('attendancesheet', compact('students', 'schools', 'schoolId' ,'districts'));
+    }
+
+    public function getSchoolsByDistrict(Request $request)
+    {
+        $districtId = $request->district_id;
+
+        $schools = School::where('scm_dist_id', $districtId)
+            ->orderBy('scm_name', 'asc')
+            ->get(['scm_id', 'scm_name', 'scm_udise_code']);
+
+        return response()->json($schools);
     }
 
     public function saveAll(Request $request)
@@ -173,13 +184,17 @@ class AttendanceController extends Controller
 
         return  redirect()->route('attendance.list')->with('success', 'Attendance and trainer image uploaded successfully!');
     }
-    public function attendanceList()
+    public function attendanceList(Request $request)
     {
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
+        $schoolId = $request->school_id;
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')->latest();
 
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
@@ -197,13 +212,16 @@ class AttendanceController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
+        }
+        if ($schoolId) {
+            $uploadsQuery->where('school_id', $schoolId);
         }
 
-        return view('studentattendancelist', compact('uploads', 'schools'));
+        $uploads = $uploadsQuery->get();
+
+        return view('studentattendancelist', compact('uploads', 'schools', 'districts'));
     }
-
-
     public function edit($id)
     {
         $upload = TrainingUpload::findOrFail($id);

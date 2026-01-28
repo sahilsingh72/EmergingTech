@@ -121,6 +121,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::post('/institute-feedback-entry-store', [FeedbackController::class, 'instituteFeedbackEntryStore'])->name('institute.feedback.entry.store');
 
     Route::get('/get-schools-by-district-{districtId}', [StudentController::class, 'getSchoolsByDistrict']);
+    Route::get('/schools-by-district', [AttendanceController::class, 'getSchoolsByDistrict'])->name('schools.byDistrict');
 
     Route::get('/feedback',[FeedbackController::class,'writtenfeedback'])->name('writtenfeedback');
     Route::post('/feedback',[FeedbackController::class,'uploadwrittenfeedback'])->name('upload.writtenfeedback');

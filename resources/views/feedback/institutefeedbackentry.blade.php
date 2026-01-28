@@ -117,6 +117,35 @@
 
                   <form method="POST" action="{{ route('institute.feedback.entry.store') }}">
                     @csrf
+                    @php
+                        $roleId = Auth::user()->role_id;
+                    @endphp
+                    @if($roleId == 1 || $roleId == 2 || $roleId == 8)
+
+                        <div class="row mb-2">
+                            {{-- District --}}
+                            <div class="col-md-6">
+                                <label>District</label>
+                                <select id="filterDistrict" class="form-control">
+                                    <option value="">-- Select District --</option>
+                                    @foreach($districts as $district)
+                                        <option value="{{ $district->DSM_DSCD }}"
+                                            {{ $selectedDistrictId == $district->DSM_DSCD ? 'selected' : '' }}>
+                                            {{ $district->DSM_DSNM }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- School --}}
+                            <div class="col-md-6">
+                                <label>School</label>
+                                <select id="filterSchool" class="form-control">
+                                    <option value="">-- Select School --</option>
+                                </select>
+                            </div>
+                        </div>
+                    @else
 
                     <!-- School -->
                     <label class="font-semibold">School</label>
@@ -129,6 +158,7 @@
                         </option>
                       @endforeach
                     </select>
+                    @endif
 
                     <!-- Training Date -->
                     <label class="font-semibold">Training Date</label>
@@ -237,10 +267,9 @@
                   </div>
 
                   @php
-                    use Illuminate\Support\Facades\Auth;
-                    $user = Auth::user();
+                    $roleId = Auth::user()->role_id;
                   @endphp
-                  @if($user->role_id == 3 || $user->role_id == 6)
+                  @if($roleId == 3 || $roleId == 6)
                     <button class="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded text-lg">
                       Submit Feedback
                     </button>
@@ -277,6 +306,64 @@
       document.getElementById('training_date').value = date;
     });
   </script>
+<script>
+function loadSchools(districtId, selectedSchoolId = null) {
+
+    $("#filterSchool").html('<option value="">Loading...</option>');
+
+    $.ajax({
+        url: "{{ route('schools.byDistrict') }}",
+        method: "GET",
+        data: { district_id: districtId },
+        success: function (schools) {
+            let options = '<option value="">-- Select School --</option>';
+
+            schools.forEach(school => {
+                let selected =
+                    selectedSchoolId == school.scm_id ? 'selected' : '';
+
+                options += `
+                    <option value="${school.scm_id}" ${selected}>
+                        ${school.scm_name} (${school.scm_udise_code})
+                    </option>`;
+            });
+
+            $("#filterSchool").html(options);
+        }
+    });
+}
+
+// district change
+$(document).on("change", "#filterDistrict", function () {
+    let districtId = $(this).val();
+    if (!districtId) {
+        $("#filterSchool").html('<option value="">-- Select School --</option>');
+        return;
+    }
+    loadSchools(districtId);
+});
+
+// 🔥 page load restore
+$(document).ready(function () {
+    let districtId = "{{ $selectedDistrictId }}";
+    let schoolId   = "{{ $selectedSchoolId }}";
+
+    if (districtId) {
+        loadSchools(districtId, schoolId);
+    }
+});
+</script>
+
+<script>
+$(document).on("change", "#filterSchool", function () {
+    let schoolId = $(this).val();
+    if (!schoolId) return;
+
+    window.location.href =
+        "{{ route('institute.feedback.entry') }}?school_id=" + schoolId;
+});
+</script>
+
 
 </body>
 @include('components.footer')

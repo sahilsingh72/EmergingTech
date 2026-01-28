@@ -414,23 +414,43 @@ class FeedbackController extends Controller
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
+
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+        
         if ($roleId == 1 || $roleId == 2 || $roleId == 8) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
-
+        
         $selectedSchoolId = $request->school_id;
+        $selectedDistrictId = null;
+        $schools = collect();
+
+        if ($selectedSchoolId) {
+            // find district of selected school
+            $selectedDistrictId = School::where('scm_id', $selectedSchoolId)
+                ->value('scm_dist_id');
+        }
+
+        if (!in_array($roleId, [1,2,8])) {
+            $selectedDistrictId = User::where('id', $user->id)->value('district_id');
+
+            $schools = School::where('scm_dist_id', $selectedDistrictId)
+                ->select('scm_id','scm_name','scm_udise_code','scm_dist','training_date')
+                ->orderBy('scm_name')
+                ->get();
+        }
         $existingFeedback = null;
         $trainingDate = null;
 
         if ($selectedSchoolId) {
             $existingFeedback = InstituteFeedback::where('school_id', $selectedSchoolId)->first();
-            $trainingDate = $schools->firstWhere('scm_id', $selectedSchoolId)?->training_date;
+            $trainingDate = School::where('scm_id', $selectedSchoolId)->value('training_date');
         }
 
-        return view('feedback.institutefeedbackentry', compact('schools', 'existingFeedback', 'trainingDate', 'selectedSchoolId'));
+        return view('feedback.institutefeedbackentry', compact('schools', 'existingFeedback', 'trainingDate', 'selectedSchoolId', 'districts', 'selectedDistrictId'));
     }
 
     public function instituteFeedbackEntryStore(Request $request)
@@ -545,14 +565,18 @@ class FeedbackController extends Controller
         return redirect()->route('videofeedback.list')->with('success', 'Feedback video uploaded successfully!');
     }
 
-    public function videofeedbacklist()
+    public function videofeedbacklist(Request $request)
     {
         $user = Auth::user();
         $userId = $user->id;
-        $roleId = $user->role_id; // 3 = DLC, 6 = Coordinator, 5 = Trainer
+        $roleId = $user->role_id;
+        $schoolId = $request->school_id;
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')->latest();
 
         if ($roleId == 1 || $roleId == 2) {
             $uploads = TrainingUpload::latest()->get();
@@ -570,10 +594,15 @@ class FeedbackController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
+        }
+        if ($schoolId) {
+            $uploadsQuery->where('school_id', $schoolId);
         }
 
-        return view('videofeedbacklist', compact('uploads', 'schools'));
+        $uploads = $uploadsQuery->get();
+
+        return view('videofeedbacklist', compact('uploads', 'schools', 'districts'));
     }
     public function editFeedbackVideo($id)
     {

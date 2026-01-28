@@ -302,8 +302,12 @@ class StudentController extends Controller
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
+        $schoolId = $request->school_id;
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        $uploadsQuery = TrainingUpload::with('school')->latest();
+
         if ($roleId == 1 || $roleId == 2 || $roleId == 8) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
@@ -330,7 +334,7 @@ class StudentController extends Controller
             $student->has_feedback_entry = StudentFeedback::where('stu_id', $student->stu_id)->exists();
         }
 
-        return view('studentfeedback', compact('schools', 'students', 'schoolId'));
+        return view('studentfeedback', compact('schools', 'students', 'schoolId', 'districts'));
     }
     public function uploadFeedback(Request $request, OneDriveService $oneDriveService)
     {

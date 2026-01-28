@@ -60,18 +60,49 @@
                                 </div>
                                     
                                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
-                                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                                            <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
-                                            <select id="filterSchool" class="border rounded p-2 w-full">
-                                                <option value="">-- Select School --</option>
-                                                @foreach ($schools as $school)
-                                                    <option value="{{ $school->scm_id }}" 
-                                                        {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
-                                                        {{ $school->scm_name }} ({{ $school->scm_udise_code }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                                        @php
+                                            $roleId = Auth::user()->role_id;
+                                        @endphp
+                                        @if($roleId == 1 || $roleId == 2 || $roleId == 8)
+
+                                            <div class="flex flex-col sm:flex-row gap-3 w-full">
+                                                {{-- District --}}
+                                                <div class="flex items-center gap-2 w-full">
+                                                    <label class="font-semibold text-gray-700">District</label>
+                                                    <select id="filterDistrict" class="border rounded p-2 w-full">
+                                                        <option value="">-- Select District --</option>
+                                                        @foreach($districts as $district)
+                                                            <option value="{{ $district->DSM_DSCD }}">
+                                                                {{ $district->DSM_DSNM }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                {{-- School --}}
+                                                <div class="flex items-center gap-2 w-full">
+                                                    <label class="font-semibold text-gray-700">School</label>
+                                                    <select id="filterSchool" class="border rounded p-2 w-full">
+                                                        <option value="">-- Select School --</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                        @else
+
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                                <label for="filterSchool" class="font-semibold text-gray-700 whitespace-nowrap">Select School:</label>
+                                                <select id="filterSchool" class="border rounded p-2 w-full">
+                                                    <option value="">-- Select School --</option>
+                                                    @foreach ($schools as $school)
+                                                        <option value="{{ $school->scm_id }}" 
+                                                            {{ isset($schoolId) && $schoolId == $school->scm_id ? 'selected' : '' }}>
+                                                            {{ $school->scm_name }} ({{ $school->scm_udise_code }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
 
                                         <div class="w-full sm:w-auto">
                                             <button onclick="exportAttendance()" class="btn btn-success w-full sm:w-40 text-center">
@@ -534,6 +565,34 @@ $(document).on("click", "#saveAttendance", function () {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).on("change", "#filterDistrict", function () {
+    let districtId = $(this).val();
+
+    $("#filterSchool").html('<option value="">Loading...</option>');
+
+    if (!districtId) {
+        $("#filterSchool").html('<option value="">-- Select School --</option>');
+        return;
+    }
+
+    $.ajax({
+        url: "{{ route('schools.byDistrict') }}",
+        method: "GET",
+        data: { district_id: districtId },
+        success: function (schools) {
+            let options = '<option value="">-- Select School --</option>';
+            schools.forEach(school => {
+                options += `
+                    <option value="${school.scm_id}">
+                        ${school.scm_name} (${school.scm_udise_code})
+                    </option>`;
+            });
+            $("#filterSchool").html(options);
+        }
+    });
+});
+</script>
 
 
 </body>
