@@ -58,9 +58,22 @@
                                     </div>
                                 </form>
 
-                                <hr>
-                                </br>
-                                @if(count($certificates) > 0)
+                                @if(empty($districtId))
+                                    <div
+                                        class="flex flex-col items-center justify-center py-16 bg-gray-50 rounded-xl border border-dashed">
+                                        <div class="text-indigo-600 text-4xl mb-3">
+                                            <i class="fas fa-map-marked-alt"></i>
+                                        </div>
+                                        <p class="text-lg font-semibold text-gray-700">
+                                            Select District & School
+                                        </p>
+                                        <p class="text-sm text-gray-500 mt-1 text-center max-w-md">
+                                            Please select a district and school from the dropdowns above to view
+                                            Certificate.
+                                        </p>
+                                    </div>
+
+                                @elseif(count($certificates) > 0)
                                     <div class="row">
                                         @foreach($certificates as $cert)
                                             <div class="col-md-3 mb-3">
@@ -79,8 +92,9 @@
                                             </div>
                                         @endforeach
                                     </div>
-                                @elseif($schoolId)
-                                    <p>No certificates uploaded for this school yet.</p>
+                                @elseif(!empty($schoolId))
+                                    <p class="text-center text-gray-600 mt-6">No certificates uploaded for this school yet.
+                                    </p>
                                 @endif
                             </div>
                         </div>
