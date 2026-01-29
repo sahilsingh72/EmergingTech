@@ -170,6 +170,11 @@ class DashboardController extends Controller
         $totalSchools = School::count();
         $completedSchools = School::where('training_completed', 1)->count();
 
+        $completedTrainings = TrainingUpload::whereIn('file_type', [
+            'attendance_sheet',
+        ])
+        ->distinct('school_id')
+        ->count('school_id');
 
         return view('dashboard', compact(
             'totalCoordinators',
@@ -180,6 +185,7 @@ class DashboardController extends Controller
             'districtWise',
             'students',
             'schools',
+            'completedTrainings'
         ));
     }
     public function calendarEvents()

@@ -73,9 +73,9 @@
         {{-- Schools --}}
         @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
           <li
-            class="nav-item has-treeview {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school', 'main.school.list') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school', 'main.school.list', 'district.training.completed.list', 'school.training.completed.list') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school', 'main.school.list') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('my.schools', 'select.district', 'dlc.school.details', 'select.school', 'main.school.list', 'district.training.completed.list', 'school.training.completed.list') ? 'active' : '' }}">
               <i class="nav-icon fas fa-university"></i>
               <p>
                 School
@@ -90,7 +90,7 @@
                   @elseif($user->role_id == 3 || $user->role_id == 6)
                     href="{{ route('my.schools') }}" 
                   @endif
-                    class="nav-link {{ request()->routeIs('select.district', 'my.schools', 'dlc.school.details', 'select.school', 'main.school.list') ? 'active' : '' }}">
+                    class="nav-link {{ request()->routeIs('select.district', 'my.schools', 'dlc.school.details', 'select.school', 'main.school.list', 'district.training.completed.list', 'school.training.completed.list') ? 'active' : '' }}">
                     <i class="fas fa-list nav-icon"></i>
                     <p>School List</p>
                 </a>

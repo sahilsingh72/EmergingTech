@@ -335,7 +335,13 @@ class StudentController extends Controller
             $student->has_feedback_entry = StudentFeedback::where('stu_id', $student->stu_id)->exists();
         }
 
-        return view('studentfeedback', compact('schools', 'students', 'schoolId', 'districts'));
+        $selectedDistrict = null;
+
+        if ($schoolId) {
+            $selectedDistrict = School::where('scm_id', $schoolId)->value('scm_dist_id');
+        }
+
+        return view('studentfeedback', compact('schools', 'students', 'schoolId', 'districts', 'selectedDistrict'));
     }
     public function uploadFeedback(Request $request, OneDriveService $oneDriveService)
     {

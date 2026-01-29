@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\District;
+use App\Models\InstituteFeedback;
 use App\Models\School;
+use App\Models\StudentFeedback;
 use App\Models\StudentMst;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -91,7 +93,7 @@ class SchoolController extends Controller
 
         // Get all schools for this district
         $schools = School::where('scm_dist_id', $id)
-            ->select('scm_id', 'scm_name', 'scm_udise_code', 'training_completed')
+            ->select('scm_id', 'scm_name', 'scm_udise_code', 'training_completed', 'training_date')
             ->withCount(['students', 'coordinators', 'trainers', 'staffs'])
             ->get();
 
@@ -143,7 +145,28 @@ class SchoolController extends Controller
         return response()->json($staffs);
     }
 
-    // dlc school 
+    public function showSchoolData($schoolId)
+    {
+        $school = School::with([
+            'trainingUploads',
+        ])->findOrFail($schoolId);
+    
+        $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+            ->where('attendance', 1)
+            ->count();
+
+        $instituteFeedbackEntrys = InstituteFeedback::where('school_id', $schoolId)->get();
+
+        $studentsWithFeedbackEntrys =StudentFeedback::where('school_id', $schoolId)
+            ->whereIn('stu_id', function ($q) use ($schoolId) {
+                $q->select('stu_id')
+                    ->from('student_mst')
+                    ->where('stu_scm_id', $schoolId)
+                    ->where('attendance', 1);
+            })->get();
+
+        return view('schoollist.schooldatashow', compact('school', 'totalStudents', 'instituteFeedbackEntrys', 'studentsWithFeedbackEntrys'));
+    }
 
     public function mySchools()
     {
@@ -236,4 +259,55 @@ class SchoolController extends Controller
 
         return view('schoollist.mainSchoollist', compact('schools', 'studentCounts', 'trainerCounts', 'coordinatorCounts', 'supportStaffCounts'));
     }
+    public function trainingCompletedDistList(){
+        // $districts = District::select('DSM_DSCD', 'DSM_DSNM')
+        //     ->orderBy('DSM_DSNM', 'asc')->get();
+
+        $totalSchools = School::select('scm_dist_id', DB::raw('COUNT(*) as total'))
+            ->groupBy('scm_dist_id')
+            ->pluck('total', 'scm_dist_id');
+
+        // $trainingCounts = School::select('scm_dist_id', DB::raw('COUNT(*) as completed_training'))
+        //     ->where('training_completed', 1)
+        //     ->groupBy('scm_dist_id')
+        //     ->pluck('completed_training', 'scm_dist_id');
+        $districts = District::whereHas('schools.trainingUploads', function ($q) {
+                $q->where('file_type', 'attendance_sheet');
+            })
+            ->select('DSM_DSCD', 'DSM_DSNM')
+            ->orderBy('DSM_DSNM', 'asc')
+            ->get();
+
+        return view('schoollist.trainingcompleteddistlist', compact('districts', 'totalSchools'));
+    }
+    public function districtSchools($districtId)
+    {
+        $schools = School::where('scm_dist_id', $districtId)
+            ->whereHas('trainingUploads', function ($q) {
+                $q->whereIn('file_type', ['attendance_sheet']);
+            })
+            ->select('scm_id', 'scm_name')
+            ->orderBy('scm_name')
+            ->get();
+
+        return response()->json([
+            'schools' => $schools
+        ]);
+    }
+    public function trainingCompletedSchoolList($id)
+    {
+        $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
+
+        // Get all schools for this district
+        $schools = School::where('scm_dist_id', $id)
+            ->whereHas('trainingUploads', function ($q) {
+                $q->where('file_type', 'attendance_sheet');
+            })
+            ->select('scm_id', 'scm_name', 'scm_udise_code', 'training_completed', 'training_date')
+            ->withCount(['students', 'coordinators', 'trainers', 'staffs'])
+            ->get();
+
+        return view('schoollist.trainingcompletedschool', compact('district', 'schools'));
+    }
+
 }

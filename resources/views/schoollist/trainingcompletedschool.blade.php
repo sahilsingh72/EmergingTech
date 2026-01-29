@@ -107,15 +107,6 @@
                                                     <div class="school-body p-3">
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom">
-                                                            <span>Training Status</span>
-                                                            @if($school->training_completed == 1)
-                                                                <span class="fw-bold" style="color: green;">● Completed</span>
-                                                            @else
-                                                                <span class="fw-bold" style="color: red;">● Not Completed</span>
-                                                            @endif
-                                                        </div>
-
-                                                        <div class="d-flex justify-content-between py-2 border-bottom">
                                                             <span>Training Date</span>
                                                             <span class="fw-bold" style="color: green;">{{ \Carbon\Carbon::parse($school->training_date)->format('d-m-Y')  ?? 'N/A'}}</span>
                                                         </div>

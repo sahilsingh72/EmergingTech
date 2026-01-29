@@ -193,7 +193,11 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/school/{id}/coordinators-json', [SchoolController::class, 'schoolCoordinatorsJson']);
     Route::get('/school/{id}/trainers-json', [SchoolController::class, 'schoolTrainersJson']);
     Route::get('/school/{id}/staffs-json', [SchoolController::class, 'schoolStaffsJson']);
-
+    Route::get('/school-{school}-data', [SchoolController::class, 'showSchoolData'])->name('school.data.show');
+    Route::get('/training-completed-list', [SchoolController::class, 'trainingCompletedDistList'])->name('district.training.completed.list');
+    Route::get('/school-{id}-completed', [SchoolController::class, 'districtSchools']);
+    Route::get('/district-{id}-school-list', [SchoolController::class, 'trainingCompletedSchoolList'])->name('school.training.completed.list');
+    
     Route::get('/school-list', [SchoolController::class, 'schoolList'])->name('main.school.list');
     
     // Show list of schools for dlc
