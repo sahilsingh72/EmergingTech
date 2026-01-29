@@ -84,7 +84,8 @@
                                                     <select id="filterDistrict" class="form-control">
                                                         <option value="">-- Select District --</option>
                                                         @foreach($districts as $district)
-                                                            <option value="{{ $district->DSM_DSCD }}">
+                                                            <option value="{{ $district->DSM_DSCD }}"
+                                                                {{ isset($selectedDistrict) && $selectedDistrict == $district->DSM_DSCD ? 'selected' : '' }}>
                                                                 {{ $district->DSM_DSNM }}
                                                             </option>
                                                         @endforeach
@@ -617,6 +618,26 @@ $(document).on("change", "#filterSchool", function () {
     });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const selectedDistrict = "{{ $selectedDistrict ?? '' }}";
+    const selectedSchool   = "{{ $schoolId ?? '' }}";
+
+    if (!selectedDistrict) return;
+
+    // Trigger district change to load schools
+    $("#filterDistrict").val(selectedDistrict).trigger('change');
+
+    // After schools load, select school
+    $(document).ajaxComplete(function () {
+        if (selectedSchool) {
+            $("#filterSchool").val(selectedSchool);
+        }
+    });
+});
+</script>
+
 
 
 </body>
