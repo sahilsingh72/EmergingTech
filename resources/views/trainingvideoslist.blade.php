@@ -365,7 +365,7 @@ $(document).on("change", "#filterSchool", function () {
     if (!schoolId) return;
 
     $.ajax({
-        url: "{{ route('trainingphotos.list') }}",
+        url: "{{ route('trainingvideos.list') }}",
         method: "GET",
         data: { school_id: schoolId },
         success: function (response) {
