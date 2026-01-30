@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\CampExpenseBill;
 use App\Models\Coordinator;
 use App\Models\District;
+use App\Models\InstituteFeedback;
 use App\Models\Role;
 use App\Models\School;
+use App\Models\StudentFeedback;
+use App\Models\StudentMst;
 use App\Models\SuppStaff;
 use App\Models\Trainer;
 use App\Models\TrainerTravelBill;
@@ -307,7 +310,7 @@ class BillController extends Controller
         } else {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
-        return view('campexpensebills', compact('schools'));
+        return view('bills.campexpensebills', compact('schools'));
     }
     public function campexpenseStore(Request $request)
     {
@@ -341,6 +344,28 @@ class BillController extends Controller
             $billType = $type === 'Misc'
                 ? ($customTypes[$i] ?? 'Misc')
                 : $type;
+
+            $amount = $amounts[$i];
+
+            $limits = [
+                'Inauguration' => 1200,
+                'Generator'    => 5000,
+            ];
+
+            $existingTotal = CampExpenseBill::where('school_id', $schoolId)
+                ->where('bill_type', $billType)
+                ->where('training_date', $dates[$i])
+                ->sum('amount');
+
+            $newTotal = $existingTotal + $amount;
+
+            if (isset($limits[$billType]) && $newTotal > $limits[$billType]) {
+                return back()
+                    ->withErrors([
+                        'amount' => "{$billType} total amount cannot exceed ₹{$limits[$billType]}. Already used ₹{$existingTotal}."
+                    ])
+                    ->withInput();
+            }
 
             $file = $files[$i];
             $fileName = time() . '_' . $file->getClientOriginalName();
@@ -402,7 +427,40 @@ class BillController extends Controller
             'Misc'
         ];
 
-        return view('campexpensebillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes'));
+        $schoolProgress = $records->groupBy('school_id')->map(function ($rows) {
+            $schoolId = $rows->first()->school_id;
+            $uploads = TrainingUpload::where('school_id', $schoolId)->pluck('file_type')->unique();
+
+            $totalStudents = StudentMst::where('stu_scm_id', $schoolId)
+                ->where('attendance', 1)
+                ->count();
+
+            $studentRatingCount = StudentFeedback::where('school_id', $schoolId)
+                ->whereIn('stu_id', function ($q) use ($schoolId) {
+                    $q->select('stu_id')
+                    ->from('student_mst')
+                    ->where('stu_scm_id', $schoolId)
+                    ->where('attendance', 1);
+                })
+                ->count();
+
+            // institute feedback rating
+            $hasInstituteRating = InstituteFeedback::where('school_id', $schoolId)->exists();
+
+            return [
+                'attendance' => $uploads->contains('attendance_sheet'), 
+                'photos' => $uploads->contains('training_photo'), 
+                'video' => $uploads->contains('training_video'), 
+                'written_feedback' => $uploads->contains('written_feedback'), 
+                'student_feedback_rating' => $studentRatingCount >= 2,
+                'institute_feedback' => $uploads->contains('institute_feedback'), 
+                'institute_feedback_rating' => $hasInstituteRating,
+                'video_feedback' => $uploads->contains('video_feedback'), 
+                'certificate' => $uploads->contains('training_completion_certificate'),
+            ];
+        });
+
+        return view('bills.campexpensebillslist', compact('records', 'districts', 'districtId', 'schoolTotals', 'billTypes', 'schoolProgress'));
     }
     public function CampExpensepreview(Request $request)
     {
@@ -447,7 +505,7 @@ class BillController extends Controller
         $bill->status_updated_by = Auth::id();
         $bill->save();
 
-        return back()->with('success', 'Travel bill approved successfully!');
+        return back()->with('success', 'bill approved successfully!');
     }
     public function CampExpensereject(Request $request, $id)
     {
@@ -463,7 +521,7 @@ class BillController extends Controller
         $bill->status_updated_by = Auth::id();
         $bill->save();
 
-        return back()->with('error', 'Travel bill rejected.');
+        return back()->with('error', 'bill rejected.');
     }
     public function CampExpenserevert($id)
     {
@@ -518,6 +576,27 @@ class BillController extends Controller
 
         if ($request->bill_type === 'Misc' && $request->filled('custom_bill_type')) {
             $finalBillType = $request->custom_bill_type;
+        }
+
+        $limits = [
+            'Inauguration' => 1200,
+            'Generator'    => 5000,
+        ];
+
+        $existingTotal = CampExpenseBill::where('school_id', $bill->school_id)
+            ->where('bill_type', $finalBillType)
+            ->where('training_date', $bill->training_date)
+            ->where('id', '!=', $bill->id) // exclude current bill
+            ->sum('amount');
+
+        $newTotal = $existingTotal + $request->amount;
+
+        if (isset($limits[$finalBillType]) && $newTotal > $limits[$finalBillType]) {
+            return back()
+                ->withErrors([
+                    'amount' => "{$finalBillType} total amount cannot exceed ₹{$limits[$finalBillType]}. Already used ₹{$existingTotal}."
+                ])
+                ->withInput();
         }
 
         if ($request->hasFile('bill_file')) {
