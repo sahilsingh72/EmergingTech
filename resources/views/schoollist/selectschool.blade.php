@@ -117,7 +117,11 @@
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom">
                                                             <span>Training Date</span>
-                                                            <span class="fw-bold" style="color: green;">{{ \Carbon\Carbon::parse($school->training_date)->format('d-m-Y')  ?? 'N/A'}}</span>
+                                                            {{-- <span class="fw-bold" style="color: green;">{{
+                                                                \Carbon\Carbon::parse($school->training_date)->format('d-m-Y')
+                                                                ?? 'N/A'}}</span> --}}
+                                                            <span class="fw-bold"
+                                                                style="color: green;">{{ $school->training_date ? \Carbon\Carbon::parse($school->training_date)->format('d-m-Y') : 'N/A' }}</span>
                                                         </div>
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
@@ -128,7 +132,7 @@
 
                                                         <a href="{{ route('school.data.show', $school->scm_id) }}"
                                                             class="d-flex justify-content-between py-2 border-bottom cursor-pointer text-decoration-none
-                                                                transform transition duration-200 hover:text-blue-700 hover:scale-105">
+                                                                    transform transition duration-200 hover:text-blue-700 hover:scale-105">
                                                             <span>School Data Uploads</span>
                                                             <span class="fw-bold text-primary">click here</span>
                                                         </a>
@@ -157,7 +161,7 @@
                                                                     class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105">
                                                                     <span>Total Students</span>
                                                                     <span
-                                                                    class="fw-bold text-primary">{{ $school->students_count }}</span>
+                                                                        class="fw-bold text-primary">{{ $school->students_count }}</span>
                                                                 </div>
                                                             </a>
                                                         @endif
@@ -340,43 +344,70 @@
                     }
 
                     let isTrainer = (modalId === "trainerModal");
+                    let isSupStaff = (modalId === "staffModal");
 
                     let html = `
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Photo</th>
-                            <th>Name</th>
-            `;
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Name</th>
+                    `;
 
                     if (isTrainer) {
                         html += `<th>Specialization</th>`;
                     }
 
-                    html += `
+                    @if(Auth::user()->role_id != 1)
+                        html += `
                             <th>Phone</th>
                             <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+                        `;
+                    @endif
+                    html += `
+                        <th>CV</th>
+                    `;
+                    if (isTrainer) {
+                        html += `<th>Experience</th>`;
+                    }
+                    html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+                    `;
 
                     data.forEach(item => {
                         html += `
-                    <tr>
-                        <td>${item.photo ? `<img src="/storage/${item.photo}" width="50" height="50" class="rounded-circle">` : '-'}</td>
-                        <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.ss_name}</td>
-                `;
+                        <tr>
+                            <td>${item.photo ? `<img src="/storage/${item.photo}" width="50" height="50" class="rounded-circle">` : '-'}</td>
+                            <td>${item.name ?? item.coordinator_name ?? item.trainer_name ?? item.ss_name}</td>
+                        `;
 
                         if (isTrainer) {
                             html += `<td>${item.specialization || '-'}</td>`;
                         }
 
+                        @if(Auth::user()->role_id != 1)
+                            html += `
+                                <td>${item.phone || '-'}</td>
+                                <td>${item.email || '-'}</td>
+                            `;
+                        @endif
                         html += `
-                        <td>${item.phone || '-'}</td>
-                        <td>${item.email || '-'}</td>
-                    </tr>
-                `;
+                            <td>
+                                ${item.cv
+                                ? `<a href="/storage/${item.cv}" target="_blank" class="text-success">View</a>`
+                                : '-'}
+                            </td>
+                        `;
+                        if (isTrainer) {
+                            html += `<td>
+                                ${item.experience_certificate
+                                    ? `<a href="/storage/${item.experience_certificate}" target="_blank" class="text-success">View</a>`
+                                    : '-'}
+                            </td>`;
+                        }
+                        html += `</tr>`;
                     });
 
                     html += "</tbody></table>";
