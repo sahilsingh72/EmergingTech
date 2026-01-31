@@ -199,6 +199,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/district-school-{id}-list', [SchoolController::class, 'trainingCompletedSchoolList'])->name('school.training.completed.list');
     
     Route::get('/school-list', [SchoolController::class, 'schoolList'])->name('main.school.list');
+    Route::get('/school-{id}', [SchoolController::class, 'showSchool'])->name('school.show');
     
     // Show list of schools for dlc
     Route::get('/dist-my-schools', [SchoolController::class, 'mySchools'])->name('my.schools');

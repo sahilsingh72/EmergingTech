@@ -133,14 +133,20 @@
                                                     <th class="p-2 border">District</th>
                                                     <th class="p-2 border">School</th>
                                                     <th class="p-2 border">Name</th>
-                                                    <th class="p-2 border">Phone</th>
-                                                    <th class="p-2 border">Email</th>
-                                                    <th class="p-2 border">Address</th>
+                                                    @php
+                                                        $roleId = Auth::user()->role_id;
+                                                    @endphp
+                                                    @if($roleId != 1)
+                                                        <th class="p-2 border">Phone</th>
+                                                        <th class="p-2 border">Email</th>
+                                                        <th class="p-2 border">Address</th>
+                                                    @endif
                                                     <th class="p-2 border">Photo</th>
                                                     <th class="p-2 border">CV</th>
-                                                    {{-- <th class="p-2 border">Experience</th> --}}
-                                                    <th class="p-2 border">Education Certificates</th>
-                                                    <th class="p-2 border">Aadhaar Card</th>
+                                                    @if($roleId != 1)
+                                                        <th class="p-2 border">Education Certificates</th>
+                                                        <th class="p-2 border">Aadhaar Card</th>
+                                                    @endif
                                                     @php
                                                         $roleId = Auth::user()->role_id;
                                                         $SahiluserId = Auth::user()->id;
@@ -180,9 +186,11 @@
                                                             @endif
                                                         </td>
                                                         <td class="p-2 border">{{ $coordinator->coordinator_name }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->phone }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->email }}</td>
-                                                        <td class="p-2 border">{{ $coordinator->address }}</td>
+                                                        @if($roleId != 1)
+                                                            <td class="p-2 border">{{ $coordinator->phone }}</td>
+                                                            <td class="p-2 border">{{ $coordinator->email }}</td>
+                                                            <td class="p-2 border">{{ $coordinator->address }}</td>
+                                                        @endif
                                                         <td class="p-2 border">
                                                             @if ($coordinator->photo)
                                                                 <a href="{{ asset('storage/' . $coordinator->photo) }}"
@@ -204,50 +212,41 @@
                                                             @endif
                                                         </td>
 
-                                                        {{-- Experience --}}
-                                                        {{-- <td class="p-2 border">
-                                                            @if ($coordinator->experience_certificate)
-                                                            <a href="{{ asset('storage/' . $coordinator->experience_certificate) }}"
-                                                                target="_blank" class="text-blue-600">View</a>
-                                                            @else
-                                                            -
-                                                            @endif
-                                                        </td> --}}
+                                                        @if($roleId != 1)
+                                                            {{-- Education Certificates --}}
+                                                            <td class="p-2 border">
+                                                                @php
+                                                                    $educationCertificates = [];
+                                                                    if (is_string($coordinator->education_certificates)) {
+                                                                        $educationCertificates =
+                                                                            json_decode(
+                                                                                $coordinator->education_certificates,
+                                                                                true,
+                                                                            ) ?? [];
+                                                                    } elseif (is_array($coordinator->education_certificates)) {
+                                                                        $educationCertificates =
+                                                                            $coordinator->education_certificates;
+                                                                    }
+                                                                @endphp
 
-
-                                                        {{-- Education Certificates --}}
-                                                        <td class="p-2 border">
-                                                            @php
-                                                                $educationCertificates = [];
-                                                                if (is_string($coordinator->education_certificates)) {
-                                                                    $educationCertificates =
-                                                                        json_decode(
-                                                                            $coordinator->education_certificates,
-                                                                            true,
-                                                                        ) ?? [];
-                                                                } elseif (is_array($coordinator->education_certificates)) {
-                                                                    $educationCertificates =
-                                                                        $coordinator->education_certificates;
-                                                                }
-                                                            @endphp
-
-                                                            @if (count($educationCertificates) > 0)
-                                                                @foreach ($educationCertificates as $certificate)
-                                                                    <a href="{{ asset('storage/' . $certificate) }}" target="_blank"
-                                                                        class="text-blue-600 block">View</a>
-                                                                @endforeach
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
-                                                        <td class="p-2 border">
-                                                            @if ($coordinator->aadhar_card)
-                                                                <a href="{{ asset('storage/' . $coordinator->aadhar_card) }}"
-                                                                    target="_blank" class="text-blue-600">View</a>
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
+                                                                @if (count($educationCertificates) > 0)
+                                                                    @foreach ($educationCertificates as $certificate)
+                                                                        <a href="{{ asset('storage/' . $certificate) }}" target="_blank"
+                                                                            class="text-blue-600 block">View</a>
+                                                                    @endforeach
+                                                                @else
+                                                                    -
+                                                                @endif
+                                                            </td>
+                                                            <td class="p-2 border">
+                                                                @if ($coordinator->aadhar_card)
+                                                                    <a href="{{ asset('storage/' . $coordinator->aadhar_card) }}"
+                                                                        target="_blank" class="text-blue-600">View</a>
+                                                                @else
+                                                                    -
+                                                                @endif
+                                                            </td>
+                                                        @endif
                                                         {{-- Actions --}}
                                                         @php
                                                             $roleId = Auth::user()->role_id;

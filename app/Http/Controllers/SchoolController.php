@@ -7,6 +7,7 @@ use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentFeedback;
 use App\Models\StudentMst;
+use App\Models\TrainingUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,22 @@ class SchoolController extends Controller
 
         return view('school.schoollist', compact('district', 'schools'));
     }
+    public function showSchool($id)
+    {
+        $school = School::withCount(['students', 'coordinators', 'trainers', 'staffs'])
+            ->findOrFail($id);
+
+        $district = District::select('DSM_DSCD', 'DSM_DSNM')
+            ->where('DSM_DSCD', $school->scm_dist_id)
+            ->first();
+        
+        $isTrainingCompleted = TrainingUpload::where('school_id', $school->scm_id)
+            ->where('file_type', 'attendance_sheet')
+            ->exists();
+
+
+        return view('schoollist.schooldetails', compact('school', 'district', 'isTrainingCompleted'));
+    }
     public function selectdistrictList($id)
     {
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
@@ -126,21 +143,21 @@ class SchoolController extends Controller
     public function schoolCoordinatorsJson($schoolId)
     {
         $school = School::findOrFail($schoolId);
-        $coordinators = $school->coordinators()->select('coordinator_name', 'phone', 'email', 'photo')->get();
+        $coordinators = $school->coordinators()->select('coordinator_name', 'phone', 'email', 'photo', 'cv', 'experience_certificate')->get();
 
         return response()->json($coordinators);
     }
     public function schoolTrainersJson($schoolId)
     {
         $school = School::findOrFail($schoolId);
-        $trainers = $school->trainers()->select('trainer_name', 'phone', 'email', 'photo', 'specialization')->get();
+        $trainers = $school->trainers()->select('trainer_name', 'phone', 'email', 'photo', 'specialization', 'cv', 'experience_certificate')->get();
 
         return response()->json($trainers);
     }
     public function schoolStaffsJson($schoolId)
     {
         $school = School::findOrFail($schoolId);
-        $staffs = $school->staffs()->select('ss_name', 'phone', 'email', 'photo')->get();
+        $staffs = $school->staffs()->select('ss_name', 'phone', 'email', 'photo', 'cv')->get();
 
         return response()->json($staffs);
     }
