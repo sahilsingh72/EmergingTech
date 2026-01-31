@@ -109,7 +109,7 @@
                                                         <div class="d-flex justify-content-between py-2 border-bottom">
                                                             <span>Training Date</span>
                                                             <span class="fw-bold"
-                                                                style="color: green;">{{ \Carbon\Carbon::parse($school->training_date)->format('d-m-Y') ?? 'N/A'}}</span>
+                                                                style="color: green;">{{ $school->training_date ? \Carbon\Carbon::parse($school->training_date)->format('d-m-Y') : 'N/A' }}</span>
                                                         </div>
 
                                                         <div class="d-flex justify-content-between py-2 border-bottom cursor-pointer transform transition duration-200 hover:text-blue-700 hover:scale-105"
