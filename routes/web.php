@@ -148,6 +148,17 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/trainer-travel-list', [BillController::class, 'trainerTravelList'])->name('trainer.travel.list');
     Route::put('/trainer-travel/{id}', [BillController::class, 'trainerTravelUpdate'])->name('trainer.travel.update');
     Route::post('/trainer-travel/{id}/update-training-date', [BillController::class, 'updateTrainingDate'])->name('trainerTravel.updateTrainingDate');
+    
+    Route::get('/camptravels',[BillController::class,'campTravels'])->name('camp.travels');  
+    Route::get('/get-people-by-school/{schoolId}',[BillController::class, 'getPeopleBySchool']);
+    Route::post('/camptravels-store',[BillController::class,'campTravelStore'])->name('camp.travel.store');
+    Route::get('/camp-travel-list', [BillController::class, 'campTravelList'])->name('camp.travel.list');
+    Route::get('/camp-travel/{id}/staff', [BillController::class, 'getCampTravelStaff']);
+    Route::post('/camp-travel/{id}/approve', [BillController::class, 'campTravelapprove'])->name('campTravel.approve');
+    Route::post('/camp-travel/{id}/reject', [BillController::class, 'campTravelreject'])->name('campTravel.reject');
+    Route::post('/camp-travel/{id}/revert', [BillController::class, 'campTravelrevert'])->name('campTravel.revert');
+    Route::post('/camp-travel/{id}/update', [BillController::class, 'campTravelupdate'])->name('campTravel.update');
+    Route::post('/camp-travel/{id}/delete', [BillController::class, 'campTraveldelete'])->name('campTravel.delete');
  
     Route::get('/trainer-bill-preview', [BillController::class, 'previewFile'])->name('trainer.travel.preview');
 

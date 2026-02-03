@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CampExpenseBill;
+use App\Models\CampTravelBillMember;
+use App\Models\CampTravelBill;
 use App\Models\Coordinator;
 use App\Models\District;
 use App\Models\InstituteFeedback;
@@ -19,6 +21,7 @@ use App\Services\OneDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -934,6 +937,400 @@ class BillController extends Controller
 
         return back()->with('success', 'Travel bill updated successfully!');
     }
+
+    public function campTravels()
+    {
+        $districtId = auth::user()->district_id;
+
+        
+        $user = Auth::user();
+        $userId = $user->id;
+        $roleId = $user->role_id;
+
+        $roles = Role::whereIn('name', ['DLC', 'Coordinator', 'Trainer', 'Supporting Staff'])->get();
+
+        $districtID = User::select('district_id')
+            ->where('id', $userId)
+            ->get('district_id');
+            
+        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')
+            ->where('scm_dist_id', $districtID[0]->district_id)
+            ->orderBy('scm_name', 'asc')
+            ->get();
+       
+        return view('travels.camptravel', compact('schools', 'districtId'));
+    }
+    public function campTravelStore(Request $request)
+    {
+        $request->validate([
+            'school'            => 'required|exists:school_mst,scm_id',
+            'trainer_ids'       => 'required|array|min:1',
+
+            'main_from'         => 'required|string|max:255',
+            'main_to'           => 'required|string|max:255',
+            'main_distance'     => 'required|numeric|min:0',
+            'main_amount'       => 'required|numeric|min:0',
+            'total_main_amount' => 'required|numeric|min:0',
+            'main_bill'         => 'required|file|mimes:pdf|max:5120',
+
+            'has_return'        => 'nullable|boolean',
+            
+            'return_from'          => 'nullable|required_if:has_return,1|string|max:255',
+            'return_to'            => 'nullable|required_if:has_return,1|string|max:255',
+            'return_distance'      => 'nullable|required_if:has_return,1|numeric|min:0',
+            'return_amount'        => 'nullable|required_if:has_return,1|numeric|min:0',
+            'total_return_amount'  => 'nullable|required_if:has_return,1|numeric|min:0',
+            'return_bill_file'     => 'nullable|required_if:has_return,1|file|mimes:pdf|max:5120',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $user     = Auth::user();
+            $district = District::find($user->district_id);
+            $school   = School::where('scm_id', $request->school)->first();
+
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $district->DSM_DSNM);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_name);
+
+            //  Create bill
+            $bill = CampTravelBill::create([
+                'school_id'            => $school->scm_id,
+                'district_id'          => $district->DSM_DSCD,
+                'training_date'        => $request->training_date[0] ?? null,
+
+                'main_from'            => $request->main_from,
+                'main_to'              => $request->main_to,
+                'main_distance'        => $request->main_distance,
+                'main_amount'          => $request->main_amount,
+                'total_main_amount'    => $request->total_main_amount,
+
+                'has_return'           => $request->has_return ?? 0,
+                'return_from'          => $request->return_from,
+                'return_to'            => $request->return_to,
+                'return_distance'      => $request->return_distance,
+                'return_amount'        => $request->return_amount,
+                'total_return_amount'  => $request->total_return_amount,
+
+                'uploaded_by'          => $user->id,
+            ]);
+
+            //  Upload main bill
+            if ($request->hasFile('main_bill')) {
+                $file = $request->file('main_bill');
+
+                $upload = $this->oneDrive->uploadDirect(
+                    $file,
+                    "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/main",
+                    time().'_'.$file->getClientOriginalName()
+                );
+
+                $bill->update([
+                    'main_bill_path' => $upload['path'] ?? null,
+                    'main_bill_url'  => $upload['url'] ?? null,
+                ]);
+            }
+
+            //  Upload return bill
+            if ($request->hasFile('return_bill_file')) {
+                $file = $request->file('return_bill_file');
+
+                $upload = $this->oneDrive->uploadDirect(
+                    $file,
+                    "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/return",
+                    time().'_'.$file->getClientOriginalName()
+                );
+
+                $bill->update([
+                    'return_bill_path' => $upload['path'] ?? null,
+                    'return_bill_url'  => $upload['url'] ?? null,
+                ]);
+            }
+
+            //  Store members
+            foreach ($request->trainer_ids as $value) {
+                [$role, $id] = explode('_', $value);
+
+                CampTravelBillMember::create([
+                    'camp_travel_bill_id' => $bill->id,
+                    'role'                => $role,
+                    'member_id'           => $id,
+                ]);
+            }
+
+            DB::commit();
+
+            return back()->with('success', 'Training travel bill submitted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withErrors([
+                'error' => 'Something went wrong while saving travel bill.',
+            ]);
+        }
+    }
+    public function getPeopleBySchool($schoolId)
+    {
+        $trainers = Trainer::whereHas('schools', function ($q) use ($schoolId) {
+                $q->where('trainer_scm_allocation.scm_id', $schoolId);
+            })
+            ->select('trainer_id as id', 'trainer_name as name')
+            ->get();
+
+        $coordinators = Coordinator::whereHas('schools', function ($q) use ($schoolId) {
+                $q->where('coordinator_scm_allocation.scm_id', $schoolId);
+            })
+            ->select('coordinator_id as id', 'coordinator_name as name')
+            ->get();
+
+        $staff = SuppStaff::whereHas('schools', function ($q) use ($schoolId) {
+                $q->where('staff_scm_allocation.scm_id', $schoolId);
+            })
+            ->select('ss_id as id', 'ss_name as name')
+            ->get();
+
+        return response()->json([
+            'trainers' => $trainers,
+            'coordinators' => $coordinators,
+            'staff' => $staff,
+        ]);
+    }
+    public function campTravelList(Request $request)
+    {   
+        $user = Auth::user();
+        $districtId = $request->district_id;
+
+        $query = CampTravelBill::with([
+            'district',
+            'members',
+            'members.trainer',
+            'members.coordinator',
+            'members.staff',
+            'statusUpdatedByUser',
+            'school'
+        ])
+            ->join('school_mst', 'school_mst.scm_id', '=', 'camp_travel_bills.school_id')
+            ->select('camp_travel_bills.*');
+
+        // ROLE FILTERS
+        if ($user->role->name === 'DLC') {
+            $query->where('district_id', $user->district_id);
+        }
+
+        if ($request->district_id) {
+            $query->where('district_id', $request->district_id);
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $records = $query->get();
+
+        $districts = District::orderBy('DSM_DSNM')->get();
+
+        return view('travels.camptravellist', compact(
+            'records',
+            'districts', 'districtId'
+        ));
+    }
+    public function getCampTravelStaff($id)
+    {
+        $bill = CampTravelBill::with('members')->findOrFail($id);
+
+        $staff = $bill->members->map(function ($m) {
+            return [
+                'role' => $m->role,
+                'name' => match ($m->role) {
+                    'trainer'      => Trainer::find($m->member_id)?->trainer_name,
+                    'coordinator'  => Coordinator::find($m->member_id)?->coordinator_name,
+                    'staff'        => SuppStaff::find($m->member_id)?->ss_name,
+                    default        => 'Unknown',
+                }
+            ];
+        });
+
+        return response()->json($staff);
+    }
+    public function campTravelupdate(Request $request, $id)
+    {
+        
+
+        $bill = CampTravelBill::findOrFail($id);
+
+        // MAIN bill must exist (old or new)
+        if (!$bill->main_bill_path && !$request->hasFile('main_bill')) {
+            return back()->withErrors(['main_bill' => 'Main bill PDF is required.']);
+        }
+
+        // RETURN bill required only if return enabled AND not already uploaded
+        if (
+            $request->has_return == 1 &&
+            !$bill->return_bill_path &&
+            !$request->hasFile('return_bill_file')
+        ) {
+            return back()->withErrors(['return_bill_file' => 'Return bill PDF is required.']);
+        }
+
+        if ($bill->status === 'Approved') {
+            return back()->withErrors('Approved bills cannot be edited.');
+        }
+
+        $request->validate([
+            'trainer_ids' => 'required|array|min:1',
+            'trainer_ids.*' => 'string',
+            'main_from' => 'required',
+            'main_to'   => 'required',
+            'main_distance' => 'required|numeric|min:0',
+            'has_return'    => 'required|boolean',
+
+            'main_bill'       => 'nullable|file|mimes:pdf|max:5120',
+            'return_bill_file'=> 'nullable|file|mimes:pdf|max:5120',
+        ]);
+
+        $data = [
+            'main_from'         => $request->main_from,
+            'main_to'           => $request->main_to,
+            'main_distance'     => $request->main_distance,
+            'main_amount'       => $request->main_amount,
+            'total_main_amount' => $request->total_main_amount,
+            'has_return'        => $request->has_return,
+        ];
+
+        if ($request->has_return) {
+            $data += [
+                'return_from'         => $request->return_from,
+                'return_to'           => $request->return_to,
+                'return_distance'     => $request->return_distance,
+                'return_amount'       => $request->return_amount,
+                'total_return_amount' => $request->total_return_amount,
+            ];
+        } 
+        else {
+            $data += [
+                'return_from'         => null,
+                'return_to'           => null,
+                'return_distance'     => null,
+                'return_amount'       => null,
+                'total_return_amount' => null,
+                'return_bill_path'    => null,
+                'return_bill_url'     => null,
+            ];
+        }
+        if ($request->hasFile('main_bill')) {
+            $file = $request->file('main_bill');
+
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->district->DSM_DSNM);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->school->scm_name);
+
+            $upload = $this->oneDrive->uploadDirect(
+                $file,
+                "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/main",
+                time().'_'.$file->getClientOriginalName()
+            );
+
+            $data['main_bill_path'] = $upload['path'] ?? $bill->main_bill_path;
+            $data['main_bill_url']  = $upload['url']  ?? $bill->main_bill_url;
+        }
+
+        if ($request->has_return && $request->hasFile('return_bill_file')) {
+            $file = $request->file('return_bill_file');
+
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->district->DSM_DSNM);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->school->scm_name);
+
+            $upload = $this->oneDrive->uploadDirect(
+                $file,
+                "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/return",
+                time().'_'.$file->getClientOriginalName()
+            );
+
+            $data['return_bill_path'] = $upload['path'] ?? $bill->return_bill_path;
+            $data['return_bill_url']  = $upload['url']  ?? $bill->return_bill_url;
+        }
+
+        //  Update members
+        CampTravelBillMember::where('camp_travel_bill_id', $bill->id)->delete();
+
+        
+            foreach ($request->trainer_ids as $value) {
+                [$role, $id] = explode('_', $value);
+
+                CampTravelBillMember::create([
+                    'camp_travel_bill_id' => $bill->id,
+                    'role'      => $role,
+                    'member_id' => $id,
+                ]);
+            }   
+        if ($bill->status === 'Rejected') {
+            $data['status'] = 'Pending';
+            $data['remarks'] = null;
+            $data['status_updated_by'] = null;
+            $data['status_updated_at'] = null;
+        }
+
+        $bill->update($data);
+
+        return back()->with('success', 'Travel bill updated successfully.');
+    }
+    public function campTravelapprove($id)
+    {
+        $bill = CampTravelBill::findOrFail($id);
+
+        $bill->update([
+            'status'            => 'Approved',
+            'status_updated_by' => Auth::id(),
+            'status_updated_at' => now(),
+            'remarks'           => null,
+        ]);
+
+        return back()->with('success', 'Travel bill approved.');
+    }
+    public function campTravelreject(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500',
+        ]);
+
+        $bill = CampTravelBill::findOrFail($id);
+
+        $bill->update([
+            'status'            => 'Rejected',
+            'remarks'           => $request->remarks,
+            'status_updated_by' => Auth::id(),
+            'status_updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Travel bill rejected.');
+    }
+    public function campTravelrevert($id)
+    {
+        $bill = CampTravelBill::findOrFail($id);
+
+        $bill->update([
+            'status'            => 'Pending',
+            'remarks'           => null,
+            'status_updated_by' => Auth::id(),
+            'status_updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Travel bill reverted to pending.');
+    }
+    public function campTraveldelete($id)
+    {
+        $bill = CampTravelBill::findOrFail($id);
+
+        if ($bill->status === 'Approved') {
+            return back()->withErrors('Approved bills cannot be deleted.');
+        }
+
+        $bill->members()->delete();
+        $bill->delete();
+
+        return back()->with('success', 'Travel bill deleted successfully.');
+    }
+
     public function updateTrainingDate(Request $request, $id)
     {
         $request->validate([

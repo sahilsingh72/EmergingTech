@@ -393,9 +393,9 @@
         @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'menu-open' : '' }}">
             <a href="{{route('uploadbills')}}"
-              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'active' : '' }}">
               <i class="nav-icon fas fa-file-invoice-dollar"></i>
               <p>
                 Finance & Bills
@@ -403,6 +403,21 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              
+              @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
+                <li class="nav-item">
+                  <a
+                    @if ($user->role_id == 3)
+                      href="{{route('trainer.travels')}}"
+                    @elseif ($user->role_id == 8 || $user->role_id == 2)
+                      href="{{route('trainer.travel.list')}}"
+                    @endif
+                    class="nav-link {{ request()->routeIs('trainer.travels', 'trainer.travel.list') ? 'active' : '' }}">
+                    <i class="fas fa-car nav-icon"></i>
+                    <p>Trainer Travels</p>
+                  </a>
+                </li>
+              @endif
               @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
                 <li class="nav-item">
                   <a 
@@ -417,33 +432,7 @@
                   </a>
                 </li>
               @endif
-              @if($user->role_id == 3)
-                <li class="nav-item">
-                  <a href="{{route('trainer.travels')}}"
-                    class="nav-link {{ request()->routeIs('trainer.travels') ? 'active' : '' }}">
-                    <i class="fas fa-car nav-icon"></i>
-                    <p>Trainer Travels</p>
-                  </a>
-                </li>
-              @endif
 
-              @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
-                <li class="nav-item">
-                  <a href="{{route('trainer.travel.list')}}"
-                    class="nav-link {{ request()->routeIs('trainer.travel.list') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice-dollar nav-icon"></i>
-                    <p>Allowance Requests</p>
-                  </a>
-                </li>
-              @endif
-
-              {{-- <li class="nav-item">
-                <a href="{{route('uploadbills')}}"
-                  class="nav-link {{ request()->routeIs('uploadbills') ? 'active' : '' }}">
-                  <i class="fas fa-utensils nav-icon"></i>
-                  <p>Staff Expenses</p>
-                </a>
-              </li> --}}
               <li class="nav-item">
                 <a 
                   @if($user->role_id == 3)
@@ -454,6 +443,18 @@
                   class="nav-link {{ request()->routeIs('uploadexpensebills', 'camp.expense.list') ? 'active' : '' }}">
                   <i class="fas fa-dollar-sign nav-icon"></i>
                   <p>Camp Expenses</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a 
+                  @if($user->role_id == 3)
+                    href="{{route('camp.travels')}}"
+                  @elseif($user->role_id == 8 || $user->role_id == 2)
+                    href="{{route('camp.travel.list')}}"
+                  @endif
+                  class="nav-link {{ request()->routeIs('camp.travel.list', 'camp.travels') ? 'active' : '' }}">
+                  <i class="fas fa-car nav-icon"></i>
+                  <p>Camp Travel Expenses</p>
                 </a>
               </li>
             </ul>
