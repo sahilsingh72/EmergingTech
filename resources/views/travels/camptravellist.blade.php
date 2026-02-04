@@ -185,6 +185,83 @@
                                                             <td><i class="fas fa-folder-open"></i></td>
                                                         @endif
                                                     </tr>
+                                                    
+                                                    {{-- PROGRESS ROW --}}
+                                                    <tr class="bg-white {{ $collapse }} d-none">
+                                                        <td></td>
+                                                        <td colspan="100%">
+                                                            @php
+                                                                $progress = $schoolProgress[$schoolId] ?? [];
+                                                                $steps = [
+                                                                    'Attendance Sheet' => $progress['attendance'] ?? false,
+                                                                    'Training Photos' => $progress['photos'] ?? false,
+                                                                    'Training Video' => $progress['video'] ?? false,
+                                                                    'Student Feedback' => $progress['written_feedback'] ?? false,
+                                                                    'Student Feedback Rating (120)' => $progress['student_feedback_rating'] ?? false,
+                                                                    'Institute Feedback' => $progress['institute_feedback'] ?? false,
+                                                                    'Institute Feedback Rating' => $progress['institute_feedback_rating'] ?? false,
+                                                                    'Video Feedback' => $progress['video_feedback'] ?? false,
+                                                                    'Completion Certificate' => $progress['certificate'] ?? false,
+                                                                ];
+
+                                                                $allCompleted = collect($steps)->every(fn($v) => $v === true);
+                                                                $completed = collect($steps)->filter()->count();
+                                                                $total = count($steps);
+                                                                $percent = ($completed / $total) * 100;
+                                                            @endphp
+
+                                                            <!-- Progress Bar -->
+                                                            <div class="mt-2">
+                                                                <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                                    <div class="h-3 bg-green-600"
+                                                                        style="width: {{ $percent }}%">
+                                                                    </div>
+                                                                </div>
+                                                                <small class="text-muted">
+                                                                    {{ $completed }} / {{ $total }} steps completed
+                                                                </small>
+                                                            </div>
+                                                            <!-- Step Icons -->
+                                                            <div class="flex justify-between text-sm mt-2">
+                                                                @foreach($steps as $label => $done)
+                                                                    @php
+                                                                        $map = [
+                                                                            'Attendance Sheet' => 'attendance_sheet',
+                                                                            'Training Photos' => 'training_photo',
+                                                                            'Training Video' => 'training_video',
+                                                                            'Student Feedback' => 'written_feedback',
+                                                                            'Student Feedback Rating (120)' => 'student_feedback_rating',
+                                                                            'Institute Feedback' => 'institute_feedback',
+                                                                            'Institute Feedback Rating' => 'institute_feedback_rating',
+                                                                            'Video Feedback' => 'video_feedback',
+                                                                            'Completion Certificate' => 'training_completion_certificate',
+                                                                        ];
+                                                                        $type = $map[$label];
+                                                                    @endphp
+                                                                    <div class="flex items-center gap-1 cursor-pointer"
+                                                                        @if($label === 'Student Feedback Rating (120)')
+                                                                            onclick="openStudentFeedback({{ $schoolId }})"
+                                                                        @elseif($label === 'Institute Feedback Rating')
+                                                                            onclick="openInstituteFeedback({{ $schoolId }})"
+                                                                        @else
+                                                                            onclick="loadUploads({{ $schoolId }}, '{{ $type }}', '{{ $label }}')"
+                                                                        @endif
+                                                                    >
+
+                                                                        @if($done)
+                                                                            <i class="fas fa-check-circle text-green-600"></i>
+                                                                        @else
+                                                                            <i class="fas fa-clock text-gray-400"></i>
+                                                                        @endif
+
+                                                                        <span class="{{ $done ? 'text-green-700' : 'text-gray-500' }}">
+                                                                            {{ $label }}
+                                                                        </span>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </td>
+                                                    </tr>
 
                                                     {{-- BILL ROWS --}}
                                                     @foreach($rows as $index => $bill)
@@ -367,9 +444,15 @@
                                                                         <form action="{{ route('campTravel.approve', $bill->id) }}"
                                                                             method="POST" class="d-inline">
                                                                             @csrf
-                                                                            <button class="btn btn-success btn-sm mt-1" title="Approve">
-                                                                                <i class="fas fa-check"></i>
-                                                                            </button>
+                                                                            @if($allCompleted)
+                                                                                <button class="btn btn-success btn-sm mt-1" title="Approve">
+                                                                                    <i class="fas fa-check"></i>
+                                                                                </button>
+                                                                            @else
+                                                                                <button class="btn btn-success btn-sm mt-1" title="Completion of all uploads before approval" disabled>
+                                                                                    <i class="fas fa-check"></i>
+                                                                                </button>
+                                                                            @endif
                                                                         </form>
 
                                                                         <button class="btn btn-danger btn-sm mt-1" data-toggle="modal"
@@ -631,6 +714,29 @@
                                     </div>
                                     <div id="pagination" class="flex justify-center space-x-2 mt-4"></div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Upload Viewer Modal -->
+                    <div class="modal fade" id="uploadViewerModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+
+                                <div class="modal-header bg-info text-white">
+                                    <h5 class="modal-title" id="uploadViewerTitle">Uploads</h5>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div id="uploadList" class="list-group">
+                                        <p class="text-muted">Loading…</p>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -956,7 +1062,65 @@ document.addEventListener('DOMContentLoaded', function () {
     if (returnFrom) returnFrom.value = schoolName;
 });
 </script>
+<script>
+        function loadUploads(schoolId, type, title) {
 
+            let url = "{{ route('school.uploads.byType', ['schoolId' => '__ID__', 'type' => '__TYPE__']) }}"
+                .replace('__ID__', schoolId)
+                .replace('__TYPE__', type);
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) {
+                        console.error('HTTP Error:', res.status);
+                        throw new Error('Request failed');
+                    }
+                    return res.json();
+                })
+                .then(files => {
+                    console.log('FILES:', files); // DEBUG
+
+                    document.getElementById('uploadViewerTitle').innerText = title;
+                    const list = document.getElementById('uploadList');
+                    list.innerHTML = '';
+
+                    if (!files.length) {
+                        list.innerHTML = `<div class="text-muted">No files uploaded</div>`;
+                        $('#uploadViewerModal').modal('show');
+                        return;
+                    }
+
+                    files.forEach(file => {
+                        const filename = file.school.replace(/[^A-Za-z0-9_\-]/g, '_') + '_' + file.file_type;
+
+                        list.innerHTML += `
+                            <a href="/preview-files?path=${encodeURIComponent(file.file_path)}
+                            &filename=${filename}" target="_blank"
+                            class="list-group-item list-group-item-action">
+                                <i class="fas fa-eye mr-2 text-primary"></i>
+                                Uploaded on ${new Date(file.created_at).toLocaleDateString()}
+                            </a>
+                        `;
+                    });
+
+                    $('#uploadViewerModal').modal('show');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Unable to load uploads');
+                });
+
+        }
+        function openStudentFeedback(schoolId) {
+            const url = "{{ route('student.feedback') }}?school_id=" + schoolId;
+            window.location.href = url;
+        }
+
+        function openInstituteFeedback(schoolId) {
+            const url = "{{ route('institute.feedback.entry') }}?school_id=" + schoolId;
+            window.location.href = url;
+        }
+    </script>
 
 </body>
 

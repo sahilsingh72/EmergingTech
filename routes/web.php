@@ -11,6 +11,7 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\OneDriveController;
@@ -33,6 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/uploadgallery', [DashboardController::class, 'photogallery'])->name('uploadgallery');
 
 Route::middleware(['auth', 'session.expired'])->group(function () {
+    Route::get('/social-media', [MediaController::class, 'socialMedia'])->name('social.media');
+    Route::get('/social-media-add', [MediaController::class, 'socialMediaAdd'])->name('social.media.add');
+    Route::post('/social-media-store', [MediaController::class, 'socialMediaStore'])->name('social.media.store');
+    Route::post('/social-media/{id}/update', [MediaController::class, 'socialMediaUpdate'])->name('social.media.update');
+
 
     Route::get('/calendar-events', [DashboardController::class, 'calendarEvents']);
     Route::post('/update-training-date', [DashboardController::class, 'updateTrainingDate']);

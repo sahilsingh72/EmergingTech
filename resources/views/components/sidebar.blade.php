@@ -473,6 +473,35 @@
           </li>
         @endif
 
+        {{-- Social Media --}}
+        @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
+
+          <li
+            class="nav-item has-treeview {{ request()->routeIs('social.media', 'social.media.add') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('social.media', 'social.media.add') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-share-alt"></i>
+              <p>
+                Media
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              
+              @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
+                <li class="nav-item">
+                  <a href="{{ route('social.media') }}"
+                    class="nav-link {{ request()->routeIs('social.media', 'social.media.add') ? 'active' : '' }}">
+                    <i class="fas fa-bullhorn nav-icon"></i>
+                    <p>Social Media</p>
+                  </a>
+                </li>
+              @endif
+              
+            </ul>
+          </li>
+        @endif
+
         {{-- Help Guide --}}
         @if($user->role_id != 1)
         <li class="nav-item has-treeview">

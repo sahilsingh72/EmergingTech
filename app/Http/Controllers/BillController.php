@@ -485,7 +485,7 @@ class BillController extends Controller
         $response = Http::head($downloadUrl);
         $contentType = $response->header('Content-Type', 'application/octet-stream');
 
-        // ✅ Only allow PDF files
+        //  Only allow PDF files
         if (!str_contains($contentType, 'pdf')) {
             return response('Only PDF preview is supported.', 415);
         }
@@ -991,7 +991,7 @@ class BillController extends Controller
             $school   = School::where('scm_id', $request->school)->first();
 
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $district->DSM_DSNM);
-            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_name);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
 
             //  Create bill
             $bill = CampTravelBill::create([
@@ -1129,11 +1129,37 @@ class BillController extends Controller
         $records = $query->get();
 
         $districts = District::orderBy('DSM_DSNM')->get();
+        
+        $schoolProgress = $records->groupBy('school_id')->map(function ($rows) {
+            $schoolId = $rows->first()->school_id;
+            $uploads = TrainingUpload::where('school_id', $schoolId)->pluck('file_type')->unique();
 
-        return view('travels.camptravellist', compact(
-            'records',
-            'districts', 'districtId'
-        ));
+            $studentRatingCount = StudentFeedback::where('school_id', $schoolId)
+                ->whereIn('stu_id', function ($q) use ($schoolId) {
+                    $q->select('stu_id')
+                    ->from('student_mst')
+                    ->where('stu_scm_id', $schoolId)
+                    ->where('attendance', 1);
+                })
+                ->count();
+
+            // institute feedback rating
+            $hasInstituteRating = InstituteFeedback::where('school_id', $schoolId)->exists();
+
+            return [
+                'attendance' => $uploads->contains('attendance_sheet'), 
+                'photos' => $uploads->contains('training_photo'), 
+                'video' => $uploads->contains('training_video'), 
+                'written_feedback' => $uploads->contains('written_feedback'), 
+                'student_feedback_rating' => $studentRatingCount >= 2,
+                'institute_feedback' => $uploads->contains('institute_feedback'), 
+                'institute_feedback_rating' => $hasInstituteRating,
+                'video_feedback' => $uploads->contains('video_feedback'), 
+                'certificate' => $uploads->contains('training_completion_certificate'),
+            ];
+        });
+
+        return view('travels.camptravellist', compact('records','districts', 'districtId', 'schoolProgress'));
     }
     public function getCampTravelStaff($id)
     {
@@ -1222,7 +1248,7 @@ class BillController extends Controller
             $file = $request->file('main_bill');
 
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->district->DSM_DSNM);
-            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->school->scm_name);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $bill->school->scm_name);
 
             $upload = $this->oneDrive->uploadDirect(
                 $file,
@@ -1238,7 +1264,7 @@ class BillController extends Controller
             $file = $request->file('return_bill_file');
 
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->district->DSM_DSNM);
-            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', '_', $bill->school->scm_name);
+            $schoolName   = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $bill->school->scm_name);
 
             $upload = $this->oneDrive->uploadDirect(
                 $file,
