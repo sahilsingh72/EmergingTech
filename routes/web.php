@@ -38,7 +38,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::get('/social-media-add', [MediaController::class, 'socialMediaAdd'])->name('social.media.add');
     Route::post('/social-media-store', [MediaController::class, 'socialMediaStore'])->name('social.media.store');
     Route::post('/social-media/{id}/update', [MediaController::class, 'socialMediaUpdate'])->name('social.media.update');
-
+    Route::delete('/social-media/{id}', [MediaController::class, 'destroy'])->name('social.media.destroy');
 
     Route::get('/calendar-events', [DashboardController::class, 'calendarEvents']);
     Route::post('/update-training-date', [DashboardController::class, 'updateTrainingDate']);

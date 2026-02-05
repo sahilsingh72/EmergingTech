@@ -16,11 +16,30 @@ class MediaController extends Controller
         $this->oneDrive = $oneDrive;
     }
 
-    public function socialMedia(){
+    public function socialMedia(Request $request){
         
-        $posts = SocialMedia::latest()->get()->groupBy('media_type');
+        $tab = $request->get('tab', 'instagram');
 
-        return view('media.socialmedia',compact('posts'));
+        $posts = [
+            'instagram' => SocialMedia::where('media_type', 'instagram')
+                ->latest()
+                ->paginate(8, ['*'], 'page_instagram'),
+
+            'facebook' => SocialMedia::where('media_type', 'facebook')
+                ->latest()
+                ->paginate(6, ['*'], 'page_facebook'),
+
+            'twitter' => SocialMedia::where('media_type', 'twitter')
+                ->latest()
+                ->paginate(6, ['*'], 'page_twitter'),
+
+            'linkedin' => SocialMedia::where('media_type', 'linkedin')
+                ->latest()
+                ->paginate(6, ['*'], 'page_linkedin'),
+        ];
+        // $posts = SocialMedia::latest()->get()->groupBy('media_type');
+
+        return view('media.socialmedia',compact('posts', 'tab'));
     }
     public function socialMediaAdd(){
         return view('media.socialmediaadd');
@@ -99,7 +118,7 @@ class MediaController extends Controller
             }
         }
 
-        // 📝 Update remaining fields
+        //  Update remaining fields
         $post->update([
             'media_type'     => $request->platform,
             'title'          => $request->title,
@@ -111,6 +130,18 @@ class MediaController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Social media post updated successfully.');
+    }
+    public function destroy($id)
+    {
+        $post = SocialMedia::findOrFail($id);
+
+        if (Auth::user()->role_id != 9) {
+            abort(403);
+        }
+
+        $post->delete();
+
+        return redirect()->back()->with('success', 'Post deleted successfully.');
     }
 
 }

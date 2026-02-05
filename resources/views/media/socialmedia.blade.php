@@ -98,22 +98,37 @@
                                     <div class="flex justify-center mb-8 px-2">
                                         <div class="tab-scroll w-full md:w-auto">
                                             <div class="tab-wrapper mx-auto">
-                                                <button onclick="openTab('instagram')" class="tab-btn active-tab">
+                                                <button onclick="openTab('instagram')" class="tab-btn {{ $tab === 'instagram' ? 'active-tab' : '' }}">
                                                     Instagram
                                                 </button>
-                                                <button onclick="openTab('facebook')" class="tab-btn">
+                                                <button onclick="openTab('facebook')" class="tab-btn {{ $tab === 'facebook' ? 'active-tab' : '' }}">
                                                     Facebook
                                                 </button>
-                                                <button onclick="openTab('twitter')" class="tab-btn">
+                                                <button onclick="openTab('twitter')" class="tab-btn {{ $tab === 'twitter' ? 'active-tab' : '' }}">
                                                     Twitter
                                                 </button>
-                                                <button onclick="openTab('linkedin')" class="tab-btn">
+                                                <button onclick="openTab('linkedin')" class="tab-btn {{ $tab === 'linkedin' ? 'active-tab' : '' }}">
                                                     LinkedIn
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="instagram" class="tab-content">
+                                    <!-- Search -->
+                                    <div class="mb-6 flex justify-center md:justify-end px-2">
+                                        <div class="relative w-full md:w-72">
+                                            <input
+                                                type="text"
+                                                id="socialSearch"
+                                                placeholder="Search by school, district, title..."
+                                                class="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2
+                                                    focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                                onkeyup="filterPosts()"
+                                            >
+                                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        </div>
+                                    </div>
+
+                                    <div id="instagram" class="tab-content {{ $tab !== 'instagram' ? 'hidden' : '' }}">
                                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                             @forelse($posts['instagram'] ?? [] as $post)
                                                 <div class="relative rounded-xl bg-blue-50 overflow-hidden shadow hover:shadow-lg transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 h-full flex flex-col bg-[#FAFAFA]">
@@ -121,12 +136,22 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                     @if($roleId == 9)
-                                                        <div class="absolute top-3 right-3 z-20">
+                                                        <div class="absolute top-3 right-3 z-20 flex gap-1">
+                                                            <form action="{{ route('social.media.destroy', $post->id) }}" method="POST" onsubmit="return confirmDelete()">
+                                                                @csrf        
+                                                                @method('DELETE')
+                                                                <button
+                                                                    type="submit"
+                                                                    class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                        hover:bg-blue-600 hover:text-white transition">
+                                                                    <i class="fas fa-trash"></i>  
+                                                                </button>
+                                                            </form>
                                                             <button
                                                                 onclick="openEditModal({{ $post->toJson() }})"
-                                                                class="bg-white/90 backdrop-blur text-blue-600 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
                                                                     hover:bg-blue-600 hover:text-white transition">
-                                                                ✏ Edit
+                                                                <i class="fas fa-edit"></i>  
                                                             </button>
                                                         </div>
                                                     @endif
@@ -163,8 +188,12 @@
                                                 <p class="text-center col-span-4 text-gray-500">No Instagram posts found.</p>
                                             @endforelse
                                         </div>
+                                        <div class="mt-8 flex justify-center">
+                                            {{ $posts['instagram']->appends(['tab' => 'instagram'])->links() }}
+                                        </div>
                                     </div>
-                                    <div id="facebook" class="tab-content hidden">
+
+                                    <div id="facebook" class="tab-content {{ $tab !== 'facebook' ? 'hidden' : '' }}">
                                         <div class="space-y-6">
                                             @forelse($posts['facebook'] ?? [] as $post)
                                                 <div class="relative p-6 bg-blue-50 rounded-xl shadow flex items-center gap-4 hover:shadow-lg transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1">
@@ -172,12 +201,22 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                     @if($roleId == 9)
-                                                        <div class="absolute top-3 right-3 z-20">
+                                                        <div class="absolute top-3 right-3 z-20 flex gap-1">
+                                                            <form action="{{ route('social.media.destroy', $post->id) }}" method="POST" onsubmit="return confirmDelete()">
+                                                                @csrf        
+                                                                @method('DELETE')
+                                                                <button
+                                                                    type="submit"
+                                                                    class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                        hover:bg-blue-600 hover:text-white transition">
+                                                                    <i class="fas fa-trash"></i>  
+                                                                </button>
+                                                            </form>
                                                             <button
                                                                 onclick="openEditModal({{ $post->toJson() }})"
-                                                                class="bg-white/90 backdrop-blur text-blue-600 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
                                                                     hover:bg-blue-600 hover:text-white transition">
-                                                                ✏ Edit
+                                                                <i class="fas fa-edit"></i>  
                                                             </button>
                                                         </div>
                                                     @endif
@@ -213,8 +252,12 @@
                                                 <p class="text-center text-gray-500">No Facebook posts found.</p>
                                             @endforelse
                                         </div>
+                                        <div class="mt-8 flex justify-center">
+                                            {{ $posts['facebook']->appends(['tab' => 'facebook'])->links() }}
+                                        </div>
                                     </div>
-                                    <div id="twitter" class="tab-content hidden">
+
+                                    <div id="twitter" class="tab-content {{ $tab !== 'twitter' ? 'hidden' : '' }}">
                                         <div class="space-y-4">
                                             @forelse($posts['twitter'] ?? [] as $post)
                                                 <div class="relative p-6 bg-blue-50 rounded-xl shadow flex items-center gap-4 hover:shadow-lg transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1">
@@ -222,12 +265,22 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                     @if($roleId == 9)
-                                                        <div class="absolute top-3 right-3 z-20">
+                                                        <div class="absolute top-3 right-3 z-20 flex gap-1">
+                                                            <form action="{{ route('social.media.destroy', $post->id) }}" method="POST" onsubmit="return confirmDelete()">
+                                                                @csrf        
+                                                                @method('DELETE')
+                                                                <button
+                                                                    type="submit"
+                                                                    class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                        hover:bg-blue-600 hover:text-white transition">
+                                                                    <i class="fas fa-trash"></i>  
+                                                                </button>
+                                                            </form>
                                                             <button
                                                                 onclick="openEditModal({{ $post->toJson() }})"
-                                                                class="bg-white/90 backdrop-blur text-blue-600 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
                                                                     hover:bg-blue-600 hover:text-white transition">
-                                                                ✏ Edit
+                                                                <i class="fas fa-edit"></i>  
                                                             </button>
                                                         </div>
                                                     @endif
@@ -263,8 +316,12 @@
                                                 <p class="text-center text-gray-500">No Twitter posts found.</p>
                                             @endforelse
                                         </div>
+                                        <div class="mt-8 flex justify-center">
+                                            {{ $posts['twitter']->appends(['tab' => 'twitter'])->links() }}
+                                        </div>
                                     </div>
-                                    <div id="linkedin" class="tab-content hidden">
+
+                                    <div id="linkedin" class="tab-content {{ $tab !== 'linkedin' ? 'hidden' : '' }}">
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                            @forelse($posts['linkedin'] ?? [] as $post)
                                                 <div class="relative p-6 bg-gray-100 rounded-xl shadow hover:shadow-lg transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1">
@@ -272,12 +329,22 @@
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                     @if($roleId == 9)
-                                                        <div class="absolute top-3 right-3 z-20">
+                                                        <div class="absolute top-3 right-3 z-20 flex gap-1">
+                                                            <form action="{{ route('social.media.destroy', $post->id) }}" method="POST" onsubmit="return confirmDelete()">
+                                                                @csrf        
+                                                                @method('DELETE')
+                                                                <button
+                                                                    type="submit"
+                                                                    class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                        hover:bg-blue-600 hover:text-white transition">
+                                                                    <i class="fas fa-trash"></i>  
+                                                                </button>
+                                                            </form>
                                                             <button
                                                                 onclick="openEditModal({{ $post->toJson() }})"
-                                                                class="bg-white/90 backdrop-blur text-blue-600 px-3 py-1 rounded-full shadow-md text-xs font-semibold
+                                                                class="bg-black/40 backdrop-blur text-blue-800 px-3 py-1 rounded-full shadow-md text-xs font-semibold
                                                                     hover:bg-blue-600 hover:text-white transition">
-                                                                ✏ Edit
+                                                                <i class="fas fa-edit"></i>  
                                                             </button>
                                                         </div>
                                                     @endif
@@ -308,6 +375,9 @@
                                             @empty
                                                 <p class="text-center text-gray-500 col-span-2">No LinkedIn posts found.</p>
                                             @endforelse
+                                        </div>
+                                        <div class="mt-8 flex justify-center">
+                                            {{ $posts['linkedin']->appends(['tab' => 'linkedin'])->links() }}
                                         </div>
                                     </div>
                                 </div>
@@ -397,6 +467,11 @@
 
 </body>
 <script>
+function confirmDelete() {
+    return confirm("Are you sure you want to delete this post? This action cannot be undone.");
+}
+</script>
+<script>
     function openTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.add('hidden');
@@ -432,6 +507,23 @@ function openEditModal(post) {
 
 function closeEditModal() {
     document.getElementById('editModal').classList.add('hidden');
+}
+</script>
+<script>
+function changeTab(tab) {
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tab);
+    window.location = url;
+}
+</script>
+<script>
+function filterPosts() {
+    const query = document.getElementById('socialSearch').value.toLowerCase();
+
+    document.querySelectorAll('.tab-content:not(.hidden) > div > div').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
+    });
 }
 </script>
 
