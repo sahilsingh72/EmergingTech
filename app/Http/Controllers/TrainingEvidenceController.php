@@ -623,7 +623,7 @@ class TrainingEvidenceController extends Controller
 
         return view('trainingcompcertificatelist', compact('uploads', 'schools'));
     }
-    public function editTrainingCompletionCertificate($id)
+    public function editTrainingCompCertificate($id)
     {
         $upload = TrainingUpload::findOrFail($id);
 
@@ -631,30 +631,52 @@ class TrainingEvidenceController extends Controller
             abort(403, 'Invalid file type');
         }
 
-        return response()->json($upload); // we’ll load it dynamically in modal via JS
+        return response()->json([
+            'upload_id'     => $upload->upload_id,
+            'file_name'     => $upload->file_name,
+            'onedrive_path' => $upload->onedrive_path,
+            'onedrive_url'  => $upload->onedrive_url,
+            'file_type'     => $upload->file_type,
+        ]);
     }
-    public function updateTrainingCompletionCertificate(Request $request, $id)
+
+    public function updateTrainingCompCertificate(Request $request, $id)
     {
         $upload = TrainingUpload::findOrFail($id);
 
-        $schoolId = $upload->school_id;
-        $school = School::find($schoolId);
-        $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
-        $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
+        $request->validate([
+            'new_training_completion_certificate' => 'nullable|mimes:pdf,jpeg,png,jpg|max:10240',
+        ]);
 
-        // Upload new file
         if ($request->hasFile('new_training_completion_certificate')) {
+            
+            $existingPath = $upload->onedrive_path;
+            if (is_array($existingPath)) {
+                $existingPath = $existingPath[0] ?? null;
+            }
+
+            if (!empty($existingPath)) {
+                try {
+                    $this->oneDrive->deleteFile($existingPath);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to delete old training completion certificate from OneDrive: " . $e->getMessage());
+                }
+            }
+
             $file = $request->file('new_training_completion_certificate');
             $filename = time() . '_' . $file->getClientOriginalName();
+            $schoolId = $upload->school_id;
+            $school = School::find($schoolId);
+            $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
+            $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
             $folder = "EmergingTech/{$districtName}/{$schoolName}/training_completion_certificate";
+            
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
-
-            // Update record
-            $upload->update([
-                'file_name'     => $file->getClientOriginalName(),
-                'onedrive_path' => $result['path'],
-                'onedrive_url'  => $result['url'] ?? null,
-            ]);
+        
+            $upload->file_name = $file->getClientOriginalName();
+            $upload->onedrive_path = $result['path'];
+            $upload->onedrive_url = $result['url'] ?? null;
+            $upload->save();
         }
 
         return back()->with('success', 'Training Completion Certificate updated successfully!');

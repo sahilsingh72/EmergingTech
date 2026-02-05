@@ -128,8 +128,9 @@
                                                 <div class="modal-body">
                                                     <div class="mb-3" id="trainingcompletionFilegroup" style="display:none;">
                                                         <label>Replace Completion Certificate File</label>
-                                                        <input type="file" name="new_training_completion_certificate" class="form-control"
+                                                        <input type="file" name="new_training_completion_certificate" id="editFileInput" class="form-control"
                                                             accept="application/pdf,image/*">
+                                                        <small class="text-muted">PDF/Image • Max size 10 MB</small>
                                                     </div>
                                                 </div>
 
@@ -251,10 +252,30 @@
             }
 
             // Set form action
-            document.getElementById('editForm').action = `/institute-feedback-list/${id}`;
+            document.getElementById('editForm').action = `/trainingcompcertificate-list/${id}`;
 
             editModal.show();
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+        const fileInput = document.getElementById('editFileInput');
+        const file = fileInput.files[0];
+
+        const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+        if (file.size > MAX_SIZE) {
+            e.preventDefault();
+            Swal.fire(
+                'File Too Large',
+                'Maximum allowed file size is 10 MB.',
+                'error'
+            );
+            fileInput.value = '';
+            return;
+        }
+    });
+</script>
 </body>
 @include('components.footer')
