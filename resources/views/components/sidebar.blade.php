@@ -499,7 +499,7 @@
                 <a href="{{ route('media.print&Electronic') }}"
                   class="nav-link {{ request()->routeIs('media.print&Electronic', 'media.print&Electronic.add') ? 'active' : '' }}">
                   <i class="fas fa-newspaper nav-icon"></i>
-                  <p>Print & Electronic Media</p>
+                  <p>Media Coverage</p>
                 </a>
               </li>
               
