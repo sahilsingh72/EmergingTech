@@ -454,7 +454,7 @@
                   @endif
                   class="nav-link {{ request()->routeIs('camp.travel.list', 'camp.travels') ? 'active' : '' }}">
                   <i class="fas fa-car nav-icon"></i>
-                  <p>Camp Travel Expenses</p>
+                  <p>Manpower Transportation</p>
                 </a>
               </li>
             </ul>
@@ -477,9 +477,9 @@
         @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('social.media', 'social.media.add') ? 'menu-open' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('social.media', 'social.media.add', 'media.print&Electronic', 'media.print&Electronic.add') ? 'menu-open' : '' }}">
             <a href="#"
-              class="nav-link {{ request()->routeIs('social.media', 'social.media.add') ? 'active' : '' }}">
+              class="nav-link {{ request()->routeIs('social.media', 'social.media.add', 'media.print&Electronic', 'media.print&Electronic.add') ? 'active' : '' }}">
               <i class="nav-icon fas fa-share-alt"></i>
               <p>
                 Media
@@ -488,15 +488,20 @@
             </a>
             <ul class="nav nav-treeview">
               
-              @if($user->role_id == 1 || $user->role_id == 2 || $user->role_id == 3 || $user->role_id == 6 || $user->role_id == 8 || $user->role_id == 9)
-                <li class="nav-item">
-                  <a href="{{ route('social.media') }}"
-                    class="nav-link {{ request()->routeIs('social.media', 'social.media.add') ? 'active' : '' }}">
-                    <i class="fas fa-bullhorn nav-icon"></i>
-                    <p>Social Media</p>
-                  </a>
-                </li>
-              @endif
+              <li class="nav-item">
+                <a href="{{ route('social.media') }}"
+                  class="nav-link {{ request()->routeIs('social.media', 'social.media.add') ? 'active' : '' }}">
+                  <i class="fas fa-bullhorn nav-icon"></i>
+                  <p>Social Media</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ route('media.print&Electronic') }}"
+                  class="nav-link {{ request()->routeIs('media.print&Electronic', 'media.print&Electronic.add') ? 'active' : '' }}">
+                  <i class="fas fa-newspaper nav-icon"></i>
+                  <p>Print & Electronic Media</p>
+                </a>
+              </li>
               
             </ul>
           </li>
