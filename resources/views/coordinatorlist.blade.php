@@ -455,8 +455,6 @@
                                                     </div>
 
                                                     <div class="space-y-4">
-
-
                                                         <div>
                                                             <label
                                                                 class="block text-sm font-medium text-gray-700">Aadhaar

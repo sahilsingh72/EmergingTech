@@ -393,9 +393,9 @@
         @if($user->role_id == 3 || $user->role_id == 8 || $user->role_id == 2)
 
           <li
-            class="nav-item has-treeview {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'menu-open' : '' }}">
-            <a href="{{route('uploadbills')}}"
-              class="nav-link {{ request()->routeIs('uploadbills', 'uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'active' : '' }}">
+            class="nav-item has-treeview {{ request()->routeIs('uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'menu-open' : '' }}">
+            <a href="#"
+              class="nav-link {{ request()->routeIs('uploadtravelbills', 'uploadexpensebills', 'camp.expense.list', 'trainer.travels', 'trainer.travel.list', 'foodbills', 'foodbills.list', 'camp.travel.list', 'camp.travels') ? 'active' : '' }}">
               <i class="nav-icon fas fa-file-invoice-dollar"></i>
               <p>
                 Finance & Bills

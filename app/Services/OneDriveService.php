@@ -79,7 +79,13 @@ class OneDriveService
 
         $tokens = json_decode(file_get_contents($this->tokenFile), true);
         if (!is_array($tokens)) {
-            throw new \Exception("Token file is invalid JSON. Re-authenticate to regenerate token file.");
+            // Delete corrupted file
+            @unlink($this->tokenFile);
+
+            throw new HttpResponseException(
+                Redirect::to('/onedrive/login')
+                    ->with('error', 'Session expired. Please login again.')
+            );
         }
 
         // If expires_at not present, compute it from expires_in (if available) or force refresh.

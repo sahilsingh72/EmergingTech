@@ -212,15 +212,12 @@
                                                                         ->where('attendance', 1);
                                                                 })->count();
 
-                                                            if ($studentRatingCount < 120) {
-                                                                $color = 'text-red-600';
-                                                                $icon  = '❌';
-                                                            } elseif ($studentRatingCount !== $totalStudents) {
-                                                                $color = 'text-yellow-600';
-                                                                $icon  = '❌';
-                                                            } else {
+                                                            if ($studentRatingCount >= 120) {
                                                                 $color = 'text-green-600';
                                                                 $icon  = '✅';
+                                                            } elseif ($studentRatingCount < 120) {
+                                                                $color = 'text-red-600';
+                                                                $icon  = '❌';
                                                             }
                                                         @endphp
 

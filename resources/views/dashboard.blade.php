@@ -24,14 +24,16 @@
 
     .fc-tooltip {
       position: absolute;
-      background: #333;
+      background: rgba(0, 0, 0, 0.9);
       color: #fff;
-      padding: 6px 10px;
+      padding: 10px 12px;
       font-size: 13px;
-      border-radius: 4px;
-      white-space: nowrap;
-      z-index: 9999;
+      border-radius: 6px;
+      max-width: 220px;
+      z-index: 10000;
       pointer-events: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      line-height: 1.4;
     }
 
     .fc-daygrid-day.fc-day-today {
@@ -68,6 +70,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      height: 92px;
+      overflow: hidden;
     }
 
     .fc-daygrid-day,
@@ -78,14 +82,16 @@
     .fc-daygrid-day:hover .fc-daygrid-day-frame {
       border-radius: 6px;
       transition: border 0.2s ease;
-      background: #0f6318
+      background: rgba(0,0,0,0.12) !important;
+      transition: background 0.2s ease;
     }
 
     .fc-daygrid-day-events {
       display: grid !important;
       grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-      padding: 4px;
+      gap: 6px;
+      padding: 6px 4px 2px;
+      justify-items: center;
     }
 
     .fc-daygrid-event {
@@ -268,22 +274,49 @@
         <div class="container-fluid">
           <!-- Small boxes (Stat box) -->
           <div class="row">
+            @php
+              $roleId = Auth::user()->role_id;
+            @endphp 
+            @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
+              <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                  <div class="inner">
+                    <h3>{{$completedTrainings}} / {{$totalSchools }}</h3>
+
+                    <p>Institute Completed Training</p>
+                  </div>
+                  <div class="icon">
+                    <i class="nav-icon fas fa-university "></i>
+                  </div>
+
+                  <a 
+                    href="{{ route('district.training.completed.list') }}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i>
+                  </a>
+                </div>
+              </div>
+            @endif
+            
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-info">
+              <div class="small-box bg-success">
                 <div class="inner">
                   <h3>{{$completedSchools }} / {{$totalSchools }}</h3>
 
-                  <p>Institutes Completed Training</p>
+                  @php
+                    $roleId = Auth::user()->role_id;
+                  @endphp @if($roleId == 3 || $roleId == 6)<p>Institute Completed Training</p>@else
+                  <p>Institute Data Upload</p>@endif
                 </div>
                 <div class="icon">
-                  <i class="nav-icon fas fa-university "></i>
+                  @if($roleId == 3 || $roleId == 6)<i class="nav-icon fas fa-university "></i>@else
+                  <i class="nav-icon fas fa-file-download "></i>@endif
                 </div>
 
                 <a @php
                   $roleId = Auth::user()->role_id;
                 @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
-                  href="{{ route('select.district') }}" @elseif($roleId == 3 || $roleId == 6)
+                href="{{ route('select.district') }}" @elseif($roleId == 3 || $roleId == 6)
                   href="{{ route('my.schools') }}" @else href="#" @endif class="small-box-footer">More info <i
                     class="fas fa-arrow-circle-right"></i>
                 </a>
@@ -292,7 +325,7 @@
             <!-- ./col -->
             <div class="col-lg-3 col-6">
               <!-- small box -->
-              <div class="small-box bg-success">
+              <div class="small-box bg-danger">
                 <div class="inner">
                   <h3>{{ $students }}<sup style="font-size: 20px"></sup></h3>
 
@@ -302,45 +335,59 @@
                   <i class="nav-icon fas fa-user-graduate"></i>
                 </div>
 
-                <a @php
+                @php
                   $roleId = Auth::user()->role_id;
-                @endphp @if($roleId == 1 || $roleId == 2 || $roleId == 8 || $roleId == 9)
-                href="{{ route('student.school') }}" @else href="{{ route('studentlist') }}" @endif
-                  class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                @endphp
+                <a 
+                  @if($roleId == 1) 
+                    style="visibility: hidden;" 
+                  @else 
+                    @if($roleId == 2 || $roleId == 8 || $roleId == 9)
+                      href="{{ route('student.school') }}" 
+                    @else 
+                      href="{{ route('studentlist') }}" 
+                    @endif 
+                  @endif
+                  class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
               </div>
             </div>
             <!-- ./col -->
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-danger">
-                <div class="inner">
-                  <h3>{{$totalTrainers}}</h3>
+            @if($roleId != 1) 
+              <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-orange">
+                  <div class="inner">
+                    <h3>{{$totalTrainers}}</h3>
 
-                  <p>Total Trainer</p>
+                    <p>Total Trainer</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-users  nav-icon"></i>
+                  </div>
+                  <a href="{{route('trainers.index')}}" class="small-box-footer">More info <i
+                      class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <div class="icon">
-                  <i class="fas fa-users  nav-icon"></i>
-                </div>
-                <a href="{{route('trainers.index')}}" class="small-box-footer">More info <i
-                    class="fas fa-arrow-circle-right"></i></a>
               </div>
-            </div>
+            @endif
             <!-- ./col -->
-            <div class="col-lg-3 col-6">
-              <!-- small box -->
-              <div class="small-box bg-warning">
-                <div class="inner">
-                  <h3>{{ $totalCoordinators }}</h3>
+            @if($roleId != 1) 
+              <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-warning">
+                  <div class="inner">
+                    <h3>{{ $totalCoordinators }}</h3>
 
-                  <p>Total Co-ordinator</p>
+                    <p>Total Co-ordinator</p>
+                  </div>
+                  <div class="icon">
+                    <i class="nav-icon fas fa-map "></i>
+                  </div>
+                  <a href="{{route('coordinators.index')}}" class="small-box-footer">More info <i
+                      class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <div class="icon">
-                  <i class="nav-icon fas fa-map "></i>
-                </div>
-                <a href="{{route('coordinators.index')}}" class="small-box-footer">More info <i
-                    class="fas fa-arrow-circle-right"></i></a>
               </div>
-            </div>
+            @endif
             <!-- ./col -->
 
           </div>
@@ -631,9 +678,48 @@
               </div>
               <!-- /.card -->
 
+              <!-- Live Stream View -->
+              <div class="card bg-gradient-primary">
+                <div class="card-header border-0">
+                  <h3 class="card-title">
+                    <i class="fas fa-video mr-1"></i>
+                    Live Stream View<i class="fas fa-live-circle ml-2 text-red-500 animate-pulse"></i>
+                  </h3>
+                  <!-- card tools -->
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-primary btn-sm" data-card-widget="collapse"
+                      data-toggle="tooltip" title="Collapse">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                  </div>
+                  <!-- /.card-tools -->
+                </div>
+                <div class="card-body">
+                  <div class="position-relative" style="width:100%; height:315px;">
+                    <!-- Offline Text -->
+                    <div id="offlineText" style="
+                          position:absolute;
+                          inset:0;
+                          background:rgba(0,0,0,0.7);
+                          font-size:22px;
+                          font-weight:600;
+                          z-index:2;
+                          display:flex;
+                          align-items:center;
+                          justify-content:center;
+                          color:#fff;
+                        ">
+                      Training not started yet
+                    </div>
+                    <div>
+                      <iframe id="ytLive" width="100%" height="315" title="" frameborder="0"
+                        allow="autoplay; encrypted-media" allowfullscreen
+                        style="position:absolute; inset:0; z-index:1;"></iframe>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-
-              <!-- /.card -->
             </section>
             <!-- right col -->
           </div>
@@ -645,8 +731,64 @@
     <!-- /.content-wrapper -->
     @include('components.footer')
   </div>
+  <script>
+    const API_KEY = "AIzaSyBo3BWZZ9sRnKQimjG6zCgXBthQj01_N38";
+    const CHANNEL_ID = "UCuOZLzzMmyU-8bvLhlmcR9A";
+    // const API_KEY = "AIzaSyCwuPbdpS5T69qHGGILgZEx3NyiRCFh09k";
+    // const CHANNEL_ID = "UCzPSIhcBGrfRNQczw6fYhZg";
+
+    const iframe = document.getElementById("ytLive");
+    const offlineText = document.getElementById("offlineText");
+
+    let uploadsPlaylistId = null;
+
+    async function getUploadsPlaylist() {
+      const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${CHANNEL_ID}&key=${API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      uploadsPlaylistId = data.items[0].contentDetails.relatedPlaylists.uploads;
+    }
+
+    async function checkLiveStatus() {
+      if (!uploadsPlaylistId) await getUploadsPlaylist();
+
+      const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=${uploadsPlaylistId}&maxResults=1&key=${API_KEY}`;
+      const res = await fetch(playlistUrl);
+      const data = await res.json();
+
+      if (!data.items || !data.items.length) {
+        offlineText.style.display = "flex";
+        return;
+      }
+
+      const videoId = data.items[0].contentDetails.videoId;
+
+      const videoUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoId}&key=${API_KEY}`;
+      const videoRes = await fetch(videoUrl);
+      const videoData = await videoRes.json();
+
+      const liveDetails = videoData.items[0].liveStreamingDetails;
+
+      if (liveDetails && liveDetails.actualStartTime && !liveDetails.actualEndTime) {
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+        offlineText.style.display = "none";
+      } else {
+        iframe.src = "";
+        offlineText.style.display = "flex";
+      }
+    }
+
+    checkLiveStatus();
+    setInterval(checkLiveStatus, 120000); // every 2 minutes
+  </script>
+
+
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <script>
+    const USER_ROLE_ID = {{ auth()->user()->role_id }};
+</script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -654,12 +796,12 @@
       var calendarEl = document.getElementById('trainingCalendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        height: 550,
+        height: 700,
         events: '/calendar-events',
         eventContent: function (arg) {
           let color = arg.event.extendedProps.color;
           return {
-            html: `<div style="width:12px;height:12px;background:${color};border-radius:4px;margin:auto;"></div>`
+            html: `<div style="width:12px; height:12px; background:${color}; border-radius:4px; margin:auto; cursor:pointer;"></div>`
           };
         },
         eventMouseEnter: function (info) {
@@ -678,10 +820,28 @@
           document.body.appendChild(tooltip);
 
           // Move tooltip with mouse
-          info.el.addEventListener('mousemove', function (e) {
-            tooltip.style.top = (e.pageY + 15) + 'px';
-            tooltip.style.left = (e.pageX + 15) + 'px';
-          });
+          // info.el.addEventListener('mousemove', function (e) {
+          //   tooltip.style.top = (e.pageY + 15) + 'px';
+          //   tooltip.style.left = (e.pageX + 15) + 'px';
+          // });
+          const rect = info.el.getBoundingClientRect();
+
+          let tooltipX = rect.right + 12;
+          let tooltipY = rect.top + window.scrollY;
+
+          // prevent overflow on right
+          if (tooltipX + tooltip.offsetWidth > window.innerWidth) {
+            tooltipX = rect.left - tooltip.offsetWidth - 12;
+          }
+
+          // prevent overflow bottom
+          if (tooltipY + tooltip.offsetHeight > window.innerHeight) {
+            tooltipY = window.innerHeight - tooltip.offsetHeight - 10;
+          }
+
+          tooltip.style.left = tooltipX + "px";
+          tooltip.style.top = tooltipY + "px";
+
         },
         eventMouseLeave: function (info) {
           if (tooltip) {
@@ -689,6 +849,21 @@
             tooltip = null;
           }
         },
+
+        eventClick: function (info) {
+          let allowedRoles = [1, 2, 8, 9];
+          if (!allowedRoles.includes(USER_ROLE_ID)) {
+            
+            return;
+          }
+          
+          let schoolId = info.event.extendedProps.school_id;
+
+          if (schoolId) {
+            window.location.href = `/school-${schoolId}`;
+          }
+        },
+
         eventDidMount: function (info) {
           // full cell element
           let cell = info.el.closest(".fc-daygrid-day");
