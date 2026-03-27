@@ -343,6 +343,124 @@ class StudentController extends Controller
 
         return view('studentfeedback', compact('schools', 'students', 'schoolId', 'districts', 'selectedDistrict'));
     }
+    public function exportFeedback(Request $request)
+    {
+        $schoolId = $request->school_id;
+
+        $school = School::where('scm_id', $schoolId)->first();
+        $schoolName = $school->scm_name ?? 'school';
+        $cleanName = preg_replace('/[^A-Za-z0-9\-]/', '_', $schoolName);
+
+        if (!$schoolId) {
+            return back()->with('error', 'School not selected');
+        }
+
+        $data = StudentFeedback::with('student')
+            ->where('school_id', $schoolId)
+            ->get();
+
+        $fileName = "student_feedback_" . $cleanName . ".xls";
+
+        $headers = [
+            "Content-type" => "application/vnd.ms-excel; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate",
+        ];
+
+        $columns = [
+            'District',
+            'School Name',
+            'Student Name',
+            'Father Name',
+            'Class',
+
+            'ଆପଣ ପୂର୍ବରୁ କୌଣସି ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ସମ୍ପର୍କିତ କର୍ମଶାଳା କିମ୍ବା ପ୍ରଶିକ୍ଷଣ ଶିବିରରେ ଯୋଗ ଦେଇଛନ୍ତି କି?',
+            'ଆପଣଙ୍କର AI, IoT&Robotics, Cyber Security ଓ ସୁରକ୍ଷିତ ଇଣ୍ଟରନେଟ ବ୍ୟବହାର ବିଷୟରେ ଜ୍ଞାନ କେତେ ଅଛି?',
+            'Digital Device ଓ Technology ବ୍ୟବହାର କରିବାରେ ଆପଣ କେତେ ଆତ୍ମବିଶ୍ୱାସୀ?',
+            'Technology ସମ୍ବନ୍ଧୀୟ ଚାକିରି ପ୍ରତି ଆପଣ କେତେ ଇଚ୍ଛୁକ?',
+            'ନୂଆଁ Technology ଶିଖିବା ପାଇଁ ଆପଣ କେତେ ଆଗ୍ରହୀ?',
+            'ଭବିଷ୍ୟତରେ ଚାକିରି ପାଇଁ Emerging Technology ଭଳି ପ୍ରଯୁକ୍ତିବିଦ୍ୟାକୁ ଆପଣ କେତେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ଭାବୁଛନ୍ତି?',
+            'ନୀତିସମ୍ମତ, ଦାୟିତ୍ୱପୂର୍ଣ୍ଣ ଓ ସୁରକ୍ଷିତ ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ବ୍ୟବହାର ବିଷୟରେ ଆପଣ କେତେ ସଚେତନ?',
+            'AI Tools ଆପଣ ବ୍ୟବହାର କରିବା କେତେ ଜାଣିଛନ୍ତି?',
+            'ଏହି ଶିବିରରୁ ଆପଣ Emerging Technology ର ବ୍ୟବହାର ଓ ଉପଯୋଗୀତା ବିଷୟରେ ଜାଣିବାକୁ ଆଶା କରୁଛନ୍ତି?',
+            
+            'ଏହି ଶିବିରରେ ଆପଣ କେଉଁ ବିଷୟକୁ ସବୁଠାରୁ ଉପଯୋଗୀ କିମ୍ବା ଆନନ୍ଦଦାୟକ ମନେକଲେ?',
+            'ପ୍ରଶିକ୍ଷଣ ପରେ AI, IoT & Robotics ଓ Cyber Security ବିଷୟରେ ଆପଣଙ୍କ ଜ୍ଞାନ କେତେ ବଢ଼ିଲା?',
+            'ବର୍ତମାନ Technology ବ୍ୟବହାର କରିବାରେ ଆପଣ କେତେ ଆତ୍ମବିଶ୍ୱାସୀ?',
+            'ପ୍ରଶିକ୍ଷଣ କାର୍ଯ୍ୟକ୍ରମଗୁଡ଼ିକ କେତେ ରୁଚିକର ଓ ଆକର୍ଷଣୀୟ ଥିଲା?',
+            'AI, IoT&Robotics, Cyber Security କିପରି କାମ କରେ – ଏହା ବିଷୟରେ ଆପଣଙ୍କ ଧାରଣା କେତେ ବଢ়িଲା?',
+            'ଏହି ପ୍ରଶିକ୍ଷଣ ଆପଣଙ୍କ ପାଠପଢା କିମ୍ବା ଭବିଷ୍ୟତ Career ପାଇଁ କେତେ ଉପଯୋଗୀ?',
+
+            'ଶିବିର ସମୟରେ ଦେଖାଯାଇଥିବା Demonstration ଗୁଡ଼ିକ କେତେ ଉପକାରୀ ଥିଲା?',
+            'ପ୍ରଶିକ୍ଷଣ ଶିବିରରେ  ପ୍ରମୁଖ  ବିଷୟଗୁଡିକ କେତେ ଭଲ ଭାବରେ ଉପସ୍ଥାପନ କରାଗଲା?',
+            'Hands-on activities କେତେ ଶିକ୍ଷଣୀୟ ଥିଲା?',
+            'ଶିଖିଥିବା ଜ୍ଞାନ କୌଶଳକୁ ଆପଣ ବାସ୍ତବ ଜୀବନରେ ବ୍ୟବହାର କରିବାକୁ କେତେ ଇଚ୍ଛୁକ?',
+
+            'ବର୍ତ୍ତମାନ ଆପଣ ସାଇବର୍ ବିପଦରୁ ନିଜକୁ କେତେ ସୁରକ୍ଷିତ ରଖି ପାରିବେ?',
+            'Artificial Intelligence Tools ପ୍ରତି ଆପଣଙ୍କର ଆଗ୍ରହ କେତେ ବଢ଼ିଲା?',
+            'ଭବିଷ୍ୟତରେ IoT ଓ Robotics ବିଷୟରେ ଅଧିକ ଶିଖିବাকୁ ଆପણ କେଉଁ ସୁଆଡ়?',
+
+            'ତାଲିମ ପ୍ରଦାନକାରୀଙ୍କର ଶିକ୍ଷାଦାନ କେତେ ଗ୍ରହଣୀୟ ଥିଲା?',
+            'ସମଗ୍ର ପ୍ରଶିକ୍ଷଣ ପ୍ରତି ଆପଣ କେତେ ସନ୍ତୁଷ୍ଟ?',
+            'Technology ସମ୍ବନ୍ଧୀୟ କ୍ୟାରିୟର କରିବା ବିଷୟରେ ଆପଣଙ୍କ ଆଗ୍ରହ କେତେ ବଢ଼ିଲା?',
+            'ପ୍ରଶିକ୍ଷଣ ଶିବିର ପରେ କିଛି ନୂତନ ଉଦ୍ଭାବନ ପାଇଁ ଭାବୁଛନ୍ତି କି?',
+            'ଭବିଷ୍ୟତରେ ଆପଣ Emerging Technology ବିଷୟରେ ଅଧିକ ପ୍ରଶିକ୍ଷଣ ଚାହୁଁଛନ୍ତି?'
+        ];
+
+        $callback = function () use ($data, $columns) {
+            $file = fopen('php://output', 'w');
+
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $columns);
+
+            foreach ($data as $row) {
+                fputcsv($file, [
+                    $row->school->district->DSM_DSNM ?? '',
+                    $row->school->scm_name ?? '',
+                    $row->student->stu_name ?? '',
+                    $row->student->stu_fathername ?? '',
+                    $row->student->stu_class ?? '',
+
+                    $row->pre_attended_training == 1 ? 'Yes' : 'No',
+                    $row->pre_know_tech,
+                    $row->pre_confidence,
+                    $row->pre_career,
+                    $row->pre_interest,
+                    $row->pre_usefulness,
+                    $row->pre_aware,
+                    $row->pre_ai_known,
+                    $row->pre_et_use,
+
+                    implode(', ', json_decode($row->post_interested_course, true) ?? []),
+                    $row->post_knowledge_improve,
+                    $row->post_confidence_now,
+                    $row->post_engagement,
+                    $row->post_understanding,
+                    $row->post_usefulness,
+
+                    $row->post_demo_helpfulness,
+                    $row->post_topic_coverage,
+                    $row->post_hands_on_usefulness,
+                    $row->post_real_life_use,
+
+                    $row->post_cyber_use,
+                    $row->post_ai_use,
+                    $row->post_iot_use,
+
+                    $row->post_trainer_rating,
+                    $row->post_overall_satisfaction,
+                    $row->post_interest_increase,
+                    $row->post_innovation,
+                    $row->post_motivation_future
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
     public function uploadFeedback(Request $request, OneDriveService $oneDriveService)
     {
         $request->validate([

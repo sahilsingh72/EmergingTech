@@ -139,6 +139,16 @@
                                             <input type="text" id="searchInput" placeholder="Search..."
                                                 class="border rounded p-2 w-40">
                                         </div>
+                                        @php
+                                            $roleId = Auth::user()->role_id;
+                                        @endphp
+                                        @if($roleId == 2)
+                                            <div class="w-full sm:w-auto">
+                                                <button id="exportBtn" class="btn btn-primary w-full sm:w-40">
+                                                    <i class="fas fa-file-excel"></i> Export Excel
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="bg-white shadow rounded-lg p-4 overflow-x-auto">
                                         <table id="studentTable" class="w-full border-collapse">
@@ -158,16 +168,10 @@
                                                         data-column="2">Roll Number</th>
                                                     <th class="border px-4 py-2 text-left cursor-pointer sort"
                                                         data-column="3">Class</th>
-                                                    {{-- <th class="border px-4 py-2 text-left cursor-pointer sort"
-                                                        data-column="10">Address</th> --}}
-                                                    {{-- <th class="border px-4 py-2 text-center">Upload Feedback</th> --}}
                                                     @php
                                                         $roleId = Auth::user()->role_id;
                                                     @endphp
                                                         <th class="border px-4 py-2 text-center">Feedback Entry</th>
-                                                    {{-- @if($roleId == 3 || $roleId == 6)
-                                                        <th class="border px-4 py-2 text-center">Actions</th>
-                                                    @endif --}}
                                                 </tr>
                                             </thead>
                                             <tbody id="feedbackTableBody">
@@ -180,31 +184,6 @@
                                                         <td class="border px-4 py-2">{{ $student->stu_gender }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_roll_number }}</td>
                                                         <td class="border px-4 py-2">{{ $student->stu_class }}</td>
-                                                        {{-- <td class="border px-4 py-2">{{ $student->stu_address}}</td> --}}
-                                                        {{-- <td class="border px-4 py-2 text-center">
-                                                            @if($student->feedback_file_url)
-                                                                <a href="{{ route('student.feedback.preview', ['path' => $student->feedback_file_path]) }}" target="_blank"
-                                                                class="text-blue-600 hover:text-blue-800 mx-1" title="View PDF">
-                                                                    <i class="fas fa-file-pdf"></i>
-                                                                </a>
-                                                                <span class="text-green-600 ml-2" title="Uploaded successfully">
-                                                                    <i class="fas fa-check-circle"></i>
-                                                                </span>
-                                                            @else
-                                                                @php
-                                                                    $roleId = Auth::user()->role_id;
-                                                                @endphp
-                                                                @if($roleId == 3 || $roleId == 6)
-                                                                    <button class="text-green-600 hover:text-green-800 mx-1 btn-upload"
-                                                                        data-id="{{ $student->stu_id }}" data-name="{{ $student->stu_name }}">
-                                                                        <i class="fas fa-upload"></i>
-                                                                    </button>
-                                                                @endif
-                                                                <span class="text-red-600 ml-2" title="Upload failed">
-                                                                    <i class="fas fa-times-circle"></i>
-                                                                </span>
-                                                            @endif
-                                                        </td> --}}
                                                         <td class="border px-4 py-2 text-center">
                                                             @php
                                                                 $roleId = Auth::user()->role_id;
@@ -225,19 +204,6 @@
                                                             </span>
                                                             @endif
                                                         </td>
-                                                        {{-- @php
-                                                            $roleId = Auth::user()->role_id;
-                                                        @endphp
-                                                        @if($roleId == 3 || $roleId == 6)
-                                                            <td class="border px-4 py-2 text-center">
-                                                                <button class="btn btn-sm btn-warning edit-feedback-btn"
-                                                                        data-stu-id="{{ $student->stu_id }}"
-                                                                        data-file-name="{{ $student->feedback_file_name }}"
-                                                                        data-file-path="{{ $student->feedback_file_path }}">
-                                                                    <i class="fas fa-edit"></i> Edit
-                                                                </button>
-                                                            </td>
-                                                        @endif --}}
                                                     </tr>
                                                 @empty
                                                     <tr>
@@ -637,7 +603,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script>
+    $(document).on("click", "#exportBtn", function () {
 
+        let schoolId = $("#filterSchool").val();
+
+        if (!schoolId) {
+            alert("Please select school first");
+            return;
+        }
+
+        window.location.href = "{{ route('student.feedback.export') }}?school_id=" + schoolId;
+    });
+</script>
 
 
 </body>

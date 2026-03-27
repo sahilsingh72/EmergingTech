@@ -116,6 +116,7 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     
     Route::get('/student-feedback',[StudentController::class,'studentFeedback'])->name('student.feedback');
     Route::post('/student-feedback', [StudentController::class, 'uploadFeedback'])->name('student.feedback.upload');
+    Route::get('/student-feedback-export', [StudentController::class, 'exportFeedback'])->name('student.feedback.export');
     Route::get('/student-feedback-preview', [StudentController::class, 'previewFile'])->name('student.feedback.preview');
     Route::get('/student-feedback-{stu_id}-entry', [StudentController::class, 'createEntry'])->name('student.feedback.entryPage');
     Route::post('/student-feedback-store', [StudentController::class, 'storeStudentFeedback'])->name('student.feedback.store');
