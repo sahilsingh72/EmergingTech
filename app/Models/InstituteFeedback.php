@@ -27,4 +27,9 @@ class InstituteFeedback extends Model
         'future_program_interest',
         'submitted_by',
     ];
+
+    public function school()
+    {
+        return $this->belongsTo(\App\Models\School::class, 'school_id', 'scm_id');
+    }
 }

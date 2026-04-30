@@ -510,6 +510,80 @@ class FeedbackController extends Controller
             ->with('success', 'feedback saved successfully!');
     }
 
+    public function exportAllInstituteFeedback()
+    {
+        $data = InstituteFeedback::with('school.district')
+            ->orderBy('school_id')
+            ->get();
+
+        $fileName = "all_institute_feedback_" . date('Y-m-d') . ".xls";
+
+        $headers = [
+            "Content-type" => "application/vnd.ms-excel; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+        ];
+
+        $callback = function () use ($data) {
+
+            echo "\xEF\xBB\xBF"; // UTF-8 BOM
+
+            echo "<table border='1'>";
+
+            // Header
+            echo "<tr style='background-color:#d4edda; font-weight:bold;'>
+                <th>District</th>
+                <th>School</th>
+                <th>Training Date</th>
+
+                <th>Planning</th>
+                <th>Discipline</th>
+                <th>Trainer Quality</th>
+                <th>Engagement</th>
+                <th>Clarity</th>
+                <th>IoT Usefulness</th>
+                <th>AI Relevance</th>
+                <th>Cyber Awareness</th>
+                <th>Equipment</th>
+                <th>Overall Impact</th>
+
+                <th>Awareness Increased</th>
+                <th>Student Enthusiasm</th>
+                <th>Program Beneficial</th>
+                <th>Future Interest</th>
+            </tr>";
+
+            foreach ($data as $row) {
+
+                $future = json_decode($row->future_program_interest, true);
+
+                echo "<tr>
+                    <td>" . ($row->school->district->DSM_DSNM ?? '') . "</td>
+                    <td>" . ($row->school->scm_name ?? '') . "</td>
+                    <td>{$row->training_date}</td>
+
+                    <td>{$row->planning_coordination}</td>
+                    <td>{$row->timeliness_discipline}</td>
+                    <td>{$row->trainer_quality}</td>
+                    <td>{$row->student_engagement}</td>
+                    <td>{$row->clarity_explanation}</td>
+                    <td>{$row->iot_robotics_usefulness}</td>
+                    <td>{$row->ai_relevance}</td>
+                    <td>{$row->cyber_awareness_need}</td>
+                    <td>{$row->equipment_quality}</td>
+                    <td>{$row->overall_impact}</td>
+
+                    <td>" . ($row->awareness_increased ? 'Yes' : 'No') . "</td>
+                    <td>{$row->student_enthusiasm}</td>
+                    <td>{$row->program_beneficial}</td>
+                    <td>" . implode(', ', $future ?? []) . "</td>
+                </tr>";
+            }
+
+            echo "</table>";
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
     public function videofeedback()
     {
         $user = Auth::user();

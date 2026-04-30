@@ -345,21 +345,9 @@ class StudentController extends Controller
     }
     public function exportFeedback(Request $request)
     {
-        $schoolId = $request->school_id;
+        $data = StudentFeedback::with(['student', 'school.district'])->get();
 
-        $school = School::where('scm_id', $schoolId)->first();
-        $schoolName = $school->scm_name ?? 'school';
-        $cleanName = preg_replace('/[^A-Za-z0-9\-]/', '_', $schoolName);
-
-        if (!$schoolId) {
-            return back()->with('error', 'School not selected');
-        }
-
-        $data = StudentFeedback::with('student')
-            ->where('school_id', $schoolId)
-            ->get();
-
-        $fileName = "student_feedback_" . $cleanName . ".xls";
+        $fileName = "all_student_feedback.xls";
 
         $headers = [
             "Content-type" => "application/vnd.ms-excel; charset=UTF-8",
@@ -374,6 +362,8 @@ class StudentController extends Controller
             'Student Name',
             'Father Name',
             'Class',
+            'D.O.B',
+            'Gender',
 
             'ଆପଣ ପୂର୍ବରୁ କୌଣସି ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ସମ୍ପର୍କିତ କର୍ମଶାଳା କିମ୍ବା ପ୍ରଶିକ୍ଷଣ ଶିବିରରେ ଯୋଗ ଦେଇଛନ୍ତି କି?',
             'ଆପଣଙ୍କର AI, IoT&Robotics, Cyber Security ଓ ସୁରକ୍ଷିତ ଇଣ୍ଟରନେଟ ବ୍ୟବହାର ବିଷୟରେ ଜ୍ଞାନ କେତେ ଅଛି?',
@@ -421,6 +411,8 @@ class StudentController extends Controller
                     $row->student->stu_name ?? '',
                     $row->student->stu_fathername ?? '',
                     $row->student->stu_class ?? '',
+                    $row->student->stu_dob ?? 'N/A',
+                    $row->student->stu_gender ?? '',
 
                     $row->pre_attended_training == 1 ? 'Yes' : 'No',
                     $row->pre_know_tech,

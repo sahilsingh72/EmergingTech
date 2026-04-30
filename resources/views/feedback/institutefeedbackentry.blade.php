@@ -100,7 +100,18 @@
                 <div class="bg-white rounded-lg w-full">
                   <!-- Title -->
                   <h2 class="text-2xl font-semibold text-center mb-6">Institute Feedback Form</h2>
-
+                  @php
+                      $roleId = Auth::user()->role_id;
+                  @endphp
+                  @if($roleId == 2)
+                    <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 mb-2">
+                      <a href="{{ route('institute.feedback.export.all') }}"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+                        id="exportBtn">
+                        <i class="fas fa-file-excel mr-1"></i> Export All Feedback
+                      </a>
+                    </div>
+                  @endif
                   @if(session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                   @endif
@@ -363,7 +374,11 @@ $(document).on("change", "#filterSchool", function () {
         "{{ route('institute.feedback.entry') }}?school_id=" + schoolId;
 });
 </script>
-
+<script>
+  document.getElementById('exportBtn').addEventListener('click', function () {
+      this.innerHTML = "Exporting...";
+  });
+</script>
 
 </body>
 @include('components.footer')

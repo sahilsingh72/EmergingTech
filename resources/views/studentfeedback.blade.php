@@ -605,15 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
     $(document).on("click", "#exportBtn", function () {
-
-        let schoolId = $("#filterSchool").val();
-
-        if (!schoolId) {
-            alert("Please select school first");
-            return;
-        }
-
-        window.location.href = "{{ route('student.feedback.export') }}?school_id=" + schoolId;
+        window.location.href = "{{ route('student.feedback.export') }}";
     });
 </script>
 

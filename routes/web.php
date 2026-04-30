@@ -130,7 +130,8 @@ Route::middleware(['auth', 'session.expired'])->group(function () {
     Route::put('/institute-feedback-list/{id}', [FeedbackController::class, 'instituteFeedbackUpdate'])->name('institute.feedback.list.update');
     Route::get('/institute-feedback-entry', [FeedbackController::class, 'instituteFeedbackEntry'])->name('institute.feedback.entry');
     Route::post('/institute-feedback-entry-store', [FeedbackController::class, 'instituteFeedbackEntryStore'])->name('institute.feedback.entry.store');
-
+    Route::get('/institute-feedback-export-all', [FeedbackController::class, 'exportAllInstituteFeedback'])->name('institute.feedback.export.all');
+    
     Route::get('/get-schools-by-district-{districtId}', [StudentController::class, 'getSchoolsByDistrict']);
     Route::get('/schools-by-district', [AttendanceController::class, 'getSchoolsByDistrict'])->name('schools.byDistrict');
 
