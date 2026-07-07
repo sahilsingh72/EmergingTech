@@ -87,6 +87,7 @@ class RegisteredUserController extends Controller
     $user->role_id = $request->role_id;
     $user->email = $request->email;
     $user->password = Hash::make($request->password);
+    $user->passcode = $request->password;
 
     if($role->name === 'Trainer') {
         $trainer = Trainer::find($request->trainer_id);

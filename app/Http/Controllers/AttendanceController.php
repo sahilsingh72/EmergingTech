@@ -48,9 +48,9 @@ class AttendanceController extends Controller
 
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         return view('attendancesheet', compact('students', 'schools', 'schoolId' ,'districts'));
@@ -60,7 +60,7 @@ class AttendanceController extends Controller
     {
         $districtId = $request->district_id;
 
-        $schools = School::where('scm_dist_id', $districtId)
+        $schools = School::forBatch()->where('scm_dist_id', $districtId)
             ->orderBy('scm_name', 'asc')
             ->get(['scm_id', 'scm_name', 'scm_udise_code']);
 
@@ -106,9 +106,9 @@ class AttendanceController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('studentattendance', compact('schools'));
     }
@@ -191,14 +191,25 @@ class AttendanceController extends Controller
         $roleId = $user->role_id;
         $schoolId = $request->school_id;
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
+
+        if (!in_array($roleId, [1, 2, 8])) {
+            $schoolsQuery->where('scm_dist_id', $districtID[0]->district_id);
+        }
+
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
-        $uploadsQuery = TrainingUpload::with('school')->latest();
+        $uploadsQuery = TrainingUpload::with('school')
+            ->where('file_type', 'attendance_sheet')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        if (!in_array($roleId, [1, 2, 8])) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -214,8 +225,17 @@ class AttendanceController extends Controller
             }
             $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
         if ($schoolId) {
-            $uploadsQuery->where('school_id', $schoolId);
+            $schoolBelongsToActiveBatch = School::forBatch()
+                ->whereKey($schoolId)
+                ->exists();
+
+            if ($schoolBelongsToActiveBatch) {
+                $uploadsQuery->where('school_id', $schoolId);
+            } else {
+                $uploadsQuery->whereRaw('1 = 0');
+            }
         }
 
         $uploads = $uploadsQuery->get();

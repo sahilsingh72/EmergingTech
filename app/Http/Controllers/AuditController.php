@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\District;
 use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentFeedback;
@@ -9,8 +8,6 @@ use App\Models\StudentMst;
 use App\Models\TrainingUpload;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class AuditController extends Controller
 {
@@ -160,7 +157,7 @@ class AuditController extends Controller
 
     public function auditList(Request $request)
     {
-        $query = School::query()
+        $query = School::forBatch()
             ->whereNotNull('training_completed');
 
         if ($request->filled('status')) {

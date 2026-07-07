@@ -13,6 +13,7 @@ class School extends Model
 
     protected $fillable = [
         'scm_id',
+        'batch_id',
         'scm_name',
         'scm_udise_code',
         'scm_dist_id',
@@ -75,6 +76,17 @@ class School extends Model
             'school_id',   // FK in training_uploads table
             'scm_id'       // PK in school_mst
         );
+    }
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
+    }
+
+    public function scopeForBatch($query, ?int $batchId = null)
+    {
+        $batchId ??= (int) session('active_batch_id');
+
+        return $query->where('batch_id', $batchId);
     }
 
 }

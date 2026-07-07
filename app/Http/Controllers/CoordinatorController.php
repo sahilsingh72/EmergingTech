@@ -20,36 +20,66 @@ class CoordinatorController extends Controller
         $userId = $user->id;
         $roleId = $user->role_id;
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        // $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+
+        $districtId = $user->district_id;
+
+        $coordinatorQuery = Coordinator::query()
+            ->with([
+                'schools' => fn ($query) => $query->forBatch(),
+                'district',
+            ])
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            });
 
         if (in_array($roleId, [1, 2])) {
-            // ✅ Role 1 or 2 can see ALL coordinators
-            $coordinators = Coordinator::with('schools', 'district')
+            // $coordinators = Coordinator::with('schools', 'district')
+            $coordinators = $coordinatorQuery
                 ->orderBy(District::select('DSM_DSNM')
                     ->whereColumn('dst_mst01.DSM_DSCD', 'coordinator_mst.dist_id'))
                 ->get();
         } elseif ($roleId == 6) {
-            // Coordinator: find their DLC (assignUnder_id), then show all coordinators under same DLC
             $dlcId = Auth::user()->assignUnder_id;
 
-            $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+            // $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+            $coordinators = $coordinatorQuery->whereHas('user', function ($query) use ($dlcId) {
                 $query->where('assignUnder_id', $dlcId);
             })->latest()->get();
         } else {
-            // ✅ Others see only coordinators created by them (via assignUnder_id)
-            $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
+            // $coordinators = Coordinator::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
+            $coordinators = $coordinatorQuery->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->latest()->get();
         }
 
-        // $coordinators = Coordinator::latest()->get();
-        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
-        if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
-        } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
-        }
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
+            ->orderBy('DSM_DSNM', 'asc')->get();
+        // if ($roleId == 1 || $roleId == 2) {
+        //     $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        // } else {
+        //     $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        // }
 
+        $schools = School::forBatch()
+            ->select(
+                'scm_id',
+                'scm_name',
+                'scm_udise_code',
+                'scm_dist',
+                'scm_dist_id'
+            )
+            ->when(
+                !in_array($roleId, [1, 2]),
+                fn ($query) => $query->where('scm_dist_id', $districtId)
+            )
+            ->orderBy(
+                in_array($roleId, [1, 2]) ? 'scm_dist' : 'scm_name'
+            )
+            ->get();
         return view('coordinatorlist', compact('coordinators', 'districts', 'schools'));
     }
 

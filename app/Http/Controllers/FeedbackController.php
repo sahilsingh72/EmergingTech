@@ -32,9 +32,9 @@ class FeedbackController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('writtenfeedback', compact('schools'));
     }
@@ -152,12 +152,23 @@ class FeedbackController extends Controller
         $userId = $user->id;
         $roleId = $user->role_id;
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        if ($roleId != 1 && $roleId != 2) {
+            $schoolsQuery->where('scm_dist_id', $user->district_id);
+        }
+
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')
+            ->where('file_type', 'written_feedback')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -171,8 +182,11 @@ class FeedbackController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
+        $uploads = $uploadsQuery->get();
 
         return view('writtenfeedbacklist', compact('uploads', 'schools'));
     }
@@ -246,20 +260,30 @@ class FeedbackController extends Controller
 
         $schools = collect();
         if ($districtId) {
-            $schools = School::where('scm_dist_id', $districtId)
+            $schools = School::forBatch()->where('scm_dist_id', $districtId)
                 ->select('scm_id', 'scm_name')
                 ->orderBy('scm_name')
                 ->get();
         }
 
-        // Attendance files
+        if ($schoolId && !School::forBatch()->whereKey($schoolId)->exists()) {
+            abort(404);
+        }
+
+        // Student feedback files for the selected batch
         $studentFeedbackFiles = TrainingUpload::where('file_type', 'written_feedback')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
             ->when($schoolId, fn ($q) => $q->where('school_id', $schoolId))
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Institute feedback files
+        // Institute feedback files for the selected batch
         $institutefeedbackFiles = TrainingUpload::where('file_type', 'institute_feedback')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
             ->when($schoolId, fn ($q) => $q->where('school_id', $schoolId))
             ->orderBy('created_at', 'desc')
             ->get();
@@ -280,9 +304,9 @@ class FeedbackController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         return view('feedback.institutefeedback', compact('schools', 'uploads'));
@@ -329,12 +353,24 @@ class FeedbackController extends Controller
         $user = Auth::user();
         $userId = $user->id;
         $roleId = $user->role_id;
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
+
+        if ($roleId != 1 && $roleId != 2) {
+            $schoolsQuery->where('scm_dist_id', $user->district_id);
+        }
+
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')
+            ->where('file_type', 'institute_feedback')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -348,8 +384,11 @@ class FeedbackController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
+        $uploads = $uploadsQuery->get();
 
         return view('feedback.institutefeedbacklist', compact('uploads', 'schools'));
     }
@@ -440,7 +479,7 @@ class FeedbackController extends Controller
         if (!in_array($roleId, [1,2,8])) {
             $selectedDistrictId = User::where('id', $user->id)->value('district_id');
 
-            $schools = School::where('scm_dist_id', $selectedDistrictId)
+            $schools = School::forBatch()->where('scm_dist_id', $selectedDistrictId)
                 ->select('scm_id','scm_name','scm_udise_code','scm_dist','training_date')
                 ->orderBy('scm_name')
                 ->get();
@@ -595,7 +634,7 @@ class FeedbackController extends Controller
         if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         return view('uploadfeedback', compact('schools'));
@@ -652,14 +691,23 @@ class FeedbackController extends Controller
         $schoolId = $request->school_id;
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
 
-        $uploadsQuery = TrainingUpload::with('school')->latest();
+        if ($roleId != 1 && $roleId != 2) {
+            $schoolsQuery->where('scm_dist_id', $user->district_id);
+        }
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')
+            ->where('file_type', 'video_feedback')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -675,7 +723,16 @@ class FeedbackController extends Controller
             }
             $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
         if ($schoolId) {
+            $schoolBelongsToActiveBatch = School::forBatch()
+                ->whereKey($schoolId)
+                ->exists();
+
+            if (!$schoolBelongsToActiveBatch) {
+                abort(404);
+            }
+
             $uploadsQuery->where('school_id', $schoolId);
         }
 

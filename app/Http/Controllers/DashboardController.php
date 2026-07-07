@@ -115,45 +115,55 @@ class DashboardController extends Controller
         $userId = $user->id;  // just the ID
         $roleName = $user->role->name;
         $districtId = $user->district_id;
-        $students = 0;
+        $globalRoles = ['OCAC', 'OKCL', 'Accounts', 'Social Media'];
+        $studentQuery = StudentMst::whereHas('school', function ($query) {
+            $query->forBatch();
+        });
 
-        if ($roleName === 'OCAC' || $roleName === 'OKCL' || $roleName === 'Accounts' || $roleName === 'Social Media') {
+        if (in_array($roleName, $globalRoles, true)) {
             // ✅ OCAC or OKCL: see all students
-            $students = StudentMst::count();
+            $students = $studentQuery->count();
         } else {
             // ✅ DLC / Coordinator / Trainer: only students in their district
-            $students = StudentMst::where('stu_distid', $districtId)->count();
+            $students = $studentQuery->where('stu_distid', $districtId)->count();
         }
 
+        $coordinatorQuery = Coordinator::whereHas('schools', function ($query) {
+            $query->forBatch();
+        });
+        $trainerQuery = Trainer::whereHas('schools', function ($query) {
+            $query->forBatch();
+        });
+
         if ($roleName === 'DLC') {
-            $totalCoordinators = Coordinator::whereHas('user', function ($query) use ($userId) {
+            $totalCoordinators = $coordinatorQuery->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->count();
-            $totalTrainers = Trainer::whereHas('user', function ($query) use ($userId) {
+            $totalTrainers = $trainerQuery->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->count();
         } elseif ($roleName === 'Coordinator' || $roleName === 'Trainer') {
 
             $dlcId = $user->assignUnder_id;
 
-            $totalTrainers = Trainer::whereHas('user', function ($query) use ($dlcId) {
+            $totalTrainers = $trainerQuery->whereHas('user', function ($query) use ($dlcId) {
                 $query->where('assignUnder_id', $dlcId);
             })->count();
-            $totalCoordinators = Coordinator::whereHas('user', function ($query) use ($dlcId) {
+            $totalCoordinators = $coordinatorQuery->whereHas('user', function ($query) use ($dlcId) {
                 $query->where('assignUnder_id', $dlcId);
             })->count();
-        } elseif ($roleName === 'OCAC' || 'OKCL') {
-            $totalCoordinators = Coordinator::count();
-            $totalTrainers = Trainer::count();
+        } else {
+            $totalCoordinators = $coordinatorQuery->count();
+            $totalTrainers = $trainerQuery->count();
         }
 
-        $zoneWise = School::select('scm_zone_id')
+        $zoneWise = School::forBatch()->select('scm_zone_id')
             ->selectRaw('COUNT(*) as total, SUM(training_completed) as completed')
             ->groupBy('scm_zone_id')
             ->get();
 
         // District-wise completed trainings
-        $districtWise = School::select('scm_dist_id')
+        $districtWise = School::forBatch()->select('scm_dist_id')
             ->selectRaw('COUNT(*) as total, SUM(training_completed) as completed')
             ->groupBy('scm_dist_id')
             ->get();
@@ -162,19 +172,31 @@ class DashboardController extends Controller
         $roleId = $user->role_id;
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()
+                ->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')
+                ->orderBy('scm_dist', 'asc')
+                ->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()
+                ->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')
+                ->where('scm_dist_id', $districtID[0]->district_id)
+                ->orderBy('scm_name', 'asc')
+                ->get();
         }
 
-        $totalSchools = School::count();
-        $completedSchools = School::where('training_completed', 1)->count();
+        $totalSchools = School::forBatch()->count();
+        $completedSchools = School::forBatch()
+            ->where('training_completed', 1)
+            ->count();
 
         $completedTrainings = TrainingUpload::whereIn('file_type', [
             'attendance_sheet',
         ])
-        ->distinct('school_id')
-        ->count('school_id');
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->distinct()
+            ->count('school_id');
 
         return view('dashboard', compact(
             'totalCoordinators',
@@ -226,7 +248,8 @@ class DashboardController extends Controller
             'Bolangir' => 'Balangir',
             'Nabarangpur' => 'Nabarangapur',
         ];
-        $districts = School::select('scm_dist')
+        $districts = School::forBatch()
+            ->select('scm_dist')
             ->groupBy('scm_dist')
             ->get()
             ->pluck('scm_dist');
@@ -237,16 +260,18 @@ class DashboardController extends Controller
 
         foreach ($districts as $district) {
             $geoDistrict = $nameCorrections[$district] ?? $district;
-            $totalSchools = School::where('scm_dist', $district)->count();
-            $completed = School::where('scm_dist', $district)
+            $totalSchools = School::forBatch()
+                ->where('scm_dist', $district)
+                ->count();
+
+            $completed = School::forBatch()
+                ->where('scm_dist', $district)
                 ->where('training_completed', 1)
                 ->count();
 
-            $totalStudents = StudentMst::where('stu_distid', function ($q) use ($district) {
-                $q->select('scm_dist_id')
-                    ->from('school_mst')
-                    ->where('scm_dist', $district)
-                    ->limit(1);
+            $totalStudents = StudentMst::whereHas('school', function ($query) use ($district) {
+                $query->forBatch()
+                    ->where('scm_dist', $district);
             })->count();
             
             $totalSchoolData[$geoDistrict] = $totalSchools;
