@@ -8,8 +8,6 @@ use App\Models\Trainer;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,41 +21,74 @@ class TrainerController extends Controller
         $userId = $user->id;
         $roleId = $user->role_id;
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
+        // $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
 
+        $districtId = $user->district_id;
+
+        $trainerQuery = Trainer::query()
+            ->with([
+                'schools' => fn ($query) => $query->forBatch(),
+                'district',
+            ])
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            });
 
         if (in_array($roleId, [1, 2])) {
-            // ✅ Role 1 or 2 can see ALL trainer
-            $trainers = Trainer::with('schools', 'district')
+            // $trainers = Trainer::with('schools', 'district')
+            $trainers = $trainerQuery
                 ->orderBy(District::select('DSM_DSNM')
                     ->whereColumn('dst_mst01.DSM_DSCD', 'trainers.dist_id'))
                 ->get();
         } elseif ($roleId == 6) {
-            // Coordinator: find their DLC (assignUnder_id), then show all coordinators under same DLC
             $dlcId = Auth::user()->assignUnder_id;
 
-            $trainers = Trainer::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+            // $trainers = Trainer::with('schools', 'district')->whereHas('user', function ($query) use ($dlcId) {
+            $trainers = $trainerQuery->whereHas('user', function ($query) use ($dlcId) {
                 $query->where('assignUnder_id', $dlcId);
             })->latest()->get();
         } else {
-            // ✅ Others see only trainer created by them (via assignUnder_id)
-            $trainers = Trainer::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
+            // $trainers = Trainer::with('schools', 'district')->whereHas('user', function ($query) use ($userId) {
+            $trainers = $trainerQuery->whereHas('user', function ($query) use ($userId) {
                 $query->where('assignUnder_id', $userId);
             })->latest()->get();
         }
 
-        // 🧩 Add school_ids array for easy Blade usage
         foreach ($trainers as $trainer) {
             $trainer->school_ids = $trainer->schools->pluck('scm_id')->toArray();
         }
 
-        // $trainers = Trainer::latest()->get();
-        $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
-        if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
-        } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
-        }
+        $districts = District::select('DSM_DSCD', 'DSM_DSNM')
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
+            ->orderBy('DSM_DSNM')
+            ->get();
+
+        // $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
+        // if ($roleId == 1 || $roleId == 2) {
+        //     $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+        // } else {
+        //     $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        // }
+
+        $schools = School::forBatch()
+            ->select(
+                'scm_id',
+                'scm_name',
+                'scm_udise_code',
+                'scm_dist',
+                'scm_dist_id'
+            )
+            ->when(
+                !in_array($roleId, [1, 2]),
+                fn ($query) => $query->where('scm_dist_id', $districtId)
+            )
+            ->orderBy(
+                in_array($roleId, [1, 2]) ? 'scm_dist' : 'scm_name'
+            )
+            ->get();
+
         return view('trainerlist', compact('trainers', 'districts', 'schools'));
     }
 

@@ -36,9 +36,9 @@ class StudentController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('addstudent', compact('schools'));
     }
@@ -126,9 +126,9 @@ class StudentController extends Controller
 
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         return view('studentlist', compact('students', 'schools', 'schoolId'));
@@ -167,9 +167,9 @@ class StudentController extends Controller
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         return view('addstudentsin', compact('schools')); // loads add student form
@@ -310,9 +310,9 @@ class StudentController extends Controller
         $uploadsQuery = TrainingUpload::with('school')->latest();
 
         if ($roleId == 1 || $roleId == 2 || $roleId == 8) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         $schoolId = $request->input('school_id');
@@ -345,7 +345,11 @@ class StudentController extends Controller
     }
     public function exportFeedback(Request $request)
     {
-        $data = StudentFeedback::with(['student', 'school.district'])->get();
+        $data = StudentFeedback::with(['student', 'school.district'])
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->get();
 
         $fileName = "all_student_feedback.xls";
 

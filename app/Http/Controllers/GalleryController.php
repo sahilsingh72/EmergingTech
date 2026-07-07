@@ -31,7 +31,7 @@ class GalleryController extends Controller
 
         $schools = collect();
         if ($districtId) {
-            $schools = School::where('scm_dist_id', $districtId)
+            $schools = School::forBatch()->where('scm_dist_id', $districtId)
                 ->select('scm_id', 'scm_name')
                 ->orderBy('scm_name')
                 ->get();

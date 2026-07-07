@@ -6,7 +6,6 @@ use App\Models\District;
 use App\Models\InstituteFeedback;
 use App\Models\School;
 use App\Models\StudentFeedback;
-use App\Models\StudentMst;
 use App\Models\TrainingUpload;
 use App\Models\User;
 use App\Services\OneDriveService;
@@ -39,9 +38,9 @@ class TrainingEvidenceController extends Controller
             ->first();
 
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('trainingphotos', compact('schools'));
     }
@@ -104,13 +103,23 @@ class TrainingEvidenceController extends Controller
         $schoolId = $request->school_id;
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
 
-        $uploadsQuery = TrainingUpload::with('school')->latest();
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        if ($roleId != 1 && $roleId != 2) {
+            $schoolsQuery->where('scm_dist_id', $user->district_id);
+        }
+
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')
+            ->whereIn('file_type', ['training_photo', 'trainer_photo'])
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -126,7 +135,16 @@ class TrainingEvidenceController extends Controller
             }
             $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
         if ($schoolId) {
+            $schoolBelongsToActiveBatch = School::forBatch()
+                ->whereKey($schoolId)
+                ->exists();
+
+            if (!$schoolBelongsToActiveBatch) {
+                abort(404);
+            }
+
             $uploadsQuery->where('school_id', $schoolId);
         }
 
@@ -232,9 +250,9 @@ class TrainingEvidenceController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('trainingvideos', compact('schools'));
     }
@@ -332,14 +350,23 @@ class TrainingEvidenceController extends Controller
         $schoolId = $request->school_id;
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $schoolsQuery = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code');
 
-        $uploadsQuery = TrainingUpload::with('school')->latest();
+        if ($roleId != 1 && $roleId != 2) {
+            $schoolsQuery->where('scm_dist_id', $user->district_id);
+        }
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        $schools = $schoolsQuery->orderBy('scm_name', 'asc')->get();
+
+        $uploadsQuery = TrainingUpload::with('school')
+            ->whereIn('file_type', ['training_video', 'trainer_video'])
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -355,7 +382,16 @@ class TrainingEvidenceController extends Controller
             }
             $uploadsQuery->whereIn('uploaded_by', $visibleUserIds);
         }
+
         if ($schoolId) {
+            $schoolBelongsToActiveBatch = School::forBatch()
+                ->whereKey($schoolId)
+                ->exists();
+
+            if (!$schoolBelongsToActiveBatch) {
+                abort(404);
+            }
+
             $uploadsQuery->where('school_id', $schoolId);
         }
 
@@ -442,9 +478,9 @@ class TrainingEvidenceController extends Controller
 
         $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
 
         // Check if user has uploaded all required files
@@ -599,12 +635,23 @@ class TrainingEvidenceController extends Controller
         $userId = $user->id;
         $roleId = $user->role_id;
 
-        $districtID = User::select('district_id')->where('id', $userId)->get('district_id');
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+        $schools = School::forBatch()
+            ->select('scm_id', 'scm_name', 'scm_udise_code')
+            ->when(
+                !in_array($roleId, [1, 2]),
+                fn ($query) => $query->where('scm_dist_id', $user->district_id)
+            )
+            ->orderBy('scm_name', 'asc')
+            ->get();
 
-        if ($roleId == 1 || $roleId == 2) {
-            $uploads = TrainingUpload::latest()->get();
-        } else {
+        $uploadsQuery = TrainingUpload::with('school')
+            ->where('file_type', 'training_completion_certificate')
+            ->whereHas('school', function ($query) {
+                $query->forBatch();
+            })
+            ->latest();
+
+        if ($roleId != 1 && $roleId != 2) {
             $visibleUserIds = collect([$userId]); // Always include self
 
             if ($roleId == 3) {
@@ -618,8 +665,11 @@ class TrainingEvidenceController extends Controller
                 $subUsers = User::where('assignUnder_id', $dlcId)->pluck('id'); // other coordinators/trainers under same DLC
                 $visibleUserIds = $visibleUserIds->merge([$dlcId])->merge($subUsers);
             }
-            $uploads = TrainingUpload::whereIn('uploaded_by', $visibleUserIds)->get();
+
+            $uploadsQuery->whereIn('uploaded_by', $visibleUserIds->unique());
         }
+
+        $uploads = $uploadsQuery->get();
 
         return view('trainingcompcertificatelist', compact('uploads', 'schools'));
     }
@@ -690,7 +740,7 @@ class TrainingEvidenceController extends Controller
 
         // Load schools for selected district
         if ($districtId) {
-            $schools = School::where('scm_dist_id', $districtId)
+            $schools = School::forBatch()->where('scm_dist_id', $districtId)
                 ->select('scm_id', 'scm_name', 'scm_dist_id')
                 ->orderBy('scm_name')
                 ->get();

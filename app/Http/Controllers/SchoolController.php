@@ -21,7 +21,8 @@ class SchoolController extends Controller
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')
             ->orderBy('DSM_DSNM', 'asc')->get();
 
-        $totalSchools = School::select('scm_dist_id', DB::raw('COUNT(*) as total'))
+        $totalSchools = School::forBatch()
+            ->select('scm_dist_id', DB::raw('COUNT(*) as total'))
             ->groupBy('scm_dist_id')
             ->pluck('total', 'scm_dist_id');
 
@@ -45,7 +46,8 @@ class SchoolController extends Controller
     public function getSchools($id)
     {
 
-        $schools = School::where('scm_dist_id', $id)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $id)
             ->select('scm_id', 'scm_name', 'training_completed')
             ->orderBy('scm_name', 'asc')
             ->withCount([
@@ -81,7 +83,8 @@ class SchoolController extends Controller
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
 
         // Get all schools for this district
-        $schools = School::where('scm_dist_id', $id)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $id)
             ->select('scm_id', 'scm_name', 'scm_udise_code')
             ->withCount('students')
             ->get();
@@ -109,7 +112,8 @@ class SchoolController extends Controller
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
 
         // Get all schools for this district
-        $schools = School::where('scm_dist_id', $id)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $id)
             ->select('scm_id', 'scm_name', 'scm_udise_code', 'training_completed', 'training_date')
             ->withCount(['students', 'coordinators', 'trainers', 'staffs'])
             ->get();
@@ -194,7 +198,8 @@ class SchoolController extends Controller
 
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($districtId);
 
-        $schools = School::where('scm_dist_id', $districtId)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $districtId)
             ->get();
 
         return view('dlc.schoollist', compact('schools', 'district'));
@@ -257,7 +262,7 @@ class SchoolController extends Controller
 
     public function schoolList()
     {
-        $schools = School::all();
+        $schools = School::forBatch()->get();
         $studentCounts = StudentMst::select('stu_scm_id', DB::raw('COUNT(*) as total_students'))
             ->groupBy('stu_scm_id')
             ->pluck('total_students', 'stu_scm_id');
@@ -280,7 +285,8 @@ class SchoolController extends Controller
         // $districts = District::select('DSM_DSCD', 'DSM_DSNM')
         //     ->orderBy('DSM_DSNM', 'asc')->get();
 
-        $totalSchools = School::select('scm_dist_id', DB::raw('COUNT(*) as total'))
+        $totalSchools = School::forBatch()
+            ->select('scm_dist_id', DB::raw('COUNT(*) as total'))
             ->groupBy('scm_dist_id')
             ->pluck('total', 'scm_dist_id');
 
@@ -288,8 +294,11 @@ class SchoolController extends Controller
         //     ->where('training_completed', 1)
         //     ->groupBy('scm_dist_id')
         //     ->pluck('completed_training', 'scm_dist_id');
-        $districts = District::whereHas('schools.trainingUploads', function ($q) {
-                $q->where('file_type', 'attendance_sheet');
+        $districts = District::whereHas('schools', function ($query) {
+                $query->forBatch()
+                    ->whereHas('trainingUploads', function ($uploadQuery) {
+                        $uploadQuery->where('file_type', 'attendance_sheet');
+                    });
             })
             ->select('DSM_DSCD', 'DSM_DSNM')
             ->orderBy('DSM_DSNM', 'asc')
@@ -299,7 +308,8 @@ class SchoolController extends Controller
     }
     public function districtSchools($districtId)
     {
-        $schools = School::where('scm_dist_id', $districtId)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $districtId)
             ->whereHas('trainingUploads', function ($q) {
                 $q->whereIn('file_type', ['attendance_sheet']);
             })
@@ -316,7 +326,8 @@ class SchoolController extends Controller
         $district = District::select('DSM_DSCD', 'DSM_DSNM')->findOrFail($id);
 
         // Get all schools for this district
-        $schools = School::where('scm_dist_id', $id)
+        $schools = School::forBatch()
+            ->where('scm_dist_id', $id)
             ->whereHas('trainingUploads', function ($q) {
                 $q->where('file_type', 'attendance_sheet');
             })
