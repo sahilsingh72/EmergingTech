@@ -105,16 +105,18 @@
                                             </select>
                                         </div>
 
-                                        <!-- District Filter -->
-                                        <div>
-                                            <label for="districtFilter" class="mr-2">District:</label>
-                                            <select id="districtFilter" class="border rounded pl-2 pr-5">
-                                                <option value="">All</option>
-                                                @foreach($districts as $d)
-                                                    <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                                        @if($roleId == 1 ||$roleId ==2)
+                                            <!-- District Filter -->
+                                            <div>
+                                                <label for="districtFilter" class="mr-2">District:</label>
+                                                <select id="districtFilter" class="border rounded pl-2 pr-5">
+                                                    <option value="">All</option>
+                                                    @foreach($districts as $d)
+                                                        <option value="{{ $d->DSM_DSCD }}">{{ $d->DSM_DSNM }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
                                         <!-- Search -->
                                         <div class="w-full sm:w-auto">
                                             <input type="text" id="searchInput" placeholder="Search..."
