@@ -108,7 +108,7 @@ class BillController extends Controller
         if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('bills.foodbills', compact('schools'));
     }
@@ -186,6 +186,7 @@ class BillController extends Controller
         $query = CampExpenseBill::with(['school', 'uploadedBy'])
             ->join('school_mst', 'school_mst.scm_id', '=', 'camp_expense_bills.school_id')
             ->select('camp_expense_bills.*')
+            ->where('school_mst.batch_id', session('active_batch_id'))
             ->where('camp_expense_bills.bill_type',  'camp fooding')
             ->orderBy('school_mst.scm_dist', 'ASC')
             ->orderBy('school_mst.scm_name', 'ASC');
@@ -311,7 +312,7 @@ class BillController extends Controller
         if ($roleId == 1 || $roleId == 2) {
             $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->orderBy('scm_dist', 'asc')->get();
         } else {
-            $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
+            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
         return view('bills.campexpensebills', compact('schools'));
     }
@@ -400,6 +401,7 @@ class BillController extends Controller
         $query = CampExpenseBill::with(['school', 'uploadedBy'])
             ->join('school_mst', 'school_mst.scm_id', '=', 'camp_expense_bills.school_id')
             ->select('camp_expense_bills.*')
+            ->where('school_mst.batch_id', session('active_batch_id'))
             ->where('camp_expense_bills.bill_type', '!=', 'Camp Fooding')
             ->orderBy('school_mst.scm_dist', 'ASC')
             ->orderBy('school_mst.scm_name', 'ASC');
@@ -657,6 +659,9 @@ class BillController extends Controller
         $allowedSpecs = ['AI', 'IoT & Robotics'];
         // Get unique specializations from trainers in that district
         $specializations = Trainer::where('dist_id', $districtId)
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
             ->pluck('specialization')
             ->flatMap(function ($item) {
 
@@ -683,6 +688,9 @@ class BillController extends Controller
     public function getTrainersBySpecialization($districtId, $specialization)
     {
         $trainers = Trainer::where('dist_id', $districtId)
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
             ->whereJsonContains('specialization', $specialization)
             ->select('trainer_id', 'trainer_name')
             ->get();
@@ -713,6 +721,18 @@ class BillController extends Controller
             'main_bill.max' => 'Main bill file must be less than 3MB.',
             'return_bill_file.max' => 'Return bill file must be less than 3MB.',
         ]);
+
+        $trainerBelongsToActiveBatch = Trainer::whereKey($request->trainer_id)
+            ->whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
+            ->exists();
+
+        if (!$trainerBelongsToActiveBatch) {
+            return back()
+                ->withErrors(['trainer_id' => 'The selected trainer is not assigned to the active batch.'])
+                ->withInput();
+        }
 
         $userId   = Auth::id();
         $trainer = Trainer::find($request->trainer_id);
@@ -795,6 +815,9 @@ class BillController extends Controller
             $status = $request->status;
 
             $records = TrainerTravelBill::with(['trainer', 'district'])
+                ->whereHas('trainer.schools', function ($query) {
+                    $query->forBatch();
+                })
                 ->join('dst_mst01', 'dst_mst01.DSM_DSCD', '=', 'trainer_travel_expenses.district_id')
                 ->join('trainers', 'trainers.trainer_id', '=', 'trainer_travel_expenses.trainer_id')
                 ->when($districtId, function ($q) use ($districtId) {
@@ -821,6 +844,9 @@ class BillController extends Controller
         if ($role === 'Trainer' && $trainer) {
             // TRAINER — SEE ONLY OWN RECORDS
             $records = TrainerTravelBill::with(['trainer', 'district'])
+                ->whereHas('trainer.schools', function ($query) {
+                    $query->forBatch();
+                })
                 ->where('trainer_id', $trainer->trainer_id)
                 ->latest()
                 ->get();
@@ -830,6 +856,9 @@ class BillController extends Controller
             $status = $request->status;
             // DLC — SEE RECORDS OF THEIR DISTRICT
             $records = TrainerTravelBill::with(['trainer', 'district'])
+                ->whereHas('trainer.schools', function ($query) {
+                    $query->forBatch();
+                })
                 ->where('district_id', $user->district_id)
                 ->when($status, function ($query) use ($status) {
                     return $query->where('status', $status);
@@ -953,7 +982,7 @@ class BillController extends Controller
             ->where('id', $userId)
             ->get('district_id');
             
-        $schools = School::select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')
+        $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist', 'training_date')
             ->where('scm_dist_id', $districtID[0]->district_id)
             ->orderBy('scm_name', 'asc')
             ->get();
@@ -1111,7 +1140,8 @@ class BillController extends Controller
             'school'
         ])
             ->join('school_mst', 'school_mst.scm_id', '=', 'camp_travel_bills.school_id')
-            ->select('camp_travel_bills.*');
+            ->select('camp_travel_bills.*')
+            ->where('school_mst.batch_id', session('active_batch_id'));
 
         // ROLE FILTERS
         if ($user->role->name === 'DLC') {
@@ -1128,7 +1158,11 @@ class BillController extends Controller
 
         $records = $query->get();
 
-        $districts = District::orderBy('DSM_DSNM')->get();
+        $districts = District::whereHas('schools', function ($query) {
+                $query->forBatch();
+            })
+            ->orderBy('DSM_DSNM')
+            ->get();
         
         $schoolProgress = $records->groupBy('school_id')->map(function ($rows) {
             $schoolId = $rows->first()->school_id;

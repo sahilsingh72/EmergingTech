@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\BatchController;
 use App\Services\OneDriveService;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BillController;
@@ -25,15 +26,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
-    Route::get('/district-progress', [DashboardController::class, 'getDistrictProgress'])->name('district.progress');
-    
+    Route::post('/batch/switch', [BatchController::class, 'switch'])->name('batch.switch');
+
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])
+        ->middleware('active.batch')
+        ->name('dashboard');
+    Route::get('/district-progress', [DashboardController::class, 'getDistrictProgress'])
+        ->middleware('active.batch')
+        ->name('district.progress');
+
     Route::get('/chart-data', [DashboardController::class, 'getChartData'])->name('chart.data');
 });
 
 Route::post('/uploadgallery', [DashboardController::class, 'photogallery'])->name('uploadgallery');
 
-Route::middleware(['auth', 'session.expired'])->group(function () {
+Route::middleware(['auth', 'session.expired', 'active.batch',])->group(function () {
     Route::get('/social-media', [MediaController::class, 'socialMedia'])->name('social.media');
     Route::get('/social-media-add', [MediaController::class, 'socialMediaAdd'])->name('social.media.add');
     Route::post('/social-media-store', [MediaController::class, 'socialMediaStore'])->name('social.media.store');

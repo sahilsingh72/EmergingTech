@@ -64,7 +64,42 @@
 
     <ul class="navbar-nav ml-auto">
 
+      <li class="nav-item dropdown">
+          <a class="nav-link" data-toggle="dropdown" href="#">
+              <i class="fas fa-layer-group mr-1"></i>
 
+              {{ $activeBatch?->name ?? 'Select Batch' }}
+
+              <i class="fas fa-angle-down ml-1"></i>
+          </a>
+
+          <div class="dropdown-menu dropdown-menu-right">
+              <span class="dropdown-header">Select active batch</span>
+
+              <div class="dropdown-divider"></div>
+
+              @foreach ($availableBatches as $batch)
+                  <form method="POST" action="{{ route('batch.switch') }}">
+                      @csrf
+
+                      <input type="hidden" name="batch_id" value="{{ $batch->id }}">
+
+                      <button
+                          type="submit"
+                          class="dropdown-item {{ session('active_batch_id') == $batch->id ? 'active' : '' }}"
+                      >
+                          <i class="fas fa-layer-group mr-2"></i>
+
+                          {{ $batch->name }}
+
+                          @if (session('active_batch_id') == $batch->id)
+                              <i class="fas fa-check float-right mt-1"></i>
+                          @endif
+                      </button>
+                  </form>
+              @endforeach
+          </div>
+      </li>
 
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'session.expired' => \App\Http\Middleware\SessionExpiredRedirect::class,
+            'active.batch' => \App\Http\Middleware\SetActiveBatch::class,
         ]);
 
     })
