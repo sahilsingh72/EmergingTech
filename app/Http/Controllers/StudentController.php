@@ -481,7 +481,7 @@ class StudentController extends Controller
             $file = $request->file('written_feedback');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/written_feedback/student_{$stuName}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/written_feedback/student_{$stuName}";
 
             $upload = $oneDriveService->uploadDirect($file, $folder, $filename);
 
@@ -582,7 +582,7 @@ class StudentController extends Controller
             // Upload new file
             $file = $request->file('written_feedback');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/written_feedback/student_{$stuName}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/written_feedback/student_{$stuName}";
 
             $upload = $oneDriveService->uploadDirect($file, $folder, $filename);
 

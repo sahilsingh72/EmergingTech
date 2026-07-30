@@ -57,7 +57,7 @@ class FeedbackController extends Controller
 
         $file = $request->file('written_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $folder   = "EmergingTech/{$districtName}/{$schoolName}/Student_feedback";
+        $folder   = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Student_feedback";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -236,7 +236,7 @@ class FeedbackController extends Controller
             $school = School::find($schoolId);
             $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/Student_feedback";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Student_feedback";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -329,7 +329,7 @@ class FeedbackController extends Controller
 
         $file = $request->file('institute_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $folder   = "EmergingTech/{$districtName}/{$schoolName}/institute_feedback";
+        $folder   = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/institute_feedback";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -439,7 +439,7 @@ class FeedbackController extends Controller
             $school = School::find($schoolId);
             $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/institute_feedback";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/institute_feedback";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -662,7 +662,7 @@ class FeedbackController extends Controller
         $file = $request->file('video_feedback');
         $filename = time() . '_' . $file->getClientOriginalName();
         $designation = $request->designation;
-        $folder   = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/designation_{$designation}";
+        $folder   = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/video_feedback/designation_{$designation}";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -779,7 +779,7 @@ class FeedbackController extends Controller
         $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
         $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
         
-        $oldfolder = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/designation_{$oldDesignation}";
+        $oldfolder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/video_feedback/designation_{$oldDesignation}";
         $newfolder = "designation_{$newDesignation}";
         
         if ($oldDesignation !== $newDesignation) {
@@ -824,7 +824,7 @@ class FeedbackController extends Controller
 
             $file = $request->file('new_feedback_video');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/video_feedback/{$newfolder}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/video_feedback/{$newfolder}";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 

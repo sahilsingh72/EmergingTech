@@ -159,7 +159,7 @@ class BillController extends Controller
             $file = $files[$i];
             $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Camp_Expenses/{$billType}";
             $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
 
             CampExpenseBill::create([
@@ -374,7 +374,7 @@ class BillController extends Controller
             $file = $files[$i];
             $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$billType}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Camp_Expenses/{$billType}";
             $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
 
             CampExpenseBill::create([
@@ -612,7 +612,7 @@ class BillController extends Controller
             $file = $request->file('bill_file');
             $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/{$bill->bill_type}";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Camp_Expenses/{$bill->bill_type}";
             $upload = $this->oneDrive->uploadDirect($file, $folder, $fileName);
 
             $bill->bill_path = $upload['path'] ?? $bill->bill_path;
@@ -1050,7 +1050,7 @@ class BillController extends Controller
 
                 $upload = $this->oneDrive->uploadDirect(
                     $file,
-                    "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/main",
+                    $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Camp_Expenses/CampTravels/main",
                     time().'_'.$file->getClientOriginalName()
                 );
 
@@ -1066,7 +1066,7 @@ class BillController extends Controller
 
                 $upload = $this->oneDrive->uploadDirect(
                     $file,
-                    "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/return",
+                    $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/Camp_Expenses/CampTravels/return",
                     time().'_'.$file->getClientOriginalName()
                 );
 
@@ -1286,7 +1286,7 @@ class BillController extends Controller
 
             $upload = $this->oneDrive->uploadDirect(
                 $file,
-                "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/main",
+                $this->schoolOneDriveRoot($bill->school, $districtName, $schoolName) . "/Camp_Expenses/CampTravels/main",
                 time().'_'.$file->getClientOriginalName()
             );
 
@@ -1302,7 +1302,7 @@ class BillController extends Controller
 
             $upload = $this->oneDrive->uploadDirect(
                 $file,
-                "EmergingTech/{$districtName}/{$schoolName}/Camp_Expenses/CampTravels/return",
+                $this->schoolOneDriveRoot($bill->school, $districtName, $schoolName) . "/Camp_Expenses/CampTravels/return",
                 time().'_'.$file->getClientOriginalName()
             );
 

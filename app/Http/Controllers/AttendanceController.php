@@ -48,7 +48,10 @@ class AttendanceController extends Controller
 
         $districts = District::select('DSM_DSCD', 'DSM_DSNM')->orderBy('DSM_DSNM', 'asc')->get();
         if ($roleId == 1 || $roleId == 2) {
-            $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->orderBy('scm_dist', 'asc')->get();
+            $schools = School::forBatch()
+                ->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')
+                ->orderBy('scm_dist', 'asc')
+                ->get();
         } else {
             $schools = School::forBatch()->select('scm_id', 'scm_name', 'scm_udise_code', 'scm_dist')->where('scm_dist_id', $districtID[0]->district_id)->orderBy('scm_name', 'asc')->get();
         }
@@ -137,7 +140,7 @@ class AttendanceController extends Controller
             foreach ($request->file('attendance_files') as $file) {
 
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "EmergingTech/{$districtName}/{$schoolName}/attendance_sheet";
+                $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/attendance_sheet";
 
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
                 $fileTypeMap = config('filetypes');
@@ -164,7 +167,7 @@ class AttendanceController extends Controller
             $file = $request->file('trainer_image');
             $filename = time() . '_' . $file->getClientOriginalName();
 
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/trainer_photo";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/trainer_photo";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
             $fileTypeMap = config('filetypes');
@@ -287,7 +290,7 @@ class AttendanceController extends Controller
 
             $file = $request->file('attendance_file');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/attendance_sheet";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/attendance_sheet";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -314,7 +317,7 @@ class AttendanceController extends Controller
 
             $file = $request->file('trainer_image');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/trainer_photo";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/trainer_photo";
 
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 

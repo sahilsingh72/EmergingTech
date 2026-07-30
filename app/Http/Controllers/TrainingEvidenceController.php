@@ -71,7 +71,7 @@ class TrainingEvidenceController extends Controller
             foreach ($request->file('training_photo') as $file) {
 
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_photo";
+                $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_photo";
 
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
@@ -206,7 +206,7 @@ class TrainingEvidenceController extends Controller
         if ($request->hasFile('new_training_photo')) {
             foreach ($request->file('new_training_photo') as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_photo";
+                $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_photo";
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
                 $existingNames[] = $file->getClientOriginalName();
@@ -281,7 +281,7 @@ class TrainingEvidenceController extends Controller
 
         foreach ($request->file('training_video') as $file) {
             $filename = time() . '_' . $file->getClientOriginalName();
-            $folder   = "EmergingTech/{$districtName}/{$schoolName}/training_video";
+            $folder   = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_video";
 
             // Upload to OneDrive
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -452,7 +452,7 @@ class TrainingEvidenceController extends Controller
         if ($request->hasFile('new_training_video')) {
             foreach ($request->file('new_training_video') as $file) {
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $folder = "EmergingTech/{$districtName}/{$schoolName}/training_video";
+                $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_video";
                 $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
 
                 $existingNames[] = $file->getClientOriginalName();
@@ -548,7 +548,7 @@ class TrainingEvidenceController extends Controller
 
         $file = $request->file('training_completion_certificate');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $folder   = "EmergingTech/{$districtName}/{$schoolName}/training_completion_certificate";
+        $folder   = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_completion_certificate";
 
         // Upload to OneDrive
         $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
@@ -719,7 +719,7 @@ class TrainingEvidenceController extends Controller
             $school = School::find($schoolId);
             $schoolName = preg_replace('/[^A-Za-z0-9_\-]/', ' ', $school->scm_name);
             $districtName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $school->scm_dist);
-            $folder = "EmergingTech/{$districtName}/{$schoolName}/training_completion_certificate";
+            $folder = $this->schoolOneDriveRoot($school, $districtName, $schoolName) . "/training_completion_certificate";
             
             $result = $this->oneDrive->uploadDirect($file, $folder, $filename);
         
